@@ -1,0 +1,2 @@
+class FootPrint < ApplicationRecord
+end

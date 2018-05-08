@@ -1,0 +1,2 @@
+class LocationNpid < ApplicationRecord
+end

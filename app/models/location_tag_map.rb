@@ -1,0 +1,2 @@
+class LocationTagMap < ApplicationRecord
+end
