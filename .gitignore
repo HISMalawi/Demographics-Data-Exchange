@@ -20,3 +20,4 @@ log/*
 .ruby-version
 vendor/plugins/htn/*
 config/*.yml
+tmp/cache/*

@@ -1,0 +1,9 @@
+
+development:
+  protocol: 'http'
+  host:     localhost
+  port:     5984
+  prefix:   dde3
+  suffix:   development
+  username: root
+  password: root
