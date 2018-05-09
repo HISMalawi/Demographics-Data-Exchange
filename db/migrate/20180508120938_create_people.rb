@@ -15,6 +15,7 @@ class CreatePeople < ActiveRecord::Migration[5.2]
       t.datetime              :date_voided
       t.string                :npid                  
       t.integer               :location_created_at,   null: false           
+      t.integer               :creator,               null: false           
 
       t.timestamps
     end

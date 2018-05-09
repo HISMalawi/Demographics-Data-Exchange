@@ -26,7 +26,6 @@ class Api::V1::UserController < ApplicationController
 		command = AuthenticateUser.call(email, password)
 
 		if command.success?
-      update_session(email, command.result)
 			render json: {
 				access_token: command.result,
 				message: 'Login Successful'
@@ -36,16 +35,5 @@ class Api::V1::UserController < ApplicationController
 		end
 	end
 
-  def update_session(email, token)
-    user = User.where(email: email).first
-    session_record = Session.where(user_id: user.id)
-
-    unless session_record.blank?
-      session_record.first.update_attributes(token: token)
-    else
-      Session.create(token: token, user_id: user.id)
-    end
-
-  end
 
 end

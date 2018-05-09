@@ -5,13 +5,14 @@ class CouchdbPerson < CouchRest::Model::Base
   property  :gender,  String
   property  :birthdate,   Date
   property  :birthdate_estimated,   TrueClass, default: false
-  property  :died,            TrueClass, default: false
+  property  :died,                  TrueClass, default: false
   property  :deathdate,   Date
   property  :deathdate_estimated,   TrueClass, default: false
-  property  :voided,            TrueClass, default: false
-  property  :date_voided,   Date
+  property  :voided,                TrueClass, default: false
+  property  :date_voided,           Date
   property  :npid,   String
   property  :location_created_at,   String
+  property  :creator,               String
 
   timestamps!
 end
