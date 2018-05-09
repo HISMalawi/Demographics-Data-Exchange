@@ -1,5 +1,5 @@
 module PersonService
-  def self.create(params)
+  def self.create(params, current_user)
 
     given_name              = params[:given_name]
     family_name             = params[:family_name]
