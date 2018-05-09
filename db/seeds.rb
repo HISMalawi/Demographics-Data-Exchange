@@ -8,6 +8,12 @@
 
 require 'csv'
 
+puts ""
+puts ""
+puts ""
+puts "Defaault user and user roles ..."
+sleep 3
+
 #Create default user ...
 couchdb_user  = CouchdbUser.create(email: 'admin@baobabhealth.org', password_digest: 'bht.dde3!')
 user          = User.create(couchdb_user_id: couchdb_user.id , email: couchdb_user.email, password: 'bht.dde3!')
@@ -32,6 +38,12 @@ Role.where(role: 'Administrator').each do |role|
     role_id:  role.id)
   puts "Adding user role: #{role.role} ...."
 end
+
+puts ""
+puts ""
+puts ""
+puts "Location Tags ..."
+sleep 3
 
 person_attributes = [
   'Current district','Current traditional authority','Current village', 
@@ -74,6 +86,12 @@ end
   puts "Created location_tag: #{couchdb.name} ...."
 end
 
+puts ""
+puts ""
+puts ""
+puts "Creating Districts ..."
+sleep 3
+
 
 districts = []
 
@@ -99,6 +117,12 @@ districts.each do |name, code|
     puts "########### #{code} ........... #{name}"
   end
 end
+
+puts ""
+puts ""
+puts ""
+puts "Creating facilities (clinics) ..."
+sleep 3
 
 CSV.foreach("#{Rails.root}/app/assets/data/health_facilities.csv", headers: true, encoding: 'ISO-8859-1') do |row|
   next if row[3].blank?
@@ -141,28 +165,10 @@ CSV.foreach("#{Rails.root}/app/assets/data/health_facilities.csv", headers: true
 end
 
 
-=begin
 
 
-CSV.foreach("#{Rails.root}/app/assets/data/health_facilities.csv", headers: true, encoding: 'ISO-8859-1') do |row|
-  next if row[0].blank?
 
-  code  = row[0]
-  name  = row[1]
-  ActiveRecord::Base.transaction do
-    couchdb_country = CouchdbLocation.create(name: name, code: code, creator: couchdb_user.id)
-    couchdb_location_tag_map = CouchdbLocationTagMap.create(location_id: couchdb_country.id, 
-			location_tag_id: location_tag.couchdb_location_tag_id)
 
-    country = Location.create(name: name, code: code, creator: user.id, couchdb_location_id: couchdb_country.id)
-    LocationTagMap.create(location_id: country.id, 
-			location_tag_id: location_tag.id,
-			couchdb_location_tag_id: couchdb_location_tag_map.id,
-			couchdb_location_id:	couchdb_country.id)
-
-		
-    puts "########### #{code} ........... #{name}"
-  end
-end
-
-=end
+puts "Default user: >>>>"
+puts "        username: admin@baobabhealth.org"
+puts "        password: bht.dde3!"
