@@ -22,3 +22,4 @@ log/*
 vendor/plugins/htn/*
 config/*.yml
 tmp/cache/*
+tmp/*
