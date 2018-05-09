@@ -6,6 +6,8 @@
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
 
+require 'csv'
+
 #Create default user ...
 couchdb_user  = CouchdbUser.create(email: 'admin@baobabhealth.org', password_digest: 'bht.dde3!')
 user          = User.create(couchdb_user_id: couchdb_user.id , email: couchdb_user.email, password: 'bht.dde3!')
@@ -19,7 +21,7 @@ roles = [
 (roles).each do |r, description|
   couchdb = CouchdbRole.create(role: r, description: description)
   Role.create(role: r, description: description, couchdb_role_id: couchdb.id)
-  puts "Adding role: #{r} #{description}"
+  puts "Adding role: #{r} #{description} ...."
 end
 
 Role.where(role: 'Administrator').each do |role|
@@ -28,5 +30,139 @@ Role.where(role: 'Administrator').each do |role|
     user_id: user.id, 
     couchdb_user_id: couchdb_user.id,
     role_id:  role.id)
-  puts "Adding user role: #{role.role}"
+  puts "Adding user role: #{role.role} ...."
 end
+
+person_attributes = [
+  'Current district','Current traditional authority','Current village', 
+  'Home district','Home traditional authority','Home village', 
+  'Nationality', 'Cell phone number','Work phone number','Home phone number',
+  'Occupation','Landmark','Legacy identification','Nationality'
+]
+
+person_attributes.each do |pa|
+  couchdb       = CouchdbPersonAttributeType.create(name: pa)
+  activerecord  = PersonAttributeType.create(name: pa, couchdb_person_attribute_type_id: couchdb.id)
+end
+
+
+location_tag_hash = {}
+CSV.foreach("#{Rails.root}/app/assets/data/health_facilities.csv", headers: true, encoding: 'ISO-8859-1') do |row|
+  next if row[5].blank?
+  next unless location_tag_hash[row[5].squish].blank?
+
+  couchdb         = CouchdbLocationTag.create(name: row[5].squish) 
+  activerecord    = LocationTag.create(couchdb_location_tag_id: couchdb.id, name: couchdb.name)
+  location_tag_hash[couchdb.name]  = activerecord
+  puts "Created location_tag: #{couchdb.name} ...."
+end
+
+location_tag_hash = {}
+CSV.foreach("#{Rails.root}/app/assets/data/health_facilities.csv", headers: true, encoding: 'ISO-8859-1') do |row|
+  next if row[6].blank?
+  next unless location_tag_hash[row[6].squish].blank?
+
+  couchdb         = CouchdbLocationTag.create(name: row[6].squish) 
+  activerecord    = LocationTag.create(couchdb_location_tag_id: couchdb.id, name: couchdb.name)
+  location_tag_hash[couchdb.name]  = activerecord
+  puts "Created location_tag: #{couchdb.name} ...."
+end
+
+['District','Northern','Central East','Central West','South East','South West','Urban','Rural'].each do |name|
+  couchdb         = CouchdbLocationTag.create(name: name) 
+  activerecord    = LocationTag.create(couchdb_location_tag_id: couchdb.id, name: couchdb.name)
+  puts "Created location_tag: #{couchdb.name} ...."
+end
+
+
+districts = []
+
+CSV.foreach("#{Rails.root}/app/assets/data/health_facilities.csv", headers: true, encoding: 'ISO-8859-1') do |row|
+  next if row[0].blank?
+  districts << [row[0].squish, row[1]]
+  districts = districts.uniq
+end
+
+location_tag = LocationTag.where(name: 'District').first
+districts.each do |name, code|
+  ActiveRecord::Base.transaction do
+    couchdb_country = CouchdbLocation.create(name: name, code: code, creator: couchdb_user.id)
+    couchdb_location_tag_map = CouchdbLocationTagMap.create(location_id: couchdb_country.id, 
+			location_tag_id: location_tag.couchdb_location_tag_id)
+
+    country = Location.create(name: name, code: code, creator: user.id, couchdb_location_id: couchdb_country.id)
+    LocationTagMap.create(location_id: country.id, 
+			location_tag_id: location_tag.id,
+			couchdb_location_tag_id: couchdb_location_tag_map.id,
+			couchdb_location_id:	couchdb_country.id)
+
+    puts "########### #{code} ........... #{name}"
+  end
+end
+
+CSV.foreach("#{Rails.root}/app/assets/data/health_facilities.csv", headers: true, encoding: 'ISO-8859-1') do |row|
+  next if row[3].blank?
+
+  name            = row[3].squish
+  facility_code   = row[2].squish rescue nil
+  district_name   = row[0].squish
+  zone            = row[4].squish
+  facility_type   = row[5].squish
+  mga             = row[6].squish
+  geographic_area = row[7].squish
+  latitude        = row[8].squish
+  longitude       = row[9].squish
+
+  ActiveRecord::Base.transaction do
+    district  = Location.where(name: district_name).first
+
+    couchdb_facility = CouchdbLocation.create(name: name, code: facility_code, 
+      creator: couchdb_user.id, longitude: longitude, latitude: latitude, 
+      parent_location:  district.couchdb_location_id)
+
+    facility = Location.create(name: name, code: facility_code, 
+      creator: user.id, longitude: longitude, latitude: latitude, 
+      parent_location:  district.location_id, couchdb_location_id: couchdb_facility.id)
+
+    [zone, facility_type, mga, geographic_area].each do |lt|
+      lt_location_tag = LocationTag.where(name: lt).first
+      c = CouchdbLocationTagMap.create(location_id: couchdb_facility.id, 
+			  location_tag_id: lt_location_tag.couchdb_location_tag_id)
+
+      LocationTagMap.create(location_id: facility.id, 
+			  location_tag_id: lt_location_tag.id,
+        couchdb_location_tag_id: c.location_tag_id,
+        couchdb_location_id: c.location_id)
+    end
+
+
+    puts "########### #{facility_code} ........... #{name}"
+  end
+end
+
+
+=begin
+
+
+CSV.foreach("#{Rails.root}/app/assets/data/health_facilities.csv", headers: true, encoding: 'ISO-8859-1') do |row|
+  next if row[0].blank?
+
+  code  = row[0]
+  name  = row[1]
+  ActiveRecord::Base.transaction do
+    couchdb_country = CouchdbLocation.create(name: name, code: code, creator: couchdb_user.id)
+    couchdb_location_tag_map = CouchdbLocationTagMap.create(location_id: couchdb_country.id, 
+			location_tag_id: location_tag.couchdb_location_tag_id)
+
+    country = Location.create(name: name, code: code, creator: user.id, couchdb_location_id: couchdb_country.id)
+    LocationTagMap.create(location_id: country.id, 
+			location_tag_id: location_tag.id,
+			couchdb_location_tag_id: couchdb_location_tag_map.id,
+			couchdb_location_id:	couchdb_country.id)
+
+		
+    puts "########### #{code} ........... #{name}"
+  end
+end
+
+=end
