@@ -173,7 +173,7 @@ couchdb_bht = CouchdbLocation.create(name: 'Baobab Health Trust',
   code: 'BHT', creator: couchdb_user.id)
 
 activerecord_bht = Location.create(name: couchdb_bht.name, code: couchdb_bht.code, 
-  couchdb_location_id: couchdb_bht.id)
+  couchdb_location_id: couchdb_bht.id, creator: user.id)
 
 location_tag  = LocationTag.where(name: 'System command center').first
   c = CouchdbLocationTagMap.create(location_id: couchdb_bht.id, 
