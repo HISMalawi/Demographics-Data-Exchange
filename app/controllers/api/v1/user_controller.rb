@@ -2,7 +2,7 @@ class Api::V1::UserController < ApplicationController
 	skip_before_action :authenticate_request, only: %i[login]
 
 	def login
-		authenticate params[:email], params[:password]
+		authenticate params[:username], params[:password]
 	end
 
 	def register
@@ -19,11 +19,11 @@ class Api::V1::UserController < ApplicationController
 	private
 
 	def user_params
-		params.permit(:email, :password)
+		params.permit(:username, :password)
 	end
 
-	def authenticate(email, password)
-		command = AuthenticateUser.call(email, password)
+	def authenticate(username, password)
+		command = AuthenticateUser.call(username, password)
 
 		if command.success?
 			render json: {

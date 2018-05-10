@@ -15,8 +15,11 @@ puts "Defaault user and user roles ..."
 sleep 3
 
 #Create default user ...
-couchdb_user  = CouchdbUser.create(email: 'admin@baobabhealth.org', password_digest: 'bht.dde3!')
-user          = User.create(couchdb_user_id: couchdb_user.id , email: couchdb_user.email, password: 'bht.dde3!')
+couchdb_user  = CouchdbUser.create(username: 'admin', 
+  email: 'admin@baobabhealth.org', password_digest: 'bht.dde3!')
+
+user  = User.create(username: 'admin', couchdb_user_id: couchdb_user.id , 
+                            email: couchdb_user.email, password: 'bht.dde3!')
 couchdb_user.update_attributes(password_digest: user.password_digest)
 
 roles = [
@@ -80,7 +83,7 @@ CSV.foreach("#{Rails.root}/app/assets/data/health_facilities.csv", headers: true
   puts "Created location_tag: #{couchdb.name} ...."
 end
 
-['District','Northern','Central East','Central West','South East','South West','Urban','Rural'].each do |name|
+['System command center','District','Northern','Central East','Central West','South East','South West','Urban','Rural'].each do |name|
   couchdb         = CouchdbLocationTag.create(name: name) 
   activerecord    = LocationTag.create(couchdb_location_tag_id: couchdb.id, name: couchdb.name)
   puts "Created location_tag: #{couchdb.name} ...."
@@ -162,13 +165,33 @@ CSV.foreach("#{Rails.root}/app/assets/data/health_facilities.csv", headers: true
 
     puts "########### #{facility_code} ........... #{name}"
   end
+
 end
 
+############################################
+couchdb_bht = CouchdbLocation.create(name: 'Baobab Health Trust', 
+  code: 'BHT', creator: couchdb_user.id)
+
+activerecord_bht = Location.create(name: couchdb_bht.name, code: couchdb_bht.code, 
+  couchdb_location_id: couchdb_bht.id)
+
+location_tag  = LocationTag.where(name: 'System command center').first
+  c = CouchdbLocationTagMap.create(location_id: couchdb_bht.id, 
+    location_tag_id: location_tag.couchdb_location_tag_id)
+
+LocationTagMap.create(location_id: activerecord_bht.id, 
+  location_tag_id: location_tag.id,
+  couchdb_location_tag_id: couchdb_bht.location_tag_id,
+  couchdb_location_id: couchdb_bht.location_id)
+
+
+user.update_attributes(location_id: activerecord_bht.location_id)
+couchdb_user.update_attributes(location_id: activerecord_bht.couchdb_location_id)
 
 
 
 
 
 puts "Default user: >>>>"
-puts "        username: admin@baobabhealth.org"
+puts "        username: admin"
 puts "        password: bht.dde3!"
