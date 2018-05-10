@@ -3,7 +3,7 @@ class CouchdbPerson < CouchRest::Model::Base
   property  :middle_name, String
   property  :family_name, String
   property  :gender,  String
-  property  :birthdate,   Date
+  property  :birthdate,   Date, default: ""
   property  :birthdate_estimated,   TrueClass, default: false
   property  :died,                  TrueClass, default: false
   property  :deathdate,   Date
