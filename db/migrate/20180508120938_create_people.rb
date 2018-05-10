@@ -9,7 +9,7 @@ class CreatePeople < ActiveRecord::Migration[5.2]
       t.date                  :birthdate,             null: false
       t.boolean               :birthdate_estimated,   null: false, default: false, limit: 1
       t.boolean               :died,                  null: false, default: false, limit: 1
-      t.date                  :death_date
+      t.date                  :deathdate
       t.boolean               :deathdate_estimated,   default: false, limit: 1   
       t.boolean               :voided,                null: false,  default: false, limit: 1
       t.datetime              :date_voided
