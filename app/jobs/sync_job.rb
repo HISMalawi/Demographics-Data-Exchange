@@ -3,6 +3,7 @@ class SyncJob
   workers 1
   def perform()
    SuckerPunch.logger.info "Sucker punch at work..."
+   CouchChanges.changes
    SyncJob.perform_in(5)
-  end #rescue SyncJob.perform_in(5)
+  end rescue SyncJob.perform_in(5)
 end
