@@ -181,8 +181,8 @@ location_tag  = LocationTag.where(name: 'System command center').first
 
 LocationTagMap.create(location_id: activerecord_bht.id, 
   location_tag_id: location_tag.id,
-  couchdb_location_tag_id: couchdb_bht.location_tag_id,
-  couchdb_location_id: couchdb_bht.location_id)
+  couchdb_location_tag_id: c.location_tag_id,
+  couchdb_location_id: couchdb_bht.id)
 
 
 user.update_attributes(location_id: activerecord_bht.location_id)
