@@ -24,11 +24,12 @@ module PersonService
     ActiveRecord::Base.transaction do
       couchdb_person = CouchdbPerson.create(given_name: given_name, family_name: family_name,
         middle_name: middle_name, gender: gender, birthdate: birthdate,
+        location_created_at: current_user.couchdb_location_id,
         birthdate_estimated: birthdate_estimated, creator: current_user.couchdb_user_id)
 
       person = Person.create(given_name: given_name, family_name: family_name,
         middle_name: middle_name, gender: gender, birthdate: birthdate, 
-        birthdate_estimated: birthdate_estimated, 
+        birthdate_estimated: birthdate_estimated, location_created_at: current_user.location_id, 
         couchdb_person_id: couchdb_person.id, creator: current_user.id)
 
     end
