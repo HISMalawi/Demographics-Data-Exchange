@@ -31,6 +31,8 @@ gem 'bootsnap', '>= 1.1.0', require: false
 gem 'couchrest_model'
 gem 'jwt'
 gem 'simple_command'
+gem 'sucker_punch'
+
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
