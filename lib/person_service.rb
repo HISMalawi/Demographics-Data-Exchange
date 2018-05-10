@@ -21,6 +21,7 @@ module PersonService
     art_number              = params[:identifiers][:art_number]
     htn_number              = params[:identifiers][:htn_number]
 
+    couchdb_person = nil
     ActiveRecord::Base.transaction do
       couchdb_person = CouchdbPerson.create(given_name: given_name, family_name: family_name,
         middle_name: middle_name, gender: gender, birthdate: birthdate,

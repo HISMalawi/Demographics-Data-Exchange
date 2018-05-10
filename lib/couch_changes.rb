@@ -34,6 +34,10 @@ module CouchChanges
       if (type == 'CouchdbUser')
         updateMysqlCouchdbUser(result["doc"])
       end
+
+      if (type == 'CouchdbPerson')
+        updateMysqlCouchdbPerson(result["doc"])
+      end
       #create_or_update_mysql_from_couch(couch_data, date)
     end
     
@@ -60,6 +64,46 @@ module CouchChanges
     else
       user.update_attributes(username: username, email: email, couchdb_location_id: couch_location_id,
         voided: voided, location_id: mysql_location_id)
+    end
+
+  end
+
+  def self.updateMysqlCouchdbPerson(data)
+    id = data["_id"]
+    given_name = data["given_name"]
+    middle_name = data["middle_name"]
+    family_name = data["family_name"]
+    gender = data["gender"]
+    birthdate = data["birthdate"]
+    birthdate_estimated = data["birthdate_estimated"]
+    died = data["died"]
+    deathdate = data["deathdate"]
+    deathdate_estimated = data["deathdate_estimated"]
+    voided = data["voided"]
+    date_voided = data["date_voided"]
+    npid = data["npid"]
+    location_created_at = data["location_created_at"]
+    creator = data["creator"]
+    created_at = data["created_at"]
+    updated_at = data["updated_at"]
+
+    mysql_location_id = get_mysql_location_from_couchdb(location_created_at)
+
+    person = Person.find_by_couchdb_person_id(id)
+    if person.blank?
+      Person.create(couchdb_person_id: id, given_name: given_name, middle_name: middle_name, family_name: family_name,
+        gender: gender, birthdate: birthdate, birthdate_estimated: birthdate_estimated,
+        died: died, deathdate: deathdate, deathdate_estimated: deathdate_estimated, voided: voided,
+        date_voided: date_voided, npid: npid, location_created_at: mysql_location_id,
+        creator: creator, created_at: created_at, updated_at: updated_at
+      )
+    else
+      person.update_attributes(couchdb_person_id: id, given_name: given_name, middle_name: middle_name, family_name: family_name,
+        gender: gender, birthdate: birthdate, birthdate_estimated: birthdate_estimated,
+        died: died, deathdate: deathdate, deathdate_estimated: deathdate_estimated, voided: voided,
+        date_voided: date_voided, npid: npid, location_created_at: mysql_location_id,
+        creator: creator, created_at: created_at, updated_at: updated_at
+      )
     end
 
   end
