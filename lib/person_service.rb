@@ -39,15 +39,15 @@ module PersonService
    
     if couchdb_person
       couchdb_person_npid  = NpidService.assign_id_person(couchdb_person)
-      person_attributes = []
 
-      PersonAttributeService.create(params[:attributes], couchdb_person)
+      attributes = PersonAttributeService.create(params[:attributes], couchdb_person)
       
-      (PersonAttribute.where(person_id: person.id) || []).each do |a|
-        person_attribute_type = PersonAttributeType.find(a.person_attribute_type_id)
+      (attributes || []).each do |attribute|
+        attribute_type = CouchdbPersonAttributeType.find(attribute.person_attribute_type_id)
         person_attributes << {
-          type: person_attribute_type.id, value: a.value, 
-          person_attribute_type_name: person_attribute_type.name
+          type: attribute_type.id, 
+          value: attribute.value, 
+          person_attribute_type_name: attribute_type.name
         }
       end
 
