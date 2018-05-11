@@ -19,7 +19,7 @@ couchdb_user  = CouchdbUser.create(username: 'admin',
   email: 'admin@baobabhealth.org', password_digest: 'bht.dde3!')
 
 user  = User.create(username: 'admin', couchdb_user_id: couchdb_user.id , 
-                            email: couchdb_user.email, password: 'bht.dde3!')
+  email: couchdb_user.email, password: 'bht.dde3!')
 couchdb_user.update_attributes(password_digest: user.password_digest)
 
 roles = [
@@ -176,8 +176,8 @@ activerecord_bht = Location.create(name: couchdb_bht.name, code: couchdb_bht.cod
   couchdb_location_id: couchdb_bht.id, creator: user.id)
 
 location_tag  = LocationTag.where(name: 'System command center').first
-  c = CouchdbLocationTagMap.create(location_id: couchdb_bht.id, 
-    location_tag_id: location_tag.couchdb_location_tag_id)
+c = CouchdbLocationTagMap.create(location_id: couchdb_bht.id, 
+  location_tag_id: location_tag.couchdb_location_tag_id)
 
 LocationTagMap.create(location_id: activerecord_bht.id, 
   location_tag_id: location_tag.id,
@@ -188,9 +188,24 @@ LocationTagMap.create(location_id: activerecord_bht.id,
 user.update_attributes(location_id: activerecord_bht.location_id)
 couchdb_user.update_attributes(location_id: activerecord_bht.couchdb_location_id)
 
+couchdb_yml = Rails.root.to_s + "/config/couchdb.yml"
+env = Rails.env
+couch_db_settings = YAML.load_file(couchdb_yml)[env]
 
+couch_host = couch_db_settings["host"]
+couch_prefix = couch_db_settings["prefix"]
+couch_suffix = couch_db_settings["suffix"]
+couch_db = couch_prefix.to_s + "_" + couch_suffix
+couch_port = couch_db_settings["port"]
+file_path = Rails.root.to_s + "/log/last_sequence.txt"
 
+couch_address = "http://#{couch_host}:#{couch_port}/#{couch_db}/_changes?include_docs=true"
 
+received_params = RestClient.get(couch_address)
+results = JSON.parse(received_params)
+last_sequence_number = results["last_seq"]
+puts "Updated sequence #: #{last_sequence_number}"
+CouchChanges.update_sequence_in_file(last_sequence_number)
 
 puts "Default user: >>>>"
 puts "        username: admin"
