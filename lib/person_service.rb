@@ -41,6 +41,7 @@ module PersonService
       couchdb_person_npid  = NpidService.assign_id_person(couchdb_person)
 
       attributes = PersonAttributeService.create(params[:attributes], couchdb_person)
+      person_attributes = []
       
       (attributes || []).each do |attribute|
         attribute_type = CouchdbPersonAttributeType.find(attribute.person_attribute_type_id)
