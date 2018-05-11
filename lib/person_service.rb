@@ -36,7 +36,8 @@ module PersonService
     end
    
     if couchdb_person
-      couchdb_person = NpidService.assign_id_person(couchdb_person)
+      couchdb_person  = NpidService.assign_id_person(couchdb_person)
+      couchdb_person  = PersonAttributeService.create(params[:attributes], couchdb_person)
     end
     
     return couchdb_person
