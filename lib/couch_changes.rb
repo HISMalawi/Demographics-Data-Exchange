@@ -41,9 +41,9 @@ module CouchChanges
       end
       #create_or_update_mysql_from_couch(couch_data, date)
     end
-    
+
     last_sequence = seq.sort.last
-    update_sequence_in_file(last_sequence)
+    update_sequence_in_file(last_sequence) unless last_sequence.blank?
     return couch_data
   end
 
