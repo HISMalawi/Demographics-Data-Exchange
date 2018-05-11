@@ -30,7 +30,8 @@ module CouchChanges
     (couch_results || []).each do |result|
       type = result["doc"]["type"]
       id = result["doc"]["_id"]
-      
+      #raise result.inspect
+      seq << result["seq"].to_i
       if (type == 'CouchdbUser')
         updateMysqlCouchdbUser(result["doc"])
       end
@@ -40,9 +41,9 @@ module CouchChanges
       end
       #create_or_update_mysql_from_couch(couch_data, date)
     end
-    
+
     last_sequence = seq.sort.last
-    #update_sequence_in_file(last_sequence)
+    update_sequence_in_file(last_sequence) unless last_sequence.blank?
     return couch_data
   end
 
@@ -98,7 +99,7 @@ module CouchChanges
         creator: creator, created_at: created_at, updated_at: updated_at
       )
     else
-      person.update_attributes(couchdb_person_id: id, given_name: given_name, middle_name: middle_name, family_name: family_name,
+      person.update_attributes(given_name: given_name, middle_name: middle_name, family_name: family_name,
         gender: gender, birthdate: birthdate, birthdate_estimated: birthdate_estimated,
         died: died, deathdate: deathdate, deathdate_estimated: deathdate_estimated, voided: voided,
         date_voided: date_voided, npid: npid, location_created_at: mysql_location_id,
@@ -116,7 +117,7 @@ module CouchChanges
 
   end
 
-  def update_sequence_in_file(last_sequence_number)
+  def self.update_sequence_in_file(last_sequence_number)
     data = {"last_sequence" => last_sequence_number}.to_json
     file_path = Rails.root.to_s + "/log/last_sequence.txt"
     File.open(file_path, "w") do |f|
