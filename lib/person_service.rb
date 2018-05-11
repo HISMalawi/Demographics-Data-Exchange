@@ -22,6 +22,8 @@ module PersonService
     htn_number              = params[:identifiers][:htn_number]
 
     couchdb_person = nil
+    person = nil
+
     ActiveRecord::Base.transaction do
       couchdb_person = CouchdbPerson.create(given_name: given_name, family_name: family_name,
         middle_name: middle_name, gender: gender, birthdate: birthdate,
@@ -37,17 +39,22 @@ module PersonService
    
     if couchdb_person
       couchdb_person_npid  = NpidService.assign_id_person(couchdb_person)
-      #couchdb_person_obj = []
+      person_attributes = []
 
       PersonAttributeService.create(params[:attributes], couchdb_person)
-     # PersonAttributeType.all.each do |t|
-       # attribute = CouchdbPersonAttribute.find(t)
-        #couchdb_person_obj << {value: }
-      #end
+      
+      (PersonAttribute.where(person_id: person.id) || []).each do |a|
+        person_attribute_type = PersonAttributeType.find(a.person_attribute_type_id)
+        person_attributes << {
+          type: person_attribute_type_id: person_attribute_type.id,
+          value: a.value, person_attribute_type_name: person_attribute_type.name
+        }
+      end
 
+      return {person: couchdb_person, person_attributes: person_attributes}
     end
     
-    return couchdb_person
+    return {person: couchdb_person, person_attributes: []}
   end
 
 
