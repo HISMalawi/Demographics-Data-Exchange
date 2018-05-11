@@ -43,6 +43,10 @@ module CouchChanges
       if (type == 'CouchdbLocationNpid')
         updateMysqlCouchdbLocationNpid(result["doc"])
       end
+
+      if (type == 'CouchdbPersonAttribute')
+        updateMysqlCouchdbPersonAttribute(result["doc"])
+      end
       #create_or_update_mysql_from_couch(couch_data, date)
     end
 
@@ -114,11 +118,10 @@ module CouchChanges
   end
 
   def self.updateMysqlCouchdbLocationNpid(data)
+    #raise data.inspect
     id = data["_id"]
     npid = data["npid"]
-    location_id = data["location_id"]
-    couchdb_location_id = data["couchdb_location_id"]
-    mysql_location_id = get_mysql_location_from_couchdb(couchdb_location_id)
+    mysql_location_id = get_mysql_location_from_couchdb(data["location_id"])
     
 
     location_npid = LocationNpid.find_by_couchdb_location_id(id)
@@ -131,9 +134,41 @@ module CouchChanges
         location_id: mysql_location_id)
     end
   end
-  
+
+  def self.updateMysqlCouchdbPersonAttribute(data)
+    id = data["_id"]
+    person_attribute_type_id = get_mysql_person_attribute_type_id_from_couch_db(data["person_attribute_type_id"])
+    person_id = get_mysql_person_id_from_couch_db(data["person_id"])
+    value = data["value"]
+    
+
+    person_attribute = PersonAttribute.where(person_id: person_id, 
+      person_attribute_type_id: person_attribute_type_id).last
+    
+    if person_attribute.blank?
+      PersonAttribute.create(person_id: person_id,
+        couchdb_person_id: data["person_id"],
+        couchdb_person_attribute_type_id: data["person_attribute_type_id"],
+        couchdb_person_attribute_id: id,
+        person_attribute_type_id: person_attribute_type_id, value: value)
+    else
+      person_attribute.update_attributes(value: value)
+    end
+  end
+
   def self.get_mysql_location_from_couchdb(couch_location_id)
-    return 1
+    location = Location.find_by_couchdb_location_id(couch_location_id)
+    return location.id
+  end
+
+  def self.get_mysql_person_id_from_couch_db(couch_person_id)
+    person = Person.find_by_couchdb_person_id(couch_person_id)
+    return person.id
+  end
+
+  def self.get_mysql_person_attribute_type_id_from_couch_db(couch_person_attribute_id)
+    person_attribute_type = PersonAttributeType.find_by_couchdb_person_attribute_type_id(couch_person_attribute_id)
+    return person_attribute_type.id #TODO
   end
 
   def create_or_update_mysql_from_couch(couch_data, date)

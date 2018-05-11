@@ -25,3 +25,4 @@ tmp/cache/*
 tmp/*
 tmp/cache/bootsnap-load-path-cache
 last_sequence.txt
+erl_crash.dump

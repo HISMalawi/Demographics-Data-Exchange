@@ -186,7 +186,9 @@ LocationTagMap.create(location_id: activerecord_bht.id,
   couchdb_location_id: couchdb_bht.id)
 
 
-user.update_attributes(location_id: activerecord_bht.location_id)
+user.update_attributes(location_id: activerecord_bht.location_id,
+    couchdb_location_id: couchdb_bht.id
+)
 couchdb_user.update_attributes(location_id: activerecord_bht.couchdb_location_id)
 
 couchdb_yml = Rails.root.to_s + "/config/couchdb.yml"

@@ -36,8 +36,15 @@ module PersonService
     end
    
     if couchdb_person
-      couchdb_person  = NpidService.assign_id_person(couchdb_person)
-      couchdb_person  = PersonAttributeService.create(params[:attributes], couchdb_person)
+      couchdb_person_npid  = NpidService.assign_id_person(couchdb_person)
+      #couchdb_person_obj = []
+
+      PersonAttributeService.create(params[:attributes], couchdb_person)
+     # PersonAttributeType.all.each do |t|
+       # attribute = CouchdbPersonAttribute.find(t)
+        #couchdb_person_obj << {value: }
+      #end
+
     end
     
     return couchdb_person
