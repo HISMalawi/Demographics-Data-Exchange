@@ -67,7 +67,7 @@ module PersonAttributeService
         person_id: couchdb_person.id,
         person_attribute_type_id: attribute_type.id)
     end  
-
+=begin
     #ART number .... 
     if params[:art_number]
       attribute_type = PersonAttributeType.find_by_name('ART number').first
@@ -83,14 +83,7 @@ module PersonAttributeService
         person_id: couchdb_person.id,
         person_attribute_type_id: attribute_type.id)
     end  
-
-
-
-
-
-
-
-
+=end
 
   end
 end

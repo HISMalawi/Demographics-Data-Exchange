@@ -52,7 +52,8 @@ person_attributes = [
   'Current district','Current traditional authority','Current village', 
   'Home district','Home traditional authority','Home village', 
   'Nationality', 'Cell phone number','Work phone number','Home phone number',
-  'Occupation','Landmark','Legacy identification','Nationality'
+  'Occupation','Landmark','Legacy identification','Nationality',
+  'HTN number', 'ART number'
 ]
 
 person_attributes.each do |pa|
