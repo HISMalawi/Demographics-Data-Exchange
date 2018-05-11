@@ -14,5 +14,17 @@ module NpidService
 
   end
 
+  def self.assign_id_person(person)
+    ActiveRecord::Base.transaction do
+      npid = LocationNpid.where(assigned: false).limit(1)
+      if npid
+        npid  = npid.first
+        person.update_attributes(npid: npid.npid)
+        npid.update_attributes(assigned: true)
+      end
+    end
+
+    return person
+  end
 
 end

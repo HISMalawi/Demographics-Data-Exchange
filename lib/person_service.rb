@@ -34,6 +34,10 @@ module PersonService
         couchdb_person_id: couchdb_person.id, creator: current_user.id)
 
     end
+   
+    if couchdb_person
+      couchdb_person = NpidService.assign_id_person(couchdb_person)
+    end
     
     return couchdb_person
   end

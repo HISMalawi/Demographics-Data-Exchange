@@ -24,3 +24,4 @@ config/*.yml
 tmp/cache/*
 tmp/*
 tmp/cache/bootsnap-load-path-cache
+last_sequence.txt
