@@ -46,8 +46,8 @@ module PersonService
       (PersonAttribute.where(person_id: person.id) || []).each do |a|
         person_attribute_type = PersonAttributeType.find(a.person_attribute_type_id)
         person_attributes << {
-          type: person_attribute_type_id: person_attribute_type.id,
-          value: a.value, person_attribute_type_name: person_attribute_type.name
+          type: person_attribute_type.id, value: a.value, 
+          person_attribute_type_name: person_attribute_type.name
         }
       end
 
