@@ -128,7 +128,7 @@ module CouchChanges
       )
     else
       location_npid.update_attributes(npid: npid, couchdb_location_id: id,
-        location_id: mysql_location_id
+        location_id: mysql_location_id)
     end
   end
   
