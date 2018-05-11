@@ -39,6 +39,10 @@ module CouchChanges
       if (type == 'CouchdbPerson')
         updateMysqlCouchdbPerson(result["doc"])
       end
+
+      if (type == 'CouchdbLocationNpid')
+        updateMysqlCouchdbLocationNpid(result["doc"])
+      end
       #create_or_update_mysql_from_couch(couch_data, date)
     end
 
@@ -109,6 +113,25 @@ module CouchChanges
 
   end
 
+  def self.updateMysqlCouchdbLocationNpid(data)
+    id = data["_id"]
+    npid = data["npid"]
+    location_id = data["location_id"]
+    couchdb_location_id = data["couchdb_location_id"]
+    mysql_location_id = get_mysql_location_from_couchdb(couchdb_location_id)
+    
+
+    location_npid = LocationNpid.find_by_couchdb_location_id(id)
+    if location_npid.blank?
+      LocationNpid.create(npid: npid, couchdb_location_id: id,
+        location_id: mysql_location_id
+      )
+    else
+      location_npid.update_attributes(npid: npid, couchdb_location_id: id,
+        location_id: mysql_location_id
+    end
+  end
+  
   def self.get_mysql_location_from_couchdb(couch_location_id)
     return 1
   end
@@ -124,6 +147,18 @@ module CouchChanges
       f.write(data)
     end
   end
-  
+
+  def self.allocate_ids_to_facility(location)
+    npids = Npid.limit(10).where(assigned: false)
+    npids.each do |npid_row|
+      CouchdbLocationNpid.create(npid: npid_row.npid,
+        location_id: location.couchdb_location_id)
+
+      npid = Npid.find_by_npid(npid_row.npid)
+      npid.assigned = true
+      npid.save
+    end
+  end
+
 end
 
