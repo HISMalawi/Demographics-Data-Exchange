@@ -18,8 +18,8 @@ class Api::V1::UserController < ApplicationController
 	
 	def add_user
 	  # POST /add_user
-	  couchdb_location_id = CouchdbLocation.get_location_by_name(params[:location])
-	  mysql_location_id = Location.get_location_by_name(params[:location])
+	  couchdb_location_id = CouchdbLocation.get_location_by_name(params[:location]).id
+	  mysql_location_id = Location.get_location_by_name(params[:location]).id
 	  
 	  couchdb_user  = CouchdbUser.create(username: params[:username], 
 	    location_id: couchdb_location_id,

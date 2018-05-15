@@ -10,8 +10,13 @@ class CouchdbLocation < CouchRest::Model::Base
 
 	timestamps!
 
+  design do
+    view :by_name
+  end
+  
 	def self.get_location_by_name(name)
-	  return 99
+	  location = CouchdbLocation.find_by_name(name)
+	  return location
 	end
 	
 end
