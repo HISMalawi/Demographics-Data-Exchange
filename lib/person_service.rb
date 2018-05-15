@@ -58,6 +58,10 @@ module PersonService
     return {person: couchdb_person, person_attributes: []}
   end
 
+  def self.search_by_name_and_gender(params)
+    people = Person.search_by_name_and_gender(params)
+    return people
+  end
 
 
 end

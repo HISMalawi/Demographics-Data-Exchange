@@ -17,6 +17,8 @@ Rails.application.routes.draw do
   
   #people controller routes
   post 'v1/add_person', to: 'api/v1/people#create'
+  post 'v1/search_by_name_and_gender', to: 'api/v1/people#search_by_name_and_gender'
+  
 
   #npid controller routes
   post 'v1/assign_npids', to: 'api/v1/npid#assign_npids'
