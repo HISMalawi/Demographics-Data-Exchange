@@ -63,5 +63,10 @@ module PersonService
     return people
   end
 
+  def self.search_by_npid(params)
+    people = Person.search_by_npid(params)
+    return people
+  end
+
 
 end
