@@ -13,6 +13,7 @@ Rails.application.routes.draw do
 
   post 'v1/register', to: 'api/v1/user#register'
   post 'v1/login', to: 'api/v1/user#login'
+  post 'v1/add_user', to: 'api/v1/user#add_user'
   
   #people controller routes
   post 'v1/add_person', to: 'api/v1/people#create'

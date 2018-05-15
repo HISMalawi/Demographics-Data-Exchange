@@ -8,5 +8,4 @@ class CouchdbUser < CouchRest::Model::Base
   
   timestamps!
 
-    
 end

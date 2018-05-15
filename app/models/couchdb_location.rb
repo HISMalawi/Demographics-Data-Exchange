@@ -9,4 +9,9 @@ class CouchdbLocation < CouchRest::Model::Base
 	property				:creator,						String
 
 	timestamps!
+
+	def self.get_location_by_name(name)
+	  return 99
+	end
+	
 end

@@ -15,6 +15,28 @@ class Api::V1::UserController < ApplicationController
 		render json: @user.errors, status: :bad
 	 end 
 	end
+	
+	def add_user
+	  # POST /add_user
+	  couchdb_location_id = CouchdbLocation.get_location_by_name(params[:location])
+	  mysql_location_id = Location.get_location_by_name(params[:location])
+	  
+	  couchdb_user  = CouchdbUser.create(username: params[:username], 
+	    location_id: couchdb_location_id,
+      email: params[:email], password_digest: 'password_digest') #password_digest will be updated later
+
+    user  = User.create(username: params[:username], couchdb_user_id: couchdb_user.id, 
+    email: couchdb_user.email, password: params[:password], location_id: mysql_location_id)
+    
+    couchdb_user.update_attributes(password_digest: user.password_digest)
+
+   if user
+    response = { message: 'User created successfully'}
+    render json: response, status: :created 
+   else
+    render json: user.errors, status: :bad
+   end 
+	end
 
 	private
 
