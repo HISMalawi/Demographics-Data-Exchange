@@ -14,4 +14,15 @@ class Api::V1::PeopleController < ApplicationController
     search_results = PersonService.search_by_npid(params)
     render plain: search_results.to_json
   end
+  
+  def search_by_doc_id
+    search_results = PersonService.search_by_doc_id(params)
+    render plain: search_results.to_json
+  end
+  
+  def search_by_attributes
+    search_results = PersonService.search_by_attributes(params)
+    render plain: search_results.to_json
+  end
+  
 end

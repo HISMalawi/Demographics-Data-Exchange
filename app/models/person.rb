@@ -22,4 +22,26 @@ class Person < ApplicationRecord
     
     return people
   end
+  
+  def self.search_by_doc_id(params)
+    doc_id = params[:doc_id]
+    people = Person.where(["couchdb_person_id =?", doc_id])
+    return people
+  end
+  
+  def self.search_by_attributes(params)
+    values = params[:values]
+    
+    if !(values.is_a?(Array))
+      values = []
+    end
+    
+    if values.blank?
+      values = []
+    end
+    
+    people = PersonAttribute.where(["value IN (?)", values])
+    return people
+  end
+  
 end

@@ -19,6 +19,8 @@ Rails.application.routes.draw do
   post 'v1/add_person', to: 'api/v1/people#create'
   post 'v1/search_by_name_and_gender', to: 'api/v1/people#search_by_name_and_gender'
   post 'v1/search_by_npid/:npid/(*doc_id)', to: 'api/v1/people#search_by_npid'
+  post 'v1/search_by_doc_id/:doc_id', to: 'api/v1/people#search_by_doc_id'
+  get 'v1/search_by_attributes/', to: 'api/v1/people#search_by_attributes'
   
 
   #npid controller routes

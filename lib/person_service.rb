@@ -67,6 +67,15 @@ module PersonService
     people = Person.search_by_npid(params)
     return people
   end
+  
+  def self.search_by_doc_id(params)
+    people = Person.search_by_doc_id(params)
+    return people
+  end
 
+  def self.search_by_attributes(params)
+    people = Person.search_by_attributes(params)
+    return people
+  end
 
 end
