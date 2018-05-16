@@ -25,4 +25,9 @@ class Api::V1::PeopleController < ApplicationController
     render plain: search_results.to_json
   end
   
+  def update_person
+    person = PersonService.update_person(params)
+    render plain: person.to_json
+  end
+  
 end

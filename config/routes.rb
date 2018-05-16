@@ -22,7 +22,9 @@ Rails.application.routes.draw do
   post 'v1/search_by_doc_id/:doc_id', to: 'api/v1/people#search_by_doc_id'
   get 'v1/search_by_attributes/', to: 'api/v1/people#search_by_attributes'
   
-
+  
+  post 'v1/update_person/', to: 'api/v1/people#update_person'
+  
   #npid controller routes
   post 'v1/assign_npids', to: 'api/v1/npid#assign_npids'
 

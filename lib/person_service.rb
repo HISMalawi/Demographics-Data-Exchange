@@ -7,6 +7,7 @@ module PersonService
     gender                  = params[:gender]
     birthdate               = params[:birthdate]
     birthdate_estimated     = params[:birthdate_estimated]
+    birthdate_estimated = false if birthdate_estimated.blank?
 
     occupation              = params[:attributes][:occupation]
     cellphone_number        = params[:attributes][:cellphone_number]
@@ -76,6 +77,64 @@ module PersonService
   def self.search_by_attributes(params)
     people = Person.search_by_attributes(params)
     return people
+  end
+  
+  def self.update_person(params)
+    doc_id = params[:doc_id]
+    couchdb_person = CouchdbPerson.find(doc_id)
+    return {} if couchdb_person.blank?
+    
+    given_name              = params[:given_name]
+    family_name             = params[:family_name]
+    middle_name             = params[:middle_name]
+    gender                  = params[:gender]
+    birthdate               = params[:birthdate]
+    birthdate_estimated     = params[:birthdate_estimated]
+
+    occupation              = params[:attributes][:occupation]
+    cellphone_number        = params[:attributes][:cellphone_number]
+    current_district        = params[:attributes][:current_district]
+    current_ta              = params[:attributes][:current_traditional_authority]
+    current_village         = params[:attributes][:current_village]
+
+    home_district           = params[:attributes][:home_district]
+    home_ta                 = params[:attributes][:home_traditional_authority]
+    home_village            = params[:attributes][:home_village]
+
+    art_number              = params[:identifiers][:art_number]
+    htn_number              = params[:identifiers][:htn_number]
+    
+    
+    if !given_name.blank?
+      couchdb_person.given_name = given_name
+    end
+    
+    if !family_name.blank?
+      couchdb_person.family_name = family_name
+    end
+    
+    if !middle_name.blank?
+      couchdb_person.middle_name = middle_name
+    end
+    
+    if !gender.blank?
+      couchdb_person.gender = gender.first.upcase
+    end
+    
+    if !birthdate.blank?
+      couchdb_person.birthdate = birthdate
+    end
+    
+    if !birthdate_estimated.blank?
+      couchdb_person.birthdate_estimated = birthdate_estimated
+    end
+
+    if couchdb_person.save
+      couchdb_person_attr = PersonAttributeService.update(params[:attributes], doc_id)
+    end
+    
+    return {person: couchdb_person, person_attributes: couchdb_person_attr}
+    
   end
 
 end
