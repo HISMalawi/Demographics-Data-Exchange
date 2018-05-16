@@ -47,6 +47,10 @@ module CouchChanges
       if (type == 'CouchdbPersonAttribute')
         updateMysqlCouchdbPersonAttribute(result["doc"])
       end
+      
+      if (type == 'CouchdbFootPrint')
+        updateMysqlCouchdbFootPrint(result["doc"])
+      end
       #create_or_update_mysql_from_couch(couch_data, date)
     end
 
@@ -154,6 +158,28 @@ module CouchChanges
     else
       person_attribute.update_attributes(value: value)
     end
+  end
+  
+  def self.updateMysqlCouchdbFootPrint(data)
+    id = data["_id"]
+    mysql_user_id = get_mysql_user_id_from_couch_db(data["user_id"])
+    couch_user_id = data["user_id"]
+    mysql_location_id = get_mysql_location_from_couchdb(data["location_id"])
+    couch_location_id = data["location_id"]
+    npid = data["npid"]
+    
+      FootPrint.create(npid: npid,
+        couchdb_foot_print_id: id,
+        user_id: mysql_user_id,
+        couchdb_user_id: couch_user_id,
+        couchdb_location_id: couch_location_id, 
+        location_id: mysql_location_id)
+  end
+
+  def self.get_mysql_user_id_from_couch_db(couch_user_id)
+    user = User.find_by_couchdb_user_id(couch_user_id)
+    user_id = user.id
+    return user_id
   end
 
   def self.get_mysql_location_from_couchdb(couch_location_id)

@@ -30,6 +30,9 @@ Rails.application.routes.draw do
 
   #location controller routes
   post 'v1/find_location', to: 'api/v1/location#find'
+  
+  #footprint
+  post 'v1/update_footprint/', to: 'api/v1/footprint#update_footprint'
 
 
 
