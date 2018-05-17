@@ -7,6 +7,7 @@ Rails.application.routes.draw do
       resources :people
       resources :location
       resources :npid
+      resources :merge
 		end
 	end
 
@@ -35,6 +36,9 @@ Rails.application.routes.draw do
   
   #footprint
   post 'v1/update_footprint/', to: 'api/v1/footprint#update_footprint'
+
+  #merging
+  post 'v1/merge_people', to: 'api/v1/merge#merge'
 
 
 
