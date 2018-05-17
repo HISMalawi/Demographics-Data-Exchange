@@ -21,6 +21,8 @@ Rails.application.routes.draw do
   post 'v1/search_by_npid/:npid/(*doc_id)', to: 'api/v1/people#search_by_npid'
   post 'v1/search_by_doc_id/:doc_id', to: 'api/v1/people#search_by_doc_id'
   get 'v1/search_by_attributes/', to: 'api/v1/people#search_by_attributes'
+  post 'v1/potential_duplicates/:npid', to: 'api/v1/people#potential_duplicates'
+  post 'v1/merge_people/', to: 'api/v1/people#merge_people'
   
   
   post 'v1/update_person/', to: 'api/v1/people#update_person'

@@ -67,9 +67,9 @@ module PersonAttributeService
         person_id: couchdb_person.id,
         person_attribute_type_id: attribute_type.couchdb_person_attribute_type_id)
     end  
-=begin
+
     #ART number .... 
-    if params[:art_number]
+    if !params[:art_number].blank?
       attribute_type = PersonAttributeType.find_by_name('ART number').first
       attribute = CouchdbPersonAttribute.create(value: params[:art_number], 
         person_id: couchdb_person.id,
@@ -77,13 +77,12 @@ module PersonAttributeService
     end  
 
     #HTS .... 
-    if params[:htn_number]
+    if !params[:htn_number].blank?
       attribute_type = PersonAttributeType.find_by_name('htn_number').first
       attribute = CouchdbPersonAttribute.create(value: params[:htn_number], 
         person_id: couchdb_person.id,
         person_attribute_type_id: attribute_type.id)
     end  
-=end
   
     return attributes
   end
@@ -231,6 +230,42 @@ module PersonAttributeService
       else
         couchdb_person_attribute = CouchdbPersonAttribute.find(person_attr.couchdb_person_attribute_id)
         couchdb_person_attribute.update_attributes(value: params[:home_village])
+      end
+      
+      attributes << couchdb_person_attribute
+    end 
+    
+    #HTN number .... 
+    if !params[:htn_number].blank?
+      attribute_type = PersonAttributeType.find_by_name('HTN NUMBER').couchdb_person_attribute_type_id
+      person_attr = PersonAttribute.where(["couchdb_person_id = ? AND couchdb_person_attribute_type_id =?",
+        couchdb_person, attribute_type]).last
+        
+      if person_attr.blank?
+        couchdb_person_attribute = CouchdbPersonAttribute.create(value: params[:htn_number], 
+        person_id: couchdb_person,
+        person_attribute_type_id: attribute_type)
+      else
+        couchdb_person_attribute = CouchdbPersonAttribute.find(person_attr.couchdb_person_attribute_id)
+        couchdb_person_attribute.update_attributes(value: params[:htn_number])
+      end
+      
+      attributes << couchdb_person_attribute
+    end 
+    
+    #ART number .... 
+    if !params[:art_number].blank?
+      attribute_type = PersonAttributeType.find_by_name('ART NUMBER').couchdb_person_attribute_type_id
+      person_attr = PersonAttribute.where(["couchdb_person_id = ? AND couchdb_person_attribute_type_id =?",
+        couchdb_person, attribute_type]).last
+        
+      if person_attr.blank?
+        couchdb_person_attribute = CouchdbPersonAttribute.create(value: params[:art_number], 
+        person_id: couchdb_person,
+        person_attribute_type_id: attribute_type)
+      else
+        couchdb_person_attribute = CouchdbPersonAttribute.find(person_attr.couchdb_person_attribute_id)
+        couchdb_person_attribute.update_attributes(value: params[:art_number])
       end
       
       attributes << couchdb_person_attribute

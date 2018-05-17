@@ -30,4 +30,14 @@ class Api::V1::PeopleController < ApplicationController
     render plain: person.to_json
   end
   
+  def potential_duplicates
+    potential_duplicates = PersonService.potential_duplicates(params)
+    render plain: potential_duplicates.to_json
+  end
+  
+  def merge_people
+    merge_results = PersonService.merge_people(params)
+    render plain: merge_results.to_json
+  end
+  
 end

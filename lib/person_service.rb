@@ -136,5 +136,80 @@ module PersonService
     return {person: couchdb_person, person_attributes: couchdb_person_attr}
     
   end
+  
+  def self.potential_duplicates(params)
+    npid = params[:npid]
+    potential_duplicates = Person.where(npid: npid).having('COUNT(*) > 1')
+    return potential_duplicates
+  end
+  
+  def self.merge_people(params)
+    primary_npid = params[:primary_npid]
+    primary_doc_id = params[:primary_doc_id]
+    
+    secondary_npid = params[:secondary_npid]
+    secondary_doc_id = params[:secondary_doc_id]
+    
+    if !primary_doc_id.blank?
+      primary_person = Person.where(["npid =? AND doc_id =?", primary_npid, primary_doc_id]).last
+    else
+      primary_person = Person.where(["npid =?", primary_npid]).last
+    end
+    
+    if !secondary_doc_id.blank?
+      secondary_person = Person.where(["npid =? AND doc_id =?", secondary_npid, secondary_doc_id]).last
+    else
+      secondary_person = Person.where(["npid =?", secondary_npid]).last
+    end
+    
+    ActiveRecord::Base.transaction do
+      
+    end
+    
+  end
 
+  def self.get_person_obj(person)
+    #This is an active record object
+    params = {
+    given_name:   person.given_name,
+    family_name:  person.family_name,
+    middle_name:  person.middle_name,
+    gender: person.gender,
+    birthdate:  person.birthdate,
+    birthdate_estimated: person.birthdate_estimated,
+    attributes: {
+      occupation: get_attribute(person, "Occupation"),
+      cellphone_number: get_attribute(person, "Cell phone number"),
+      current_district: get_attribute(person, "Current district"),
+      current_traditional_authority: get_attribute(person, "Current traditional authority"),
+      current_village: get_attribute(person, "Current village"),
+      home_district: get_attribute(person, "Home district"),
+      home_traditional_authority: get_attribute(person, "Home traditional authority"),
+      home_village: get_attribute(person, "Home village")
+    },
+    identifiers: get_identifiers(person)
+  }
+ end
+  
+  def self.get_attribute(person, type)
+    person_attribute_type_id = PersonAttributeType.find_by_name(type).id
+    person_attribute = PersonAttribute.where(["person_id =? AND person_attribute_type_id =?", 
+      person.person_id, person_attribute_type_id]).last
+    #return person_attribute.blank? ? nil : person_attribute.value
+    return person_attribute.blank? == true ? nil : person_attribute.value
+    
+  end
+  
+  def self.get_identifiers(person)
+    attribute_types = ["National patient identifier", "HTN number", "ART number"]
+    identifiers = []
+    attribute_types.each do |attribute_type|
+      identifier = get_attribute(person, attribute_type)
+      unless identifier.blank?
+        identifiers << {"#{attribute_type}": identifier}
+      end
+    end
+    return identifiers
+  end
+  
 end

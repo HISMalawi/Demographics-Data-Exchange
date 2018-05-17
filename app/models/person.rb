@@ -1,4 +1,5 @@
 class Person < ApplicationRecord
+  after_create :update_footprint
   
   def self.search_by_name_and_gender(params)
     given_name = params[:given_name]
@@ -42,6 +43,12 @@ class Person < ApplicationRecord
     
     people = PersonAttribute.where(["value IN (?)", values])
     return people
+  end
+  
+ private
+ 
+  def update_footprint
+    FootPrintService.create(self, User.current)
   end
   
 end

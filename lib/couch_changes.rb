@@ -17,7 +17,7 @@ module CouchChanges
     else
       couch_address = "http://#{couch_host}:#{couch_port}/#{couch_db}/_changes?since=#{last_sequence_number}&include_docs=true"
     end
-
+    #raise couch_address.inspect
     #raise couch_address.inspect
     received_params = RestClient.get(couch_address)
     results = JSON.parse(received_params)
@@ -163,17 +163,20 @@ module CouchChanges
   def self.updateMysqlCouchdbFootPrint(data)
     id = data["_id"]
     mysql_user_id = get_mysql_user_id_from_couch_db(data["user_id"])
-    couch_user_id = data["user_id"]
-    mysql_location_id = get_mysql_location_from_couchdb(data["location_id"])
-    couch_location_id = data["location_id"]
-    npid = data["npid"]
-    
-      FootPrint.create(npid: npid,
+    mysql_person_id = get_mysql_person_id_from_couchdb(data["person_id"])
+
+      FootPrint.create(
         couchdb_foot_print_id: id,
         user_id: mysql_user_id,
-        couchdb_user_id: couch_user_id,
-        couchdb_location_id: couch_location_id, 
-        location_id: mysql_location_id)
+        couchdb_user_id: data["user_id"],
+        person_id: mysql_person_id, 
+        couchdb_person_id: data["person_id"])
+  end
+
+  def self.get_mysql_person_id_from_couchdb(couch_person_id)
+    person = Person.find_by_couchdb_person_id(couch_person_id)
+    person_id = person.id
+    return person_id
   end
 
   def self.get_mysql_user_id_from_couch_db(couch_user_id)
