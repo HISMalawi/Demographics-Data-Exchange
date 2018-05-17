@@ -79,26 +79,6 @@ module PersonService
     return {person: couchdb_person, person_attributes: []}
   end
 
-  def self.search_by_name_and_gender(params)
-    people = Person.search_by_name_and_gender(params)
-    return people
-  end
-
-  def self.search_by_npid(params)
-    people = Person.search_by_npid(params)
-    return people
-  end
-  
-  def self.search_by_doc_id(params)
-    people = Person.search_by_doc_id(params)
-    return people
-  end
-
-  def self.search_by_attributes(params)
-    people = Person.search_by_attributes(params)
-    return people
-  end
-  
   def self.update_person(params)
     doc_id = params[:doc_id]
     couchdb_person = CouchdbPerson.find(doc_id)
@@ -231,5 +211,82 @@ module PersonService
     end
     return identifiers
   end
+
+  def self.search_by_name_and_gender(params)
+    given_name  = params[:given_name]
+    family_name = params[:family_name]
+    gender      = params[:gender]
+    
+    people = Person.where(["given_name = ? AND family_name = ? AND gender = ?", 
+      given_name, family_name, gender])
+
+    people_arr = []
+    
+    (people || []).each do |person|
+      people_arr << self.get_person_obj(person)
+    end
+
+    return people_arr
+  end
+  
+  def self.search_by_npid(params)
+    npid = params[:npid]
+    doc_id = params[:doc_id]
+    
+    unless doc_id.blank?
+      person = Person.find_by_couchdb_person_id(doc_id)
+      unless person.blank?
+        person_obj = self.get_person_obj(person)
+        FootPrintService.create(person)
+
+        return [person_obj]
+      end
+    end
+
+    people_arr = []
+
+    unless npid.blank?
+      people = Person.where("npid = ? OR value = ?",
+        npid, npid).joins("RIGHT JOIN person_attributes p 
+      ON p.couchdb_person_id = people.couchdb_person_id").select("people.*")
+
+      (people || []).each do |person|
+        people_arr << self.get_person_obj(person)
+      end
+    end
+    
+    return people_arr
+  end
+  
+  def self.search_by_doc_id(params)
+    doc_id = params[:doc_id]
+    person = Person.where(couchdb_person_id: doc_id)
+    return nil if person.blank?
+    return self.get_person_obj(person.first)
+  end
+  
+  def self.search_by_attributes(params)
+    values = params[:values]
+    
+    if !(values.is_a?(Array))
+      values = []
+    end
+    
+    if values.blank?
+      values = []
+    end
+    
+    people = Person.where(["value IN (?)", values]).joins("INNER JOIN person_attributes p
+    ON p.couchdb_person_id = people.couchdb_person_id").select("people.*")
+
+    people_arr = []
+
+    (people || []).each do |person|
+      people_arr << self.get_person_obj(person)
+    end
+
+    return people_arr
+  end
   
 end
+
