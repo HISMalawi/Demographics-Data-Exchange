@@ -187,7 +187,9 @@ module PersonService
       home_traditional_authority: get_attribute(person, "Home traditional authority"),
       home_village: get_attribute(person, "Home village")
     },
-    identifiers: get_identifiers(person)
+    identifiers: get_identifiers(person),
+    npid: person.npid,
+    doc_id: person.couchdb_person_id
   }
  end
   
