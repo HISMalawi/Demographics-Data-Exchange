@@ -53,6 +53,26 @@ module PersonService
         }
       end
 
+      unless htn_number.blank?
+        PersonAttributeService.create({htn_number: htn_number}, couchdb_person)
+        type = PersonAttributeType.find_by_name('HTN number')
+        person_attributes << {
+          type: type.couchdb_person_attribute_type_id, 
+          value: htn_number, 
+          person_attribute_type_name: type.name
+        }
+      end
+  
+      unless art_number.blank?
+        PersonAttributeService.create({art_number: art_number}, couchdb_person)
+        type = PersonAttributeType.find_by_name('ART number')
+        person_attributes << {
+          type: type.couchdb_person_attribute_type_id, 
+          value: art_number, 
+          person_attribute_type_name: type.name
+        }
+      end
+  
       return {person: couchdb_person, person_attributes: person_attributes}
     end
     
