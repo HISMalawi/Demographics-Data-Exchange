@@ -9,6 +9,7 @@ class CouchdbPerson < CouchRest::Model::Base
   property  :deathdate,   Date
   property  :deathdate_estimated,   TrueClass, default: false
   property  :voided,                TrueClass, default: false
+  property  :void_reason            String
   property  :date_voided,           Date
   property  :npid,   String
   property  :location_created_at,   String

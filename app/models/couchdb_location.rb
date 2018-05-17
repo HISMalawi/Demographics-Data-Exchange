@@ -4,6 +4,7 @@ class CouchdbLocation < CouchRest::Model::Base
 	property				:latitude,					String
 	property				:longitude,					String
 	property				:voided,						String
+	property        :void_reason,       String
 	property				:parent_location,		String
 	property				:code,							String
 	property				:creator,						String

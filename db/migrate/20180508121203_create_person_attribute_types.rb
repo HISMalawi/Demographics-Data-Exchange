@@ -4,6 +4,7 @@ class CreatePersonAttributeTypes < ActiveRecord::Migration[5.2]
       t.string        :couchdb_person_attribute_type_id,    null: false
       t.string        :name,                                null: false
       t.boolean       :voided,                              null: false, default: false, limit: 1
+      t.string        :void_reason
       
       t.timestamps
 

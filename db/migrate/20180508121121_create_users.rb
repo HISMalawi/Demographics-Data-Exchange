@@ -6,6 +6,7 @@ class CreateUsers < ActiveRecord::Migration[5.2]
       t.string        :email
       t.string        :password_digest,           null: false
       t.string        :voided,                    null: false, default: false, limit: 1
+      t.string        :void_reason
       t.integer       :location_id,               null: false, default: 0
       t.string        :couchdb_location_id,       null: false, default: 0
 
