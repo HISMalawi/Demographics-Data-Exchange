@@ -5,7 +5,7 @@ class CouchdbPersonAttribute < CouchRest::Model::Base
   property      :voided,                            TrueClass, default: false
   property      :voided_by,                         String
   property      :date_voided,                       DateTime
-  property      :void_reason,                         String
+  property      :void_reason,                       String
 
   timestamps!
 end
