@@ -66,17 +66,21 @@ module CouchChanges
     password_digest = data["password_digest"]
     couch_location_id = data["location_id"]
     voided = data["voided"]
+    void_reason = data["void_reason"]
     updated_at = data["updated_at"]
     created_at = data["created_at"]
+    
     mysql_location_id = get_mysql_location_from_couchdb(couch_location_id)
 
     user = User.find_by_couchdb_user_id(id)
     if user.blank?
       User.create(couchdb_user_id: id, username: username, email: email, password_digest: password_digest,
-        couchdb_location_id: couch_location_id, voided: voided, location_id: mysql_location_id)
+        couchdb_location_id: couch_location_id, voided: voided, void_reason: void_reason,
+        location_id: mysql_location_id)
     else
       user.update_attributes(username: username, email: email, couchdb_location_id: couch_location_id,
-        voided: voided, location_id: mysql_location_id)
+        voided: voided, void_reason: void_reason,
+        location_id: mysql_location_id)
     end
 
   end
@@ -93,6 +97,7 @@ module CouchChanges
     deathdate = data["deathdate"]
     deathdate_estimated = data["deathdate_estimated"]
     voided = data["voided"]
+    void_reason = data["void_reason"]
     date_voided = data["date_voided"]
     npid = data["npid"]
     location_created_at = data["location_created_at"]
@@ -106,7 +111,8 @@ module CouchChanges
     if person.blank?
       Person.create(couchdb_person_id: id, given_name: given_name, middle_name: middle_name, family_name: family_name,
         gender: gender, birthdate: birthdate, birthdate_estimated: birthdate_estimated,
-        died: died, deathdate: deathdate, deathdate_estimated: deathdate_estimated, voided: voided,
+        died: died, deathdate: deathdate, deathdate_estimated: deathdate_estimated, 
+        voided: voided, void_reason: void_reason,
         date_voided: date_voided, npid: npid, location_created_at: mysql_location_id,
         creator: creator, created_at: created_at, updated_at: updated_at
       )
@@ -114,7 +120,8 @@ module CouchChanges
       person.update_attributes(given_name: given_name, middle_name: middle_name, family_name: family_name,
         gender: gender, birthdate: birthdate, birthdate_estimated: birthdate_estimated,
         died: died, deathdate: deathdate, deathdate_estimated: deathdate_estimated, voided: voided,
-        date_voided: date_voided, npid: npid, location_created_at: mysql_location_id,
+        date_voided: date_voided, void_reason: void_reason, 
+        npid: npid, location_created_at: mysql_location_id,
         creator: creator, created_at: created_at, updated_at: updated_at
       )
     end
@@ -144,6 +151,8 @@ module CouchChanges
     person_attribute_type_id = get_mysql_person_attribute_type_id_from_couch_db(data["person_attribute_type_id"])
     person_id = get_mysql_person_id_from_couch_db(data["person_id"])
     value = data["value"]
+    voided = data["voided"]
+    void_reason = data["void_reason"]
     
 
     person_attribute = PersonAttribute.where(person_id: person_id, 
@@ -154,6 +163,7 @@ module CouchChanges
         couchdb_person_id: data["person_id"],
         couchdb_person_attribute_type_id: data["person_attribute_type_id"],
         couchdb_person_attribute_id: id,
+        voided: voided, void_reason: void_reason,
         person_attribute_type_id: person_attribute_type_id, value: value)
     else
       person_attribute.update_attributes(value: value)
