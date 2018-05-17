@@ -70,7 +70,7 @@ module PersonAttributeService
 
     #ART number .... 
     if !params[:art_number].blank?
-      attribute_type = PersonAttributeType.find_by_name('ART number').first
+      attribute_type = PersonAttributeType.find_by_name('ART number')
       attribute = CouchdbPersonAttribute.create(value: params[:art_number], 
         person_id: couchdb_person.id,
         person_attribute_type_id: attribute_type.id)
@@ -78,7 +78,7 @@ module PersonAttributeService
 
     #HTS .... 
     if !params[:htn_number].blank?
-      attribute_type = PersonAttributeType.find_by_name('htn_number').first
+      attribute_type = PersonAttributeType.find_by_name('htn_number')
       attribute = CouchdbPersonAttribute.create(value: params[:htn_number], 
         person_id: couchdb_person.id,
         person_attribute_type_id: attribute_type.id)
