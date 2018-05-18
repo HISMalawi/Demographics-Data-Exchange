@@ -21,6 +21,7 @@ log/*
 .ruby-version
 vendor/plugins/htn/*
 config/*.yml
+tmp/*
 last_sequence.txt
 erl_crash.dump
 .project
