@@ -166,7 +166,7 @@ module CouchChanges
         voided: voided, void_reason: void_reason,
         person_attribute_type_id: person_attribute_type_id, value: value)
     else
-      person_attribute.update_attributes(value: value)
+      person_attribute.update_attributes(value: value, voided: voided, void_reason: void_reason)
     end
   end
   

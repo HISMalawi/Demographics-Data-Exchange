@@ -36,7 +36,7 @@ class Api::V1::PeopleController < ApplicationController
   end
   
   def merge_people
-    merge_results = PersonService.merge_people(params)
+    merge_results = MergeService.merge(params[:primary_person_doc_id], params[:secondary_person_doc_id])
     render plain: merge_results.to_json
   end
   

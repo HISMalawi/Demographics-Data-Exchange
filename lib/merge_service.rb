@@ -11,17 +11,30 @@ module MergeService
     attributes to the primary_person
 =end
     secondary_person_attributes = PersonAttribute.where(couchdb_person_id: secondary_doc_id)
-    (secondary_person_attributes || []).each do |a|
-      attribute = PersonAttribute.where("couchdb_person_id = ? AND value = ?
-        AND couchdb_person_attribute_type_id = ?", primary_doc_id, 
-        a.value, a.couchdb_person_attribute_type_id)  
+    
+    (secondary_person_attributes || []).each do |secondary_person_attribute|
+     attributes = PersonAttribute.where("couchdb_person_id = ? AND 
+          couchdb_person_attribute_type_id = ?", primary_doc_id, 
+              secondary_person_attribute.couchdb_person_attribute_type_id)  
+        
 
-      unless attribute.blank?
-        CouchdbPersonAttribute.create(value: a.value, person_id: primary_doc_id,
-          person_attribute_type_id: a.couchdb_person_attribute_type_id)
+      if attributes.blank?
+        CouchdbPersonAttribute.create(value: secondary_person_attribute.value, person_id: primary_doc_id,
+          person_attribute_type_id: secondary_person_attribute.couchdb_person_attribute_type_id)
   
-        couchdb_person_attribute = CouchdbPersonAttribute.find(a.couchdb_person_attribute_id)
+        couchdb_person_attribute = CouchdbPersonAttribute.find(secondary_person_attribute.couchdb_person_attribute_id)
         couchdb_person_attribute.update_attributes(voided: true, void_reason: void_reason)
+        
+      else
+        attributes.each do |attribute|  
+          #if (attribute.value.squish.upcase != secondary_person_attribute.value.squish.upcase)
+            #CouchdbPersonAttribute.create(value: secondary_person_attribute.value, person_id: primary_doc_id,
+              #person_attribute_type_id: secondary_person_attribute.couchdb_person_attribute_type_id)
+          #end
+          
+          couchdb_person_attribute = CouchdbPersonAttribute.find(secondary_person_attribute.couchdb_person_attribute_id)
+          couchdb_person_attribute.update_attributes(voided: true, void_reason: void_reason)
+        end
       end
 
     end
