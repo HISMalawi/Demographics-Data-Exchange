@@ -37,6 +37,11 @@ class Api::V1::UserController < ApplicationController
     render json: user.errors, status: :bad
    end 
 	end
+	
+	def index
+	  #render plain: {name: "john"}.to_json
+	  render file: Rails.root.join('public', 'index.html')
+	end
 
 	private
 

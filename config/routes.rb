@@ -43,7 +43,7 @@ Rails.application.routes.draw do
   #merging
   post 'v1/merge_people', to: 'api/v1/merge#merge'
 
-
+  root to: "api/v1/user#index"
 
 
 end
