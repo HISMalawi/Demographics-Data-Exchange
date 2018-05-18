@@ -1,6 +1,7 @@
 class CreateLocationNpids < ActiveRecord::Migration[5.2]
   def change
     create_table :location_npids do |t|
+      t.string    :couchdb_location_npid_id
       t.string    :couchdb_location_id  
       t.integer   :location_id
       t.string    :npid

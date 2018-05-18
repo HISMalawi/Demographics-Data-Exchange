@@ -137,7 +137,7 @@ module CouchChanges
 
     location_npid = LocationNpid.find_by_couchdb_location_id(id)
     if location_npid.blank?
-      LocationNpid.create(npid: npid, couchdb_location_id: id,
+      LocationNpid.create(npid: npid, couchdb_location_id: data["location_id"],
         location_id: mysql_location_id
       )
     else

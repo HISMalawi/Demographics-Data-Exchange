@@ -26,5 +26,24 @@ module NpidService
 
     return person
   end
+  
+  def self.npids_assigned(params)
+    
+    location_doc_id = params[:location_doc_id]
+    location_npids  = LocationNpid.where("couchdb_location_id = ? and
+      assigned = true", location_doc_id)
+      
+    return {assigned_npid: location_npids.length}
+  end
+  
+  def self.total_allocated_npids(params)
+    
+    location_doc_id = params[:location_doc_id]
+    location_npids  = LocationNpid.where("couchdb_location_id = ?",
+     location_doc_id)
+      
+    return {allocated_npids: location_npids.length}
+    
+  end
 
 end

@@ -33,6 +33,9 @@ Rails.application.routes.draw do
 
   #location controller routes
   post 'v1/find_location', to: 'api/v1/location#find'
+  post  'v1/list_locations', to: 'api/v1/location#get_locations'
+  post  'v1/npids_assigned', to: 'api/v1/location#npids_assigned'
+  post  'v1/total_allocated_npids', to: 'api/v1/location#total_allocated_npids'
   
   #footprint
   post 'v1/update_footprint/', to: 'api/v1/footprint#update_footprint'
