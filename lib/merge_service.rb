@@ -3,7 +3,9 @@ module MergeService
 
   def self.merge(primary_doc_id, secondary_doc_id)
     primary_person    = Person.find_by_couchdb_person_id(primary_doc_id)
+    return [] if primary_person.blank?
     secondary_person  = Person.find_by_couchdb_person_id(secondary_doc_id)
+    return [] if secondary_person.blank?
     void_reason       = "Merged with: #{primary_doc_id}"
 =begin
     we look for any attributes that primary_person does not have 

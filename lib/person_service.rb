@@ -263,7 +263,7 @@ module PersonService
   def self.search_by_doc_id(params)
     doc_id = params[:doc_id]
     person = Person.where(couchdb_person_id: doc_id)
-    return nil if person.blank?
+    return [] if person.blank?
     return self.get_person_obj(person.first)
   end
   
