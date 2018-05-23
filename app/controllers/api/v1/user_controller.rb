@@ -20,6 +20,8 @@ class Api::V1::UserController < ApplicationController
 	  # POST /add_user
 	  couchdb_location_id = CouchdbLocation.get_location_by_name(params[:location]).id
 	  mysql_location_id = Location.get_location_by_name(params[:location]).id
+
+
 	  
 	  couchdb_user  = CouchdbUser.create(username: params[:username], 
 	    location_id: couchdb_location_id,
@@ -31,7 +33,7 @@ class Api::V1::UserController < ApplicationController
     couchdb_user.update_attributes(password_digest: user.password_digest)
 
    if user
-    response = { message: 'User created successfully'}
+    response = {status: 200, message: 'User created successfully'}
     render json: response, status: :created 
    else
     render json: user.errors, status: :bad
