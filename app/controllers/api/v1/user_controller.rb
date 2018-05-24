@@ -45,6 +45,18 @@ class Api::V1::UserController < ApplicationController
 	  render file: Rails.root.join('public', 'index.html')
 	end
 
+  def verify_token
+    token_status = HashWithIndifferentAccess.new(JWT.decode(params[:token], 
+      Rails.application.secrets.secret_key_base)[0]
+    ) rescue []
+    if token_status.blank?
+      message = {status: 401, message: "Failed"}
+    else
+      message = {status: 200, message: "Successful"}
+    end
+    render plain: message.to_json
+  end
+  
 	private
 
 	def user_params

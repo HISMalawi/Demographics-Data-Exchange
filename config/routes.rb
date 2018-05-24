@@ -15,6 +15,7 @@ Rails.application.routes.draw do
   post 'v1/register', to: 'api/v1/user#register'
   post 'v1/login', to: 'api/v1/user#login'
   post 'v1/add_user', to: 'api/v1/user#add_user'
+  post 'v1/verify_token/', to: 'api/v1/user#verify_token'
   
   #people controller routes
   post 'v1/add_person', to: 'api/v1/people#create'
@@ -25,7 +26,6 @@ Rails.application.routes.draw do
   post 'v1/potential_duplicates', to: 'api/v1/people#potential_duplicates'
   post 'v1/merge_people', to: 'api/v1/people#merge_people'
   
-  
   post 'v1/update_person/', to: 'api/v1/people#update_person'
   
   #npid controller routes
@@ -34,6 +34,7 @@ Rails.application.routes.draw do
   #location controller routes
   post 'v1/find_location', to: 'api/v1/location#find'
   post  'v1/list_locations', to: 'api/v1/location#list_assigned_locations'
+
   post  'v1/npids_assigned', to: 'api/v1/location#npids_assigned'
   post  'v1/total_allocated_npids', to: 'api/v1/location#total_allocated_npids'
   post   'v1/get_locations',  to: 'api/v1/location#get_locations'
