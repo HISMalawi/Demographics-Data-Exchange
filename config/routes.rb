@@ -15,6 +15,7 @@ Rails.application.routes.draw do
   post 'v1/register', to: 'api/v1/user#register'
   post 'v1/login', to: 'api/v1/user#login'
   post 'v1/add_user', to: 'api/v1/user#add_user'
+  post 'v1/verify_token/', to: 'api/v1/user#verify_token'
   
   #people controller routes
   post 'v1/add_person', to: 'api/v1/people#create'
@@ -24,7 +25,6 @@ Rails.application.routes.draw do
   post 'v1/search_by_attributes', to: 'api/v1/people#search_by_attributes'
   post 'v1/potential_duplicates', to: 'api/v1/people#potential_duplicates'
   post 'v1/merge_people', to: 'api/v1/people#merge_people'
-  
   
   post 'v1/update_person/', to: 'api/v1/people#update_person'
   
