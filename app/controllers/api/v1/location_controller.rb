@@ -6,8 +6,8 @@ class Api::V1::LocationController < ApplicationController
     render plain: location.to_json
   end
   
-  def get_locations
-    render plain: LocationService.get_locations.to_json
+  def list_assigned_locations
+    render plain: LocationService.list_assigned_locations.to_json
   end
   
   def npids_assigned
@@ -20,6 +20,10 @@ class Api::V1::LocationController < ApplicationController
     
     render plain: NpidService.total_allocated_npids(params).to_json
     
+  end
+
+  def get_locations
+    render plain: LocationService.get_locations(params).to_json
   end
 
 end
