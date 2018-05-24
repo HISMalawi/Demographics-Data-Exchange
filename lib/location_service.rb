@@ -43,13 +43,16 @@ module LocationService
         INNER JOIN locations l ON l.location_id = m.location_id").select("location_tags.*")
 
       locations << {
-        name:           l.name,
-        doc_id:         l.couchdb_location_id,
-        latitude:       l.latitude,
-        longitude:      l.longitude,
-        code:           l.code,
-        location_tags:  location_tags.map(&:name)
-       }
+          name:           l.name,
+          doc_id:         l.couchdb_location_id,
+          latitude:       l.latitude,
+          longitude:      l.longitude,
+          code:           l.code,
+          location_tags:  location_tags.map(&:name)
+        }
+
+    end
 
   end
+
 end
