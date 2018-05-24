@@ -19,12 +19,23 @@ module CouchChanges
     end
     #raise couch_address.inspect
     #raise couch_address.inspect
-    received_params = RestClient.get(couch_address)
-    results = JSON.parse(received_params)
+    begin
+      received_params = RestClient.get(couch_address)
+      results = JSON.parse(received_params)
+    rescue
+      couch_address       = "http://#{couch_host}:#{couch_port}/#{couch_db}/_changes?include_docs=true&limit=1&descending=true"
+      received_params     = RestClient.get(couch_address)
+      results = JSON.parse(received_params)
+      save_last_sequence  = results["last_seq"].split('-')[0]
+      return {} if save_last_sequence.to_i == last_sequence_number.to_i
+    end
+
+
+
     couch_data = {}
     seq = []
     couch_results = results["results"]
-    last_sequence = results["last_seq"]
+    last_sequence = results["last_seq"].split('-')[0]
     puts "Starting from sequence#: #{last_sequence_number}"
     
     (couch_results || []).each do |result|
