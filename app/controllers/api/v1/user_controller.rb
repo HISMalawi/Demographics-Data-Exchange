@@ -18,11 +18,9 @@ class Api::V1::UserController < ApplicationController
 	
 	def add_user
 	  # POST /add_user
-	  couchdb_location_id = CouchdbLocation.get_location_by_name(params[:location]).id
-	  mysql_location_id = Location.get_location_by_name(params[:location]).id
+	  couchdb_location_id = params[:location]#CouchdbLocation.get_location_by_name(params[:location]).id
+	  mysql_location_id = Location.find_by_couchdb_location_id(params[:location]).id
 
-
-	  
 	  couchdb_user  = CouchdbUser.create(username: params[:username], 
 	    location_id: couchdb_location_id,
       email: params[:email], password_digest: 'password_digest') #password_digest will be updated later

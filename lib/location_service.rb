@@ -34,7 +34,9 @@ module LocationService
     else
       location = Location.where("name like (?)", "#{name}%").order("name ASC")
     end
-
+    
+    locations = []
+    
     (location || []).each do |l|
 
       location_tags = LocationTag.where("l.couchdb_location_id = ?",
@@ -52,7 +54,8 @@ module LocationService
         }
 
     end
-
+    
+    return locations
   end
 
 end
