@@ -7,7 +7,7 @@ def random_npid(len=6)
   return npid
 end
 
-1.upto(10) do
+1.upto(100) do
   npid = random_npid
   puts "Creating: #{npid}"
   Npid.create(npid: npid, version_number: 4)

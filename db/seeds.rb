@@ -206,7 +206,7 @@ couch_address = "http://#{couch_host}:#{couch_port}/#{couch_db}/_changes?include
 
 received_params = RestClient.get(couch_address)
 results = JSON.parse(received_params)
-last_sequence_number = results["last_seq"].split('-')[0]
+last_sequence_number = results["last_seq"]
 puts "Updated sequence #: #{last_sequence_number}"
 CouchChanges.update_sequence_in_file(last_sequence_number)
 

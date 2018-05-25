@@ -17,32 +17,32 @@ module CouchChanges
     else
       couch_address = "http://#{couch_host}:#{couch_port}/#{couch_db}/_changes?since=#{last_sequence_number}&include_docs=true"
     end
-    #raise couch_address.inspect
-    #raise couch_address.inspect
+
     begin
       received_params = RestClient.get(couch_address)
       results = JSON.parse(received_params)
     rescue
-      couch_address       = "http://#{couch_host}:#{couch_port}/#{couch_db}/_changes?include_docs=true&limit=1&descending=true"
+      couch_address       = "http://#{couch_host}:#{couch_port}/#{couch_db}/_changes?since='#{last_sequence_number}'"
       received_params     = RestClient.get(couch_address)
       results = JSON.parse(received_params)
-      save_last_sequence  = results["last_seq"].split('-')[0]
-      return {} if save_last_sequence.to_i == last_sequence_number.to_i
     end
-
-
 
     couch_data = {}
     seq = []
     couch_results = results["results"]
-    last_sequence = results["last_seq"].split('-')[0]
+    last_sequence = results["last_seq"]
     puts "Starting from sequence#: #{last_sequence_number}"
     
     (couch_results || []).each do |result|
       type = result["doc"]["type"]
       id = result["doc"]["_id"]
-      #raise result.inspect
-      seq << result["seq"].to_i
+      
+      if result['seq'].match(/-/)
+        seq << result["seq"] 
+      else
+        seq << result["seq"].to_i 
+      end
+
       if (type == 'CouchdbUser')
         updateMysqlCouchdbUser(result["doc"])
       end
@@ -66,7 +66,7 @@ module CouchChanges
     end
 
     last_sequence = seq.sort.last
-    update_sequence_in_file(last_sequence) unless last_sequence.blank?
+    self.update_sequence_in_file(last_sequence) unless last_sequence.blank?
     return couch_data
   end
 
@@ -148,9 +148,9 @@ module CouchChanges
 
     location_npid = LocationNpid.find_by_couchdb_location_id(id)
     if location_npid.blank?
+      npid_exist = LocationNpid.where(npid: npid)
       LocationNpid.create(npid: npid, couchdb_location_id: data["location_id"],
-        location_id: mysql_location_id
-      )
+        location_id: mysql_location_id) if npid_exist.blank?
     else
       location_npid.update_attributes(npid: npid, couchdb_location_id: id,
         location_id: mysql_location_id)
@@ -226,7 +226,7 @@ module CouchChanges
   end
 
   def self.update_sequence_in_file(last_sequence_number)
-    data = {"last_sequence" => last_sequence_number}.to_json
+    data = {"last_sequence": "#{last_sequence_number}"}.to_json
     file_path = Rails.root.to_s + "/log/last_sequence.txt"
     File.open(file_path, "w") do |f|
       f.write(data)

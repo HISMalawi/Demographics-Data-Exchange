@@ -34,7 +34,7 @@ gem 'couchrest_model'
 gem 'jwt'
 gem 'simple_command'
 gem 'sucker_punch'
-
+gem 'passenger'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
