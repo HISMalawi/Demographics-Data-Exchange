@@ -37,7 +37,7 @@ module CouchChanges
       type = result["doc"]["type"]
       id = result["doc"]["_id"]
       
-      if result['seq'].match(/-/)
+      if result['seq'].to_s.match(/-/)
         seq << result["seq"] 
       else
         seq << result["seq"].to_i 
