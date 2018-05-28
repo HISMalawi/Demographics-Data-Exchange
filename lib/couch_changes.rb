@@ -17,10 +17,16 @@ module CouchChanges
     else
       couch_address = "http://#{couch_host}:#{couch_port}/#{couch_db}/_changes?since=#{last_sequence_number}&include_docs=true"
     end
-    #raise couch_address.inspect
-    #raise couch_address.inspect
-    received_params = RestClient.get(couch_address)
-    results = JSON.parse(received_params)
+
+    begin
+      received_params = RestClient.get(couch_address)
+      results = JSON.parse(received_params)
+    rescue
+      couch_address       = "http://#{couch_host}:#{couch_port}/#{couch_db}/_changes?since='#{last_sequence_number}'"
+      received_params     = RestClient.get(couch_address)
+      results = JSON.parse(received_params)
+    end
+
     couch_data = {}
     seq = []
     couch_results = results["results"]
@@ -30,8 +36,13 @@ module CouchChanges
     (couch_results || []).each do |result|
       type = result["doc"]["type"]
       id = result["doc"]["_id"]
-      #raise result.inspect
-      seq << result["seq"].to_i
+      
+      if result['seq'].match(/-/)
+        seq << result["seq"] 
+      else
+        seq << result["seq"].to_i 
+      end
+
       if (type == 'CouchdbUser')
         updateMysqlCouchdbUser(result["doc"])
       end
@@ -55,7 +66,7 @@ module CouchChanges
     end
 
     last_sequence = seq.sort.last
-    update_sequence_in_file(last_sequence) unless last_sequence.blank?
+    self.update_sequence_in_file(last_sequence) unless last_sequence.blank?
     return couch_data
   end
 
@@ -109,21 +120,30 @@ module CouchChanges
 
     person = Person.find_by_couchdb_person_id(id)
     if person.blank?
+      begin
       Person.create(couchdb_person_id: id, given_name: given_name, middle_name: middle_name, family_name: family_name,
         gender: gender, birthdate: birthdate, birthdate_estimated: birthdate_estimated,
         died: died, deathdate: deathdate, deathdate_estimated: deathdate_estimated, 
         voided: voided, void_reason: void_reason,
         date_voided: date_voided, npid: npid, location_created_at: mysql_location_id,
-        creator: creator, created_at: created_at, updated_at: updated_at
-      )
+        creator: creator, created_at: created_at, updated_at: updated_at) 
+      rescue
+        person = Person.find_by_couchdb_person_id(id)
+        
+        person.update_attributes(given_name: given_name, middle_name: middle_name, family_name: family_name,
+          gender: gender, birthdate: birthdate, birthdate_estimated: birthdate_estimated,
+          died: died, deathdate: deathdate, deathdate_estimated: deathdate_estimated, voided: voided,
+          date_voided: date_voided, void_reason: void_reason, 
+          npid: npid, location_created_at: mysql_location_id,
+          creator: creator, created_at: created_at, updated_at: updated_at)
+      end
     else
       person.update_attributes(given_name: given_name, middle_name: middle_name, family_name: family_name,
         gender: gender, birthdate: birthdate, birthdate_estimated: birthdate_estimated,
         died: died, deathdate: deathdate, deathdate_estimated: deathdate_estimated, voided: voided,
         date_voided: date_voided, void_reason: void_reason, 
         npid: npid, location_created_at: mysql_location_id,
-        creator: creator, created_at: created_at, updated_at: updated_at
-      )
+        creator: creator, created_at: created_at, updated_at: updated_at)
     end
 
   end
@@ -137,9 +157,9 @@ module CouchChanges
 
     location_npid = LocationNpid.find_by_couchdb_location_id(id)
     if location_npid.blank?
+      npid_exist = LocationNpid.where(npid: npid)
       LocationNpid.create(npid: npid, couchdb_location_id: data["location_id"],
-        location_id: mysql_location_id
-      )
+        location_id: mysql_location_id) if npid_exist.blank?
     else
       location_npid.update_attributes(npid: npid, couchdb_location_id: id,
         location_id: mysql_location_id)
@@ -215,7 +235,7 @@ module CouchChanges
   end
 
   def self.update_sequence_in_file(last_sequence_number)
-    data = {"last_sequence" => last_sequence_number}.to_json
+    data = {"last_sequence": "#{last_sequence_number}"}.to_json
     file_path = Rails.root.to_s + "/log/last_sequence.txt"
     File.open(file_path, "w") do |f|
       f.write(data)

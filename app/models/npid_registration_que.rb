@@ -1,0 +1,2 @@
+class NpidRegistrationQue < ApplicationRecord
+end
