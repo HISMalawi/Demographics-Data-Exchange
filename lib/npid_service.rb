@@ -1,5 +1,10 @@
 
 module NpidService
+  
+  def self.que(couchdb_person)
+    NpidRegistrationQue.create(couchdb_person_id: couchdb_person.id, creator: User.current.id)
+  end
+
   def self.assign(number_of_ids, current_user)
 
     available_ids = Npid.where(assigned: false).limit(number_of_ids)

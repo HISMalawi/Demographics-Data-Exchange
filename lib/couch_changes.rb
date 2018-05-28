@@ -120,21 +120,30 @@ module CouchChanges
 
     person = Person.find_by_couchdb_person_id(id)
     if person.blank?
+      begin
       Person.create(couchdb_person_id: id, given_name: given_name, middle_name: middle_name, family_name: family_name,
         gender: gender, birthdate: birthdate, birthdate_estimated: birthdate_estimated,
         died: died, deathdate: deathdate, deathdate_estimated: deathdate_estimated, 
         voided: voided, void_reason: void_reason,
         date_voided: date_voided, npid: npid, location_created_at: mysql_location_id,
-        creator: creator, created_at: created_at, updated_at: updated_at
-      )
+        creator: creator, created_at: created_at, updated_at: updated_at) 
+      rescue
+        person = Person.find_by_couchdb_person_id(id)
+        
+        person.update_attributes(given_name: given_name, middle_name: middle_name, family_name: family_name,
+          gender: gender, birthdate: birthdate, birthdate_estimated: birthdate_estimated,
+          died: died, deathdate: deathdate, deathdate_estimated: deathdate_estimated, voided: voided,
+          date_voided: date_voided, void_reason: void_reason, 
+          npid: npid, location_created_at: mysql_location_id,
+          creator: creator, created_at: created_at, updated_at: updated_at)
+      end
     else
       person.update_attributes(given_name: given_name, middle_name: middle_name, family_name: family_name,
         gender: gender, birthdate: birthdate, birthdate_estimated: birthdate_estimated,
         died: died, deathdate: deathdate, deathdate_estimated: deathdate_estimated, voided: voided,
         date_voided: date_voided, void_reason: void_reason, 
         npid: npid, location_created_at: mysql_location_id,
-        creator: creator, created_at: created_at, updated_at: updated_at
-      )
+        creator: creator, created_at: created_at, updated_at: updated_at)
     end
 
   end

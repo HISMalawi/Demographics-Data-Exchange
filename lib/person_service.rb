@@ -30,6 +30,10 @@ module PersonService
         middle_name: middle_name, gender: gender, birthdate: birthdate,
         location_created_at: current_user.couchdb_location_id,
         birthdate_estimated: birthdate_estimated, creator: current_user.couchdb_user_id)
+    
+      #####################
+      NpidService.que(couchdb_person)
+      #####################
 
       person = Person.create(given_name: given_name, family_name: family_name,
         middle_name: middle_name, gender: gender, birthdate: birthdate, 
@@ -39,7 +43,6 @@ module PersonService
     end
    
     if couchdb_person
-      couchdb_person_npid  = NpidService.assign_id_person(couchdb_person)
 
       attributes = PersonAttributeService.create(params[:attributes], couchdb_person)
       person_attributes = []
@@ -73,10 +76,29 @@ module PersonService
         }
       end
   
-      return {person: couchdb_person, person_attributes: person_attributes}
+      #return {person: couchdb_person, person_attributes: person_attributes}
+      #return {person: self.get_person_obj(person), person_attributes: person_attributes}
     end
+
+    count = 0
+
+    while (couchdb_person.npid.blank? == true) do
+      couchdb_person = CouchdbPerson.find(couchdb_person.id)
+      npids_assigned = (couchdb_person.npid.blank? == true ? false : true)
+      if (couchdb_person.npid.blank? == false)
+        return self.get_person_obj(person)
+        break
+      end
     
-    return {person: couchdb_person, person_attributes: []}
+      if count == 5000
+        puts "################## 1  #{person.npid.blank?}"
+        break
+      end
+      count+= 1
+    end
+
+    return self.get_person_obj(person, person_attributes)
+    #return self.get_person_obj(person)
   end
 
   def self.update_person(params)
@@ -168,30 +190,49 @@ module PersonService
     
   end
 
-  def self.get_person_obj(person)
+  def self.get_person_obj(person, person_attributes = [])
     #This is an active record object
-    params = {
-    given_name:   person.given_name,
-    family_name:  person.family_name,
-    middle_name:  person.middle_name,
-    gender: person.gender,
-    birthdate:  person.birthdate,
-    birthdate_estimated: person.birthdate_estimated,
-    attributes: {
-      occupation: get_attribute(person, "Occupation"),
-      cellphone_number: get_attribute(person, "Cell phone number"),
-      current_district: get_attribute(person, "Current district"),
-      current_traditional_authority: get_attribute(person, "Current traditional authority"),
-      current_village: get_attribute(person, "Current village"),
-      home_district: get_attribute(person, "Home district"),
-      home_traditional_authority: get_attribute(person, "Home traditional authority"),
-      home_village: get_attribute(person, "Home village")
-    },
-    identifiers: get_identifiers(person),
-    npid: person.npid,
-    doc_id: person.couchdb_person_id
-  }
- end
+    person_attributes = []
+
+    if person_attributes.blank?
+      return {
+        given_name:   person.given_name,
+        family_name:  person.family_name,
+        middle_name:  person.middle_name,
+        gender: person.gender,
+        birthdate:  person.birthdate,
+        birthdate_estimated: person.birthdate_estimated,
+        attributes: {
+          occupation: get_attribute(person, "Occupation"),
+          cellphone_number: get_attribute(person, "Cell phone number"),
+          current_district: get_attribute(person, "Current district"),
+          current_traditional_authority: get_attribute(person, "Current traditional authority"),
+          current_village: get_attribute(person, "Current village"),
+          home_district: get_attribute(person, "Home district"),
+          home_traditional_authority: get_attribute(person, "Home traditional authority"),
+          home_village: get_attribute(person, "Home village")
+        },
+          identifiers: get_identifiers(person),
+          npid: (CouchdbPerson.find(person.couchdb_person_id).npid rescue nil),
+          doc_id: person.couchdb_person_id
+        }
+    else
+=begin
+      return {
+        given_name:   person.given_name,
+        family_name:  person.family_name,
+        middle_name:  person.middle_name,
+        gender: person.gender,
+        birthdate:  person.birthdate,
+        birthdate_estimated: person.birthdate_estimated,
+        attributes: person_attributes.map{|a| ["#{CouchdbPersonAttributeType.find(a.person_attribute_type_id).name}", a.value] },
+          identifiers: get_identifiers(person),
+          npid: (CouchdbPerson.find(person.couchdb_person_id).npid rescue nil),
+          doc_id: person.couchdb_person_id
+        }
+=end
+    end
+  end
   
   def self.get_attribute(person, type)
     person_attribute_type_id = PersonAttributeType.find_by_name(type).id
