@@ -9,18 +9,18 @@ module PersonService
     birthdate_estimated     = params[:birthdate_estimated]
     birthdate_estimated = false if birthdate_estimated.blank?
 
-    occupation              = params[:attributes][:occupation]
-    cellphone_number        = params[:attributes][:cellphone_number]
-    current_district        = params[:attributes][:current_district]
-    current_ta              = params[:attributes][:current_traditional_authority]
-    current_village         = params[:attributes][:current_village]
+    occupation              = params[:attributes][:occupation] rescue nil
+    cellphone_number        = params[:attributes][:cellphone_number] rescue nil
+    current_district        = params[:attributes][:current_district] rescue nil
+    current_ta              = params[:attributes][:current_traditional_authority] rescue nil
+    current_village         = params[:attributes][:current_village] rescue nil
 
-    home_district           = params[:attributes][:home_district]
-    home_ta                 = params[:attributes][:home_traditional_authority]
-    home_village            = params[:attributes][:home_village]
+    home_district           = params[:attributes][:home_district] rescue nil
+    home_ta                 = params[:attributes][:home_traditional_authority] rescue nil
+    home_village            = params[:attributes][:home_village] rescue nil
 
-    art_number              = params[:identifiers][:art_number]
-    htn_number              = params[:identifiers][:htn_number]
+    art_number              = params[:identifiers][:art_number] rescue nil
+    htn_number              = params[:identifiers][:htn_number] rescue nil
 
     couchdb_person = nil
     person = nil
@@ -248,10 +248,17 @@ module PersonService
     people_arr = []
 
     unless npid.blank?
-      people = Person.where("npid = ? OR value = ?",
-        npid, npid).joins("RIGHT JOIN person_attributes p 
-      ON p.couchdb_person_id = people.couchdb_person_id").select("people.*")
-
+      #people = Person.where("npid = ? OR value = ?",
+        #npid, npid).joins("RIGHT JOIN person_attributes p 
+      #ON p.couchdb_person_id = people.couchdb_person_id").select("people.*")
+      people = []
+      person = Person.where(["npid =?", npid])
+      
+      PersonAttribute.where(["value =?", npid]).each do |person_attribute|
+        people << Person.find(person_attribute.person_id)
+      end
+      
+      people = (person + people).uniq
       (people || []).each do |person|
         people_arr << self.get_person_obj(person)
       end
@@ -264,7 +271,7 @@ module PersonService
     doc_id = params[:doc_id]
     person = Person.where(couchdb_person_id: doc_id)
     return [] if person.blank?
-    return self.get_person_obj(person.first)
+    return [self.get_person_obj(person.first)]
   end
   
   def self.search_by_attributes(params)
