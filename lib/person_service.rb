@@ -192,8 +192,7 @@ module PersonService
 
   def self.get_person_obj(person, person_attributes = [])
     #This is an active record object
-    person_attributes = []
-
+     
     if person_attributes.blank?
       return {
         given_name:   person.given_name,
@@ -217,7 +216,6 @@ module PersonService
           doc_id: person.couchdb_person_id
         }
     else
-=begin
       return {
         given_name:   person.given_name,
         family_name:  person.family_name,
@@ -225,12 +223,11 @@ module PersonService
         gender: person.gender,
         birthdate:  person.birthdate,
         birthdate_estimated: person.birthdate_estimated,
-        attributes: person_attributes.map{|a| ["#{CouchdbPersonAttributeType.find(a.person_attribute_type_id).name}", a.value] },
+        attributes: person_attributes.map{|a| ["#{a[:person_attribute_type_name]}", a[:value]] },
           identifiers: get_identifiers(person),
           npid: (CouchdbPerson.find(person.couchdb_person_id).npid rescue nil),
           doc_id: person.couchdb_person_id
         }
-=end
     end
   end
   
