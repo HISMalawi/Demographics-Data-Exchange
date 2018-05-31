@@ -6,7 +6,7 @@ module NpidRegistrationService
       person = CouchdbPerson.find(job.couchdb_person_id)
       NpidService.assign_id_person(person)
       job.update_attributes(assigned: true)
-      puts "Assigned ID to couchdb_person_id: #{person.id}"
+      #puts "Assigned ID to couchdb_person_id: #{person.id}"
     end
 
   end

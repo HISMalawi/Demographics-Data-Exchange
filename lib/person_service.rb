@@ -1,6 +1,29 @@
 module PersonService
-  def self.create(params, current_user)
+  def self.assign_npid(params)
+    couchdb_person = CouchdbPerson.find(params[:doc_id])
+    return {} if couchdb_person.blank?
 
+    if couchdb_person.npid.blank?
+      NpidService.que(couchdb_person)
+      
+      count = 0      
+      while (couchdb_person.npid.blank? == true) do
+        couchdb_person = CouchdbPerson.find(couchdb_person.id)
+        if (couchdb_person.npid.blank? == false)
+          break
+        end
+      
+        if count == 5000
+          break
+        end
+        count+= 1
+      end
+    end
+
+    return self.get_person_obj(Person.find_by_couchdb_person_id(couchdb_person.id))
+  end
+
+  def self.create(params, current_user)
     given_name              = params[:given_name]
     family_name             = params[:family_name]
     middle_name             = params[:middle_name]

@@ -25,6 +25,7 @@ Rails.application.routes.draw do
   post 'v1/search_by_attributes', to: 'api/v1/people#search_by_attributes'
   post 'v1/potential_duplicates', to: 'api/v1/people#potential_duplicates'
   post 'v1/merge_people', to: 'api/v1/people#merge_people'
+  post 'v1/assign_npid', to: 'api/v1/people#assign_npid'
   
   post 'v1/update_person/', to: 'api/v1/people#update_person'
   
@@ -44,6 +45,7 @@ Rails.application.routes.draw do
 
   #merging
   post 'v1/merge_people', to: 'api/v1/merge#merge'
+  post 'v1/reassign_npid', to: 'api/v1/people#reassign_npid'
 
   root to: "api/v1/user#index"
 
