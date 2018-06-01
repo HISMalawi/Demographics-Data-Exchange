@@ -8,8 +8,12 @@ class Api::V1::PeopleController < ApplicationController
     else
       render plain: errors.to_json
     end
-    
         
+  end
+
+  def assign_npid
+    person = PersonService.assign_npid(params)
+    render plain: person.to_json
   end
 
   def search_by_name_and_gender
@@ -82,5 +86,10 @@ class Api::V1::PeopleController < ApplicationController
       render plain: errors.to_json
     end
   end
-  
+
+  def reassign_npid
+    person = PersonService.assign_npid(params)
+    render plain: person.to_json
+  end
+    
 end

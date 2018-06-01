@@ -31,7 +31,7 @@ module CouchChanges
     seq = []
     couch_results = results["results"]
     last_sequence = results["last_seq"]
-    puts "Starting from sequence#: #{last_sequence_number}"
+    #puts "Starting from sequence#: #{last_sequence_number}"
     
     (couch_results || []).each do |result|
       type = result["doc"]["type"]

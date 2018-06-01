@@ -1,6 +1,29 @@
 module PersonService
-  def self.create(params, current_user)
+  def self.assign_npid(params)
+    couchdb_person = CouchdbPerson.find(params[:doc_id])
+    return {} if couchdb_person.blank?
 
+    if couchdb_person.npid.blank?
+      NpidService.que(couchdb_person)
+      
+      count = 0      
+      while (couchdb_person.npid.blank? == true) do
+        couchdb_person = CouchdbPerson.find(couchdb_person.id)
+        if (couchdb_person.npid.blank? == false)
+          break
+        end
+      
+        if count == 5000
+          break
+        end
+        count+= 1
+      end
+    end
+
+    return self.get_person_obj(Person.find_by_couchdb_person_id(couchdb_person.id))
+  end
+
+  def self.create(params, current_user)
     given_name              = params[:given_name]
     family_name             = params[:family_name]
     middle_name             = params[:middle_name]
@@ -216,6 +239,12 @@ module PersonService
           doc_id: person.couchdb_person_id
         }
     else
+      attributes = {}
+      person_attributes.map do |a|
+        puts a[:person_attribute_type_name]
+        attributes["#{a[:person_attribute_type_name]}"] = a[:value]
+      end
+
       return {
         given_name:   person.given_name,
         family_name:  person.family_name,
@@ -223,7 +252,16 @@ module PersonService
         gender: person.gender,
         birthdate:  person.birthdate,
         birthdate_estimated: person.birthdate_estimated,
-        attributes: person_attributes.map{|a| ["#{a[:person_attribute_type_name]}", a[:value]] },
+        attributes: {
+          occupation: attributes["Occupation"],
+          cellphone_number: attributes["Cell phone number"],
+          current_district: attributes["Current district"],
+          current_traditional_authority: attributes["Current traditional authority"],
+          current_village: attributes["Current village"],
+          home_district: attributes["Home district"],
+          home_traditional_authority: attributes["Home traditional authority"],
+          home_village: attributes["Home village"]
+        },
           identifiers: get_identifiers(person),
           npid: (CouchdbPerson.find(person.couchdb_person_id).npid rescue nil),
           doc_id: person.couchdb_person_id
