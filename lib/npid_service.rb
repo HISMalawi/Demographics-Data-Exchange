@@ -26,6 +26,19 @@ module NpidService
         npid  = npid.first
         person.update_attributes(npid: npid.npid)
         npid.update_attributes(assigned: true)
+
+        ############# void National patient identifier if it exists
+        attribute_type = PersonAttributeType.find_by_name('National patient identifier')
+        attributes = PersonAttribute.where("couchdb_person_id = ? 
+          AND person_attribute_type_id = ?", person.id, attribute_type.id) 
+
+        (attributes || []).each do |a|
+          couchdb_person_attribute = CouchdbPersonAttribute.find(a.couchdb_person_attribute_id)
+          couchdb_person_attribute.update_attributes(voided: true, void_reason: "Given new npid: #{npid}")
+        end
+        ###########################################################
+
+
       end
     end
 

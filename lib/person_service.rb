@@ -225,16 +225,16 @@ module PersonService
         birthdate:  person.birthdate,
         birthdate_estimated: person.birthdate_estimated,
         attributes: {
-          occupation: get_attribute(person, "Occupation"),
-          cellphone_number: get_attribute(person, "Cell phone number"),
-          current_district: get_attribute(person, "Current district"),
-          current_traditional_authority: get_attribute(person, "Current traditional authority"),
-          current_village: get_attribute(person, "Current village"),
-          home_district: get_attribute(person, "Home district"),
-          home_traditional_authority: get_attribute(person, "Home traditional authority"),
-          home_village: get_attribute(person, "Home village")
+          occupation: self.get_attribute(person, "Occupation"),
+          cellphone_number: self.get_attribute(person, "Cell phone number"),
+          current_district: self.get_attribute(person, "Current district"),
+          current_traditional_authority: self.get_attribute(person, "Current traditional authority"),
+          current_village: self.get_attribute(person, "Current village"),
+          home_district: self.get_attribute(person, "Home district"),
+          home_traditional_authority: self.get_attribute(person, "Home traditional authority"),
+          home_village: self.get_attribute(person, "Home village")
         },
-          identifiers: get_identifiers(person),
+          identifiers: self.get_identifiers(person),
           npid: (CouchdbPerson.find(person.couchdb_person_id).npid rescue nil),
           doc_id: person.couchdb_person_id
         }
@@ -262,7 +262,7 @@ module PersonService
           home_traditional_authority: attributes["Home traditional authority"],
           home_village: attributes["Home village"]
         },
-          identifiers: get_identifiers(person),
+          identifiers: self.get_identifiers(person),
           npid: (CouchdbPerson.find(person.couchdb_person_id).npid rescue nil),
           doc_id: person.couchdb_person_id
         }
@@ -282,7 +282,7 @@ module PersonService
     attribute_types = ["National patient identifier", "HTN number", "ART number"]
     identifiers = []
     attribute_types.each do |attribute_type|
-      identifier = get_attribute(person, attribute_type)
+      identifier = self.get_attribute(person, attribute_type)
       unless identifier.blank?
         identifiers << {"#{attribute_type}": identifier}
       end
