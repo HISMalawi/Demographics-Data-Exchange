@@ -175,7 +175,7 @@ module PersonService
     end
 
     if couchdb_person.save
-      couchdb_person_attr = PersonAttributeService.update(params[:attributes], doc_id)
+      couchdb_person_attr = PersonAttributeService.update(params[:attributes], doc_id) if params[:attributes]
     end
     
     return {person: couchdb_person, person_attributes: couchdb_person_attr}
