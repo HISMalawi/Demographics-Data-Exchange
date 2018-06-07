@@ -1,14 +1,28 @@
 # README
 
-DDE stands for Demographics Data Exchange. It was written in Ruby on Rails. Its main purpose is to manage patient IDs. It was built by Baobab Health and Partners in Health in Malawi, Africa. 
+DDE stands for Demographics Data Exchange. It was written in Ruby on Rails. Its main purpose is to manage patient IDs. 
+It was built by Baobab Health Trust. 
+
+
 ===================================================================================================================
+
+
 REQUIREMENTS
+
+
 ===================================================================================================================
+
+
 Below are some simple steps to follow when you want to setup DDE.
+
 Requirements
+
 Ruby 2.5.0
+
 Rails 5.2.0
+
 MySQL
+
 CouchDB
 
 ===================================================================================================================
