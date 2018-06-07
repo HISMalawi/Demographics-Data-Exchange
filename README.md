@@ -39,5 +39,5 @@ NB: Load mySQL national ids dump into mySQL npid table
 
 After completing the above steps, you may now run the application by typing **passenger start**
 
-Your application is now running on port 3000. You can change the default port by giving it -p like ** passenger start -p 3001**
-===================================================================================================================
+##Your application is now running on port 3000. You can change the default port by giving it -p like ** passenger start -p 3001**
+
