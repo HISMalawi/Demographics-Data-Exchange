@@ -6,11 +6,6 @@ It was built by Baobab Health Trust.
 
 ###REQUIREMENTS
 
-
-Below are some simple steps to follow when you want to setup DDE.
-
-Requirements
-
 Ruby 2.5.0
 
 Rails 5.2.0
