@@ -4,11 +4,7 @@ DDE stands for Demographics Data Exchange. It was written in Ruby on Rails. Its 
 It was built by Baobab Health Trust. 
 
 
-===================================================================================================================
-
-REQUIREMENTS
-
-===================================================================================================================
+###REQUIREMENTS
 
 
 Below are some simple steps to follow when you want to setup DDE.
@@ -23,9 +19,8 @@ MySQL
 
 CouchDB
 
-===================================================================================================================
-HOW TO SET IT UP
-===================================================================================================================
+###HOW TO SET IT UP
+
 
 Open your terminal
 
