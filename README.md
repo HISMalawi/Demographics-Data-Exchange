@@ -27,6 +27,8 @@ Type **cp config/database.yml.example config/database.yml**
 
 Type **cp config/couchdb.yml.example config/couchdb.yml**
 
+Type **cp config/secrets.yml.example config/secrets.yml**
+
 Note: Open *config/database.yml* and edit the file. Provide new mysql database name, username and password
 
 Note: Open *config/couchdb.yml* and edit the file. Provide new couchdb database name, username and password.
@@ -37,7 +39,23 @@ Type **rake db:create db:migrate db:seed**
 
 NB: Load mySQL national ids dump into mySQL npid table
 
-After completing the above steps, you may now run the application by typing **passenger start**
+Type **passenger start -p <PORT_NUMBER>**
+
+
+## dde-jobs application is for syncing data
+Get a source code from bitbucket by typing **git clone git@bitbucket.org:baobabhealthtrust/dde-jobs.git**
+
+Enter into the root of your application by typing **cd dde-jobs**
+
+Get config/database.yml, config/couchdb.yml from dde application and put it in config directory of dde-jobs application
+
+Type **cp config/secrets.yml.example config/secrets.yml**
+
+Type **bundle install**
+
+Type **passenger start -p <PORT_NUMBER>**
+
+
 
 ##Your application is now running on port 3000. You can change the default port by giving it -p like ** passenger start -p 3001**
 
