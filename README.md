@@ -19,25 +19,25 @@ CouchDB
 
 Open your terminal
 
-Get a source code from github by typing "git clone git@bitbucket.org:baobabhealthtrust/dde3.git"
+Get a source code from bitbucket by typing **git clone git@bitbucket.org:baobabhealthtrust/dde3.git**
 
-Enter into the root of your application by typing "cd dde3"
+Enter into the root of your application by typing **cd dde3**
 
-Type "cp config/database.yml.example config/database.yml"
+Type **cp config/database.yml.example config/database.yml**
 
-Type "cp config/couchdb.yml.example config/couchdb.yml"
+Type **cp config/couchdb.yml.example config/couchdb.yml**
 
-Note: Open config/database.yml and edit the file. Provide new mysql database name, username and password
+Note: Open *config/database.yml* and edit the file. Provide new mysql database name, username and password
 
-Note: Open config/couchdb.yml and edit the file. Provide new couchdb database name, username and password.
+Note: Open *config/couchdb.yml* and edit the file. Provide new couchdb database name, username and password.
 
-Type "bundle install". 
+Type **bundle install**
 
-Type "rake db:create db:migrate db:seed".
+Type **rake db:create db:migrate db:seed**
 
-NB: Load national ids in npid table
+NB: Load mySQL national ids dump into mySQL npid table
 
-After completing the above steps, you may now run the application by typing "passenger start"
+After completing the above steps, you may now run the application by typing **passenger start**
 
-Your application is now running on port 3000
+Your application is now running on port 3000. You can change the default port by giving it -p like ** passenger start -p 3001**
 ===================================================================================================================
