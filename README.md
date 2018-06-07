@@ -1,24 +1,33 @@
 # README
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+DDE stands for Demographics Data Exchange. It was written in Ruby on Rails. Its main purpose is to manage patient IDs. It was built by Baobab Health and Partners in Health in Malawi, Africa. 
+===================================================================================================================
+REQUIREMENTS
+===================================================================================================================
+Below are some simple steps to follow when you want to setup DDE.
+Requirements
+Ruby 2.5.0
+Rails 5.2.0
+MySQL
+CouchDB
 
-Things you may want to cover:
+===================================================================================================================
+HOW TO SET IT UP
+===================================================================================================================
 
-* Ruby version
+Open your terminal
+Get a source code from github by typing "git clone git@bitbucket.org:baobabhealthtrust/dde3.git"
+Enter into the root of your application by typing "cd dde3"
+Type "cp config/database.yml.example config/database.yml"
+Type "cp config/couchdb.yml.example config/couchdb.yml"
+Note: Open config/database.yml and edit the file. Provide new mysql database name, username and password
+Note: Open config/couchdb.yml and edit the file. Provide new couchdb database name, username and password.
+Type "bundle install". 
+Type "rake db:create db:migrate db:seed".
 
-* System dependencies
+NB: Load national ids in npid table
 
-* Configuration
+After completing the above steps, you may now run the application by typing "passenger start"
 
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Your application is now running on port 3000
+===================================================================================================================
