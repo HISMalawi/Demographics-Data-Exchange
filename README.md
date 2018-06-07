@@ -55,7 +55,3 @@ Type **bundle install**
 
 Type **passenger start -p <PORT_NUMBER>**
 
-
-
-##Your application is now running on port 3000. You can change the default port by giving it -p like ** passenger start -p 3001**
-
