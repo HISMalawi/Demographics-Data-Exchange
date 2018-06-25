@@ -48,7 +48,7 @@ module PersonService
     couchdb_person = nil
     person = nil
 
-    ActiveRecord::Base.transaction do
+    #ActiveRecord::Base.transaction do
       couchdb_person = CouchdbPerson.create(given_name: given_name, family_name: family_name,
         middle_name: middle_name, gender: gender, birthdate: birthdate,
         location_created_at: current_user.couchdb_location_id,
@@ -57,13 +57,13 @@ module PersonService
       #####################
       NpidService.que(couchdb_person)
       #####################
-
+=begin
       person = Person.create(given_name: given_name, family_name: family_name,
         middle_name: middle_name, gender: gender, birthdate: birthdate, 
         birthdate_estimated: birthdate_estimated, location_created_at: current_user.location_id, 
         couchdb_person_id: couchdb_person.id, creator: current_user.id)
-
-    end
+=end
+    #end
    
     if couchdb_person
       attributes = PersonAttributeService.create(params[:attributes], couchdb_person)
@@ -75,32 +75,22 @@ module PersonService
       couchdb_person = CouchdbPerson.find(couchdb_person.id)
       npids_assigned = (couchdb_person.npid.blank? == true ? false : true)
       if (couchdb_person.npid.blank? == false)
-        return self.get_person_obj(person)
+        return self.after_create_get_person_obj(couchdb_person, params[:attributes])
         break
       end
     
       if count == 5000
-        puts "################## 1  #{person.npid.blank?}"
+        puts "################## 1  #{couchdb_person.npid.blank?}"
         break
       end
       count+= 1
     end
 
-    return self.after_create_get_person_obj(person, attributes)
+    return self.after_create_get_person_obj(couchdb_person, params[:attributes])
   end
 
-  def self.after_create_get_person_obj(person, attributes)
-    occupation_id = PersonAttributeType.find_by_name('Occupation').couchdb_person_attribute_type_id
-    cell_phone_id = PersonAttributeType.find_by_name('Cell phone number').couchdb_person_attribute_type_id
-    current_dc_id = PersonAttributeType.find_by_name('Current district').couchdb_person_attribute_type_id
-    current_ta_id = PersonAttributeType.find_by_name('Current traditional authority').couchdb_person_attribute_type_id
-    current_vg_id = PersonAttributeType.find_by_name('Current village').couchdb_person_attribute_type_id
-    home_dc_id    = PersonAttributeType.find_by_name('Home district').couchdb_person_attribute_type_id
-    home_ta_id    = PersonAttributeType.find_by_name('Home traditional authority').couchdb_person_attribute_type_id
-    home_vg_id    = PersonAttributeType.find_by_name('Home village').couchdb_person_attribute_type_id
-    htn_number_id = PersonAttributeType.find_by_name('HTN number').couchdb_person_attribute_type_id
-    art_number_id = PersonAttributeType.find_by_name('ART number').couchdb_person_attribute_type_id
-
+  def self.after_create_get_person_obj(person, params)
+    
     return {
       given_name:   person.given_name,
       family_name:  person.family_name,
@@ -109,21 +99,22 @@ module PersonService
       birthdate:  person.birthdate,
       birthdate_estimated: person.birthdate_estimated,
       attributes: {
-        occupation: attributes.map{|a| a.value if a.person_attribute_type_id.strip == occupation_id}.compact[0], 
-        cellphone_number: attributes.map{|a| a.value if a.person_attribute_type_id.strip == cell_phone_id}.compact[0],
-        current_district: attributes.map{|a| a.value if a.person_attribute_type_id.strip == current_dc_id}.compact[0],
-        current_traditional_authority: attributes.map{|a| a.value if a.person_attribute_type_id.strip == current_ta_id}.compact[0],
-        current_village: attributes.map{|a| a.value if a.person_attribute_type_id.strip == current_vg_id}.compact[0],
-        home_district: attributes.map{|a| a.value if a.person_attribute_type_id.strip == home_dc_id}.compact[0],
-        home_traditional_authority: attributes.map{|a| a.value if a.person_attribute_type_id.strip == home_ta_id}.compact[0],
-        home_village: attributes.map{|a| a.value if a.person_attribute_type_id.strip == home_vg_id}.compact[0]
+        occupation: params[:occupation],
+        cellphone_number: params[:cellphone_number],
+        current_district: params[:current_district],
+        current_traditional_authority: params[:current_traditional_authority],
+        current_village: params[:current_village], 
+        home_district: params[:home_district],
+        home_traditional_authority: params[:home_traditional_authority],
+        home_village: params[:home_village]
       },
       identifiers: {
-        art_number:  attributes.map{|a| a.value if a.person_attribute_type_id == art_number_id}.compact[0],
-        htn_number:  attributes.map{|a| a.value if a.person_attribute_type_id == htn_number_id}.compact[0]
+        art_number: params[:art_number],
+        htn_number: params[:htn_number]
+        
       },
-      npid: (CouchdbPerson.find(person.couchdb_person_id).npid rescue nil),
-      doc_id: person.couchdb_person_id
+      npid: (person.npid rescue nil),
+      doc_id: person.id
     }
   end
 
