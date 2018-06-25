@@ -7,3 +7,14 @@ development:
   suffix:   development
   username: root
   password: root
+  
+  
+production:
+  protocol: 'http'
+  host:     localhost
+  port:     5984
+  prefix:   dde3
+  suffix:   development
+  username: root
+  password: root
+  
