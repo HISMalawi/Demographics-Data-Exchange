@@ -16,6 +16,8 @@
 @legacy_npid_type    = PersonAttributeType.find_by_name('Legacy identification')
 @npid_type           = PersonAttributeType.find_by_name('National patient identifier')
 @art_number_type     = PersonAttributeType.find_by_name('ART number')
+
+@location_created_at = Location.find_by_name('Baobab Health Trust')
   
 def get_database_names
 	databases = ActiveRecord::Base.connection.select_all <<EOF
@@ -82,7 +84,8 @@ EOF
     birthdate_estimated: patient_obj['birthdate_estimated'],
     died: patient_obj['died'], 
     deathdate:  (patient_obj['deathdate'].to_date rescue nil),
-    deathdate_estimated: patient_obj['deathdate_estimated'] )
+    deathdate_estimated: patient_obj['deathdate_estimated'],
+    location_created_at:  @location_created_at.id  )
 
     create_addresses(patient_id, couchdb_person, database_name)
     create_attributes(patient_id, couchdb_person, database_name)
