@@ -107,22 +107,34 @@ def create_identifiers(patient_id, couchdb_person, database_name)
 EOF
 
   (patient_identifiers || []).each_with_index do |patient_identifier|
-    if patient_identifier['name'] == 'National id'
-      CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
-      person_attribute_type_id: @npid_type.couchdb_person_attribute_type_id,
-      value: patient_identifier['identifier'])
+    begin  
+      if patient_identifier['name'] == 'National id'
+        CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
+        person_attribute_type_id: @npid_type.couchdb_person_attribute_type_id,
+        value: patient_identifier['identifier'])
+      end
+    rescue
+      puts "Error: ........ #{patient_identifier.inspect}"
     end
 
-    if patient_identifier['name'] == 'ARV Number'
-      CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
-      person_attribute_type_id: @art_number_type.couchdb_person_attribute_type_id,
-      value: patient_identifier['identifier'])
+    begin
+      if patient_identifier['name'] == 'ARV Number'
+        CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
+        person_attribute_type_id: @art_number_type.couchdb_person_attribute_type_id,
+        value: patient_identifier['identifier'])
+      end
+    rescue
+      puts "Error: ........ #{patient_identifier.inspect}"
     end
 
-    if !patient_identifier['name'] == 'ARV Number' && !patient_identifier['name'] == 'National id'
-      CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
-      person_attribute_type_id: @legacy_npid_type.couchdb_person_attribute_type_id,
-      value: patient_identifier['identifier'])
+    begin
+      if !patient_identifier['name'] == 'ARV Number' && !patient_identifier['name'] == 'National id'
+        CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
+        person_attribute_type_id: @legacy_npid_type.couchdb_person_attribute_type_id,
+        value: patient_identifier['identifier'])
+      end
+    rescue
+      puts "Error: ........ #{patient_identifier.inspect}"
     end
 
   end
@@ -139,28 +151,44 @@ EOF
 
   (patient_attributes || []).each_with_index do |patient_attribute|
     
-    if patient_attribute['name'] == 'Occupation'
-      CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
-      person_attribute_type_id: @occupation_type.couchdb_person_attribute_type_id,
-      value: patient_attribute['value'])
+    begin
+      if patient_attribute['name'] == 'Occupation'
+        CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
+        person_attribute_type_id: @occupation_type.couchdb_person_attribute_type_id,
+        value: patient_attribute['value'])
+      end
+    rescue
+      puts "Error: ........ #{patient_attribute.inspect}"
     end
 
-    if patient_attribute['name'] == 'Cell Phone Number'
-      CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
-      person_attribute_type_id: @cell_phone_type.couchdb_person_attribute_type_id,
-      value: patient_attribute['value'])
+    begin
+      if patient_attribute['name'] == 'Cell Phone Number'
+        CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
+        person_attribute_type_id: @cell_phone_type.couchdb_person_attribute_type_id,
+        value: patient_attribute['value'])
+      end
+    rescue
+      puts "Error: ........ #{patient_attribute.inspect}"
     end
 
-    if patient_attribute['name'] == 'Home Phone Number'
-      CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
-      person_attribute_type_id: @home_phone_type.couchdb_person_attribute_type_id,
-      value: patient_attribute['value'])
+    begin
+      if patient_attribute['name'] == 'Home Phone Number'
+        CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
+        person_attribute_type_id: @home_phone_type.couchdb_person_attribute_type_id,
+        value: patient_attribute['value'])
+      end
+    rescue
+      puts "Error: ........ #{patient_attribute.inspect}"
     end
 
-    if patient_attribute['name'] == 'Office Phone Number'
-      CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
-      person_attribute_type_id: @work_phone_type.couchdb_person_attribute_type_id,
-      value: patient_attribute['value'])
+    begin
+      if patient_attribute['name'] == 'Office Phone Number'
+        CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
+        person_attribute_type_id: @work_phone_type.couchdb_person_attribute_type_id,
+        value: patient_attribute['value'])
+      end
+    rescue
+      puts "Error: ........ #{patient_attribute.inspect}"
     end
 
   end
@@ -179,41 +207,64 @@ def create_addresses(patient_id, couchdb_person, database_name)
 EOF
 
 
-
-  unless patient_addresses['home_district'].blank?
-    CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
-    person_attribute_type_id: @home_district_type.couchdb_person_attribute_type_id,
-    value: patient_addresses['home_district'])
+  begin
+    unless patient_addresses['home_district'].blank?
+      CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
+      person_attribute_type_id: @home_district_type.couchdb_person_attribute_type_id,
+      value: patient_addresses['home_district'])
+    end
+  rescue
+    puts "Error ............ #{patient_addresses.inspect}"
   end
-   
-  unless patient_addresses['home_ta'].blank?
-    CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
-    person_attribute_type_id: @home_ta_type.couchdb_person_attribute_type_id,
-    value: patient_addresses['home_ta'])
+  
+  begin 
+    unless patient_addresses['home_ta'].blank?
+      CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
+      person_attribute_type_id: @home_ta_type.couchdb_person_attribute_type_id,
+      value: patient_addresses['home_ta'])
+    end
+  rescue
+    puts "Error ............ #{patient_addresses.inspect}"
   end
-   
-  unless patient_addresses['home_village'].blank?
-    CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
-    person_attribute_type_id: @home_village_type.couchdb_person_attribute_type_id,
-    value: patient_addresses['home_village'])
+  
+  begin 
+    unless patient_addresses['home_village'].blank?
+      CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
+      person_attribute_type_id: @home_village_type.couchdb_person_attribute_type_id,
+      value: patient_addresses['home_village'])
+    end
+  rescue
+    puts "Error ............ #{patient_addresses.inspect}"
   end
-   
-  unless patient_addresses['current_district'].blank?
-    CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
-    person_attribute_type_id: @current_district_type.couchdb_person_attribute_type_id,
-    value: patient_addresses['current_district'])
+  
+  begin 
+    unless patient_addresses['current_district'].blank?
+      CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
+      person_attribute_type_id: @current_district_type.couchdb_person_attribute_type_id,
+      value: patient_addresses['current_district'])
+    end
+  rescue
+    puts "Error ............ #{patient_addresses.inspect}"
   end
-   
-  unless patient_addresses['current_ta'].blank?
-    CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
-    person_attribute_type_id: @current_ta_type.couchdb_person_attribute_type_id,
-    value: patient_addresses['current_ta'])
+  
+  begin 
+    unless patient_addresses['current_ta'].blank?
+      CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
+      person_attribute_type_id: @current_ta_type.couchdb_person_attribute_type_id,
+      value: patient_addresses['current_ta'])
+    end
+  rescue
+    puts "Error ............ #{patient_addresses.inspect}"
   end
-   
-  unless patient_addresses['current_village'].blank?
-    CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
-    person_attribute_type_id: @current_village_type.couchdb_person_attribute_type_id,
-    value: patient_addresses['current_village'])
+  
+  begin 
+    unless patient_addresses['current_village'].blank?
+      CouchdbPersonAttribute.create(person_id: couchdb_person.id, 
+      person_attribute_type_id: @current_village_type.couchdb_person_attribute_type_id,
+      value: patient_addresses['current_village'])
+    end
+  rescue
+    puts "Error ............ #{patient_addresses.inspect}"
   end
 
 end
