@@ -18,6 +18,7 @@
 @art_number_type     = PersonAttributeType.find_by_name('ART number')
 
 @location_created_at = Location.find_by_name('Baobab Health Trust')
+@user = User.find_by_name('admin')
   
 def get_database_names
 	databases = ActiveRecord::Base.connection.select_all <<EOF
@@ -85,7 +86,8 @@ EOF
     died: patient_obj['died'], 
     deathdate:  (patient_obj['deathdate'].to_date rescue nil),
     deathdate_estimated: patient_obj['deathdate_estimated'],
-    location_created_at:  @location_created_at.id  )
+    location_created_at:  @location_created_at.id,
+    creator:  @user.couchdb_user_id )
 
     create_addresses(patient_id, couchdb_person, database_name)
     create_attributes(patient_id, couchdb_person, database_name)
