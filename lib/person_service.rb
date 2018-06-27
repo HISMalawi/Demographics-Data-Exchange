@@ -48,7 +48,7 @@ module PersonService
     couchdb_person = nil
     person = nil
 
-    ActiveRecord::Base.transaction do
+    #ActiveRecord::Base.transaction do
       couchdb_person = CouchdbPerson.create(given_name: given_name, family_name: family_name,
         middle_name: middle_name, gender: gender, birthdate: birthdate,
         location_created_at: current_user.couchdb_location_id,
@@ -57,50 +57,16 @@ module PersonService
       #####################
       NpidService.que(couchdb_person)
       #####################
-
+=begin
       person = Person.create(given_name: given_name, family_name: family_name,
         middle_name: middle_name, gender: gender, birthdate: birthdate, 
         birthdate_estimated: birthdate_estimated, location_created_at: current_user.location_id, 
         couchdb_person_id: couchdb_person.id, creator: current_user.id)
-
-    end
+=end
+    #end
    
     if couchdb_person
-
       attributes = PersonAttributeService.create(params[:attributes], couchdb_person)
-      person_attributes = []
-      
-      (attributes || []).each do |attribute|
-        attribute_type = CouchdbPersonAttributeType.find(attribute.person_attribute_type_id)
-        person_attributes << {
-          type: attribute_type.id, 
-          value: attribute.value, 
-          person_attribute_type_name: attribute_type.name
-        }
-      end
-
-      unless htn_number.blank?
-        PersonAttributeService.create({htn_number: htn_number}, couchdb_person)
-        type = PersonAttributeType.find_by_name('HTN number')
-        person_attributes << {
-          type: type.couchdb_person_attribute_type_id, 
-          value: htn_number, 
-          person_attribute_type_name: type.name
-        }
-      end
-  
-      unless art_number.blank?
-        PersonAttributeService.create({art_number: art_number}, couchdb_person)
-        type = PersonAttributeType.find_by_name('ART number')
-        person_attributes << {
-          type: type.couchdb_person_attribute_type_id, 
-          value: art_number, 
-          person_attribute_type_name: type.name
-        }
-      end
-  
-      #return {person: couchdb_person, person_attributes: person_attributes}
-      #return {person: self.get_person_obj(person), person_attributes: person_attributes}
     end
 
     count = 0
@@ -109,19 +75,47 @@ module PersonService
       couchdb_person = CouchdbPerson.find(couchdb_person.id)
       npids_assigned = (couchdb_person.npid.blank? == true ? false : true)
       if (couchdb_person.npid.blank? == false)
-        return self.get_person_obj(person)
+        return self.after_create_get_person_obj(couchdb_person, params[:attributes])
         break
       end
     
       if count == 5000
-        puts "################## 1  #{person.npid.blank?}"
+        puts "################## 1  #{couchdb_person.npid.blank?}"
         break
       end
       count+= 1
     end
 
-    return self.get_person_obj(person, person_attributes)
-    #return self.get_person_obj(person)
+    return self.after_create_get_person_obj(couchdb_person, params[:attributes])
+  end
+
+  def self.after_create_get_person_obj(person, params)
+    
+    return {
+      given_name:   person.given_name,
+      family_name:  person.family_name,
+      middle_name:  person.middle_name,
+      gender: person.gender,
+      birthdate:  person.birthdate,
+      birthdate_estimated: person.birthdate_estimated,
+      attributes: {
+        occupation: params[:occupation],
+        cellphone_number: params[:cellphone_number],
+        current_district: params[:current_district],
+        current_traditional_authority: params[:current_traditional_authority],
+        current_village: params[:current_village], 
+        home_district: params[:home_district],
+        home_traditional_authority: params[:home_traditional_authority],
+        home_village: params[:home_village]
+      },
+      identifiers: {
+        art_number: params[:art_number],
+        htn_number: params[:htn_number]
+        
+      },
+      npid: (person.npid rescue nil),
+      doc_id: person.id
+    }
   end
 
   def self.update_person(params)
