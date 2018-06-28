@@ -84,7 +84,7 @@ def start
 	names.sort.each_with_index do |databasename, i|
 		patient_ids = get_version4_patient_ids(databasename)
 		push_records_tocouchdb(patient_ids, databasename) unless patient_ids.blank?
-    break if databasename.match(/18/i)
+    #break if databasename.match(/18/i)
 	end
 
   puts "Script done: start at: #{@start_at.strftime('%d/%b/%Y %H:%M:%S')}, ended at: #{Time.now().strftime('%d/%b/%Y %H:%M:%S')}"
@@ -125,7 +125,7 @@ EOF
     create_identifiers(patient_id, couchdb_person, database_name)
   
     puts "#### #{database_name}:  #{i + 1} of #{patient_ids.length}"
-    break if i == 99
+    #break if i == 99
    end
        
 end
