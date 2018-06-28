@@ -21,6 +21,9 @@
 
 @location_created_at = Location.find_by_name('Baobab Health Trust')
 @user = User.find_by_username('admin')
+
+@first_loop = true
+@first_loop2 = true
   
 File.open("#{Rails.root}/log/people.sql", "a+"){|f| 
   string =<<EOF
@@ -320,21 +323,38 @@ def push_to_people_sql_file(couchdb_person)
   deathdate             = couchdb_person['deathdate'].blank? ? 'NULL' : "'#{couchdb_person['deathdate']}'"
   deathdate_estimated   = couchdb_person['deathdate_estimated'].blank? ? 'NULL' : couchdb_person['deathdate_estimated']
 
+  if @first_loop == true
   string =<<EOF
-(#{@sql_patient_id},"#{couchdb_person['_id']}", "#{couchdb_person['given_name']}", #{middle_name},"#{couchdb_person['family_name']}","#{couchdb_person['gender']}","#{couchdb_person['birthdate']}", #{couchdb_person['birthdate_estimated']},#{died},#{deathdate}, #{deathdate_estimated}, #{@location_created_at.id}, #{@user.id},"#{couchdb_person['created_at']}","#{couchdb_person['updated_at']}"),
+(#{@sql_patient_id},"#{couchdb_person['_id']}", "#{couchdb_person['given_name']}", #{middle_name},"#{couchdb_person['family_name']}","#{couchdb_person['gender']}","#{couchdb_person['birthdate']}", #{couchdb_person['birthdate_estimated']},#{died},#{deathdate}, #{deathdate_estimated}, #{@location_created_at.id}, #{@user.id},"#{couchdb_person['created_at']}","#{couchdb_person['updated_at']}")
 EOF
-  
+ 
+    @first_loop = false 
+  else
+    string =<<EOF
+, (#{@sql_patient_id},"#{couchdb_person['_id']}", "#{couchdb_person['given_name']}", #{middle_name},"#{couchdb_person['family_name']}","#{couchdb_person['gender']}","#{couchdb_person['birthdate']}", #{couchdb_person['birthdate_estimated']},#{died},#{deathdate}, #{deathdate_estimated}, #{@location_created_at.id}, #{@user.id},"#{couchdb_person['created_at']}","#{couchdb_person['updated_at']}")
+EOF
+  end
     f << string
   }
+
 end
 
 def push_to_person_attribute_sql_file(couchdb, person_attribute_type_id)
   @sql_patient_attribute_id += 1
   File.open("#{Rails.root}/log/person_attributes.sql", "a+"){|f|
   
-  string =<<EOF
-(#{@sql_patient_attribute_id}, "#{couchdb['person_id']}", #{@sql_patient_id},"#{couchdb['person_attribute_type_id']}", #{person_attribute_type_id},"#{couchdb['person_attribute_type_id']}","#{couchdb['value']}","#{couchdb['created_at']}","#{couchdb['updated_at']}"),
+  if @first_loop2 == true
+    string =<<EOF
+(#{@sql_patient_attribute_id}, "#{couchdb['person_id']}", #{@sql_patient_id},"#{couchdb['person_attribute_type_id']}", #{person_attribute_type_id},"#{couchdb['person_attribute_type_id']}","#{couchdb['value']}","#{couchdb['created_at']}","#{couchdb['updated_at']}")
 EOF
+
+    @first_loop2 = false
+  else
+    string =<<EOF
+, (#{@sql_patient_attribute_id}, "#{couchdb['person_id']}", #{@sql_patient_id},"#{couchdb['person_attribute_type_id']}", #{person_attribute_type_id},"#{couchdb['person_attribute_type_id']}","#{couchdb['value']}","#{couchdb['created_at']}","#{couchdb['updated_at']}")
+EOF
+
+  end
 
     f << string
   }
