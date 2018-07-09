@@ -31,6 +31,7 @@ File.open("#{Rails.root}/log/people.sql", "a+"){|f|
 # EOF
 
 #   f << string
+   f << ", "
 }
 
 
@@ -40,6 +41,7 @@ File.open("#{Rails.root}/log/person_attributes.sql", "a+"){|f|
 # EOF
 
 #   f << string
+   f << ", "
 }
 
 
