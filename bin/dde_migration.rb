@@ -1,6 +1,6 @@
 @start_at = Time.now()
-@sql_patient_id = 2_026_467 #0
-@sql_patient_attribute_id = 16_858_825 #0
+@sql_patient_id = 2_117_748 #0
+@sql_patient_attribute_id = 17_616_413 #0
 
 @current_district_type = PersonAttributeType.find_by_name('Current district')
 @current_ta_type       = PersonAttributeType.find_by_name('Current traditional authority')
@@ -47,59 +47,56 @@ File.open("#{Rails.root}/log/person_attributes.sql", "a+"){|f|
 
 
 def get_database_names
-  databases = ActiveRecord::Base.connection.select_all <<EOF
-  show databases like '%openmrs%';
+	databases = ActiveRecord::Base.connection.select_all <<EOF
+	show databases like '%openmrs%';
 EOF
 
-  names = []
-  (databases || []).each_with_index do |n, i|
-    names << n["Database (%openmrs%)"]
-    puts names.last
-  end
+	names = []
+	(databases || []).each_with_index	do |n, i|
+		names << n["Database (%openmrs%)"]
+		puts names.last
+	end
 
-  return names
+	return names
 end
 
 def get_version4_patient_ids(databasename)
-  begin 
-  patient_ids = ActiveRecord::Base.connection.select_all <<EOF
-  SELECT * FROM #{databasename}.patient_identifier where length(identifier) = 6 
-  AND voided = 0 and identifier_type = 3 group by patient_id ,identifier;
+	begin 
+	patient_ids = ActiveRecord::Base.connection.select_all <<EOF
+	SELECT * FROM #{databasename}.patient_identifier where length(identifier) = 6 
+	AND voided = 0 and identifier_type = 3 group by patient_id ,identifier;
 EOF
 
-  rescue 
-    puts "Table does not exist in #{databasename}"
-  end
-  
-  version4_ids = []
+	rescue 
+		puts "Table does not exist in #{databasename}"
+	end
+	
+	version4_ids = []
 
-  (patient_ids || []).each do |v4|
-    version4_ids << v4['patient_id'].to_i
-  end
+	(patient_ids || []).each do |v4|
+		version4_ids << v4['patient_id'].to_i
+	end
 
-  return version4_ids
+	return version4_ids
 
 end
 
 def start
-  # names = get_database_names
-  names = ["openmrs_QECH_ART", "openmrs_RU", "openmrs_SAL", "openmrs_SLK", 
-    "openmrs_SL_ART", "openmrs_SMH", "openmrs_STH", "openmrs_STJM", "openmrs_SUC_ART", 
-    "openmrs_TBHC", "openmrs_TDHC", "openmrs_THY", "openmrs_TKHC_ART", 
-    "openmrs_ZCH_ANC_DDE_demographics", "openmrs_ZCH_ARV_ART", "openmrs_ZINGW_ART", 
+	# names = get_database_names
+  names = ["openmrs_ZCH_ARV_ART", "openmrs_ZINGW_ART", 
     "openmrs_mbangombe", "openmrs_namasalima", "openmrs_ngoni", "openmrs_ukwe"]
-  names.sort.each_with_index do |databasename, i|
-    patient_ids = get_version4_patient_ids(databasename)
-    push_records_tocouchdb(patient_ids, databasename) unless patient_ids.blank?
+	names.sort.each_with_index do |databasename, i|
+		patient_ids = get_version4_patient_ids(databasename)
+		push_records_tocouchdb(patient_ids, databasename) unless patient_ids.blank?
     #break if databasename.match(/18/i)
-  end
+	end
 
   puts "Script done: start at: #{@start_at.strftime('%d/%b/%Y %H:%M:%S')}, ended at: #{Time.now().strftime('%d/%b/%Y %H:%M:%S')}"
 end
 
 def push_records_tocouchdb(patient_ids, database_name)
   (patient_ids || []).each_with_index do |patient_id, i|
-    next if i < 229_810 && database_name == "openmrs_QECH_ART"
+    next if i < 10 && database_name == "openmrs_ZCH_ARV_ART"
     #create a patient_id that will be used in the SQL file
     @sql_patient_id += 1
     
