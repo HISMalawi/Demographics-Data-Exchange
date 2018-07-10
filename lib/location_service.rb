@@ -30,7 +30,7 @@ module LocationService
     name = params[:name]
 
     if name.blank?
-      location = Location.limit(10).order("name ASC")
+      location = Location.order("name ASC")
     else
       location = Location.where("name like (?)", "#{name}%").order("name ASC")
     end

@@ -66,6 +66,7 @@ module PersonService
     #end
    
     if couchdb_person
+      #raise couchdb_person.inspect
       attributes = PersonAttributeService.create(params[:attributes], couchdb_person)
     end
 
@@ -122,11 +123,12 @@ module PersonService
     doc_id = params[:doc_id]
     couchdb_person = CouchdbPerson.find(doc_id)
     return {} if couchdb_person.blank?
-    
+    gender_param            = (params[:gender].to_s.downcase == "female") ? "F" : "M"
+
     given_name              = params[:given_name]
     family_name             = params[:family_name]
     middle_name             = params[:middle_name]
-    gender                  = params[:gender]
+    gender                  = gender_param
     birthdate               = params[:birthdate]
     birthdate_estimated     = params[:birthdate_estimated]
 
