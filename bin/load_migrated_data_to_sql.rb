@@ -12,7 +12,7 @@ def start
           given_name,middle_name,family_name,gender,birthdate,
           birthdate_estimated,died,deathdate,deathdate_estimated,
           location_created_at, creator,created_at,updated_at) VALUES #{data};
-  EOF
+EOF
       rescue StandardError => e
         `echo "#{e}" >> #{Rails.root}/log/dde_load_migrated_data_errors.log`
       end
