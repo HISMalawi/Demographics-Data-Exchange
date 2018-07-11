@@ -4,7 +4,7 @@ def start
   File.open("#{Rails.root}/log/people.sql", 'r').each_line do |line|
     puts "Processing record #{i}"
     data += "(#{line}),"
-    if (i % 100_000).zero? || 2_332_908 == i
+    if (i % 50_000).zero? || 2_332_908 == i
       puts 'Loading data into MySQL'
       begin
         ActiveRecord::Base.connection.execute <<EOF
