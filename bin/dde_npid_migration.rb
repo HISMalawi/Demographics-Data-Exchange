@@ -32,7 +32,7 @@ EOF
       ActiveRecord::Base.connection.execute <<EOF
       DELETE FROM person_attributes WHERE 
       couchdb_person_attribute_id = "#{attribute['couchdb_person_attribute_id']}"
-      AND couchdb_person_id = "#{couch_person_id}"
+      AND couch_person_id = "#{couch_person_id}"
 EOF
 
       doc = @db.get(attribute['couchdb_person_attribute_id'])
