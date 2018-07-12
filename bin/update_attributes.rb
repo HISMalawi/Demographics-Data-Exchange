@@ -24,7 +24,7 @@ def start
 	  couchdb_person_id = doc['person_id']
 
 	  ActiveRecord::Base.connection.execute <<EOF
-	    UPDATE person_attributes SET couchdb_attribute_id = #{couchdb_attribute_id}
+	    UPDATE person_attributes SET couchdb_person_attribute_id = #{couchdb_attribute_id}
 	    WHERE couchdb_person_id = #{couchdb_person_id}
 	    AND couchdb_person_attribute_type_id = #{couchdb_attribute_type_id}
 	  EOF
