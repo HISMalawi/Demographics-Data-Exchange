@@ -24,6 +24,10 @@ module PersonService
   end
 
   def self.create(params, current_user)
+    location_npids = LocationNpid.where(["couchdb_location_id = ? 
+      AND assigned = FALSE",current_user.couchdb_location_id])
+    return {} if location_npids.blank?
+
     given_name              = params[:given_name]
     family_name             = params[:family_name]
     middle_name             = params[:middle_name]
@@ -66,7 +70,6 @@ module PersonService
     #end
    
     if couchdb_person
-      #raise couchdb_person.inspect
       attributes = PersonAttributeService.create(params[:attributes], couchdb_person)
     end
 
@@ -123,12 +126,11 @@ module PersonService
     doc_id = params[:doc_id]
     couchdb_person = CouchdbPerson.find(doc_id)
     return {} if couchdb_person.blank?
-    gender_param            = (params[:gender].to_s.downcase == "female") ? "F" : "M"
-
+    
     given_name              = params[:given_name]
     family_name             = params[:family_name]
     middle_name             = params[:middle_name]
-    gender                  = gender_param
+    gender                  = params[:gender]
     birthdate               = params[:birthdate]
     birthdate_estimated     = params[:birthdate_estimated]
 
