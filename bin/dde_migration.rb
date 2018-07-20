@@ -1,6 +1,6 @@
 @start_at = Time.now()
-@sql_patient_id = 2_026_467 #0
-@sql_patient_attribute_id = 16_858_825 #0
+@sql_patient_id = 0 #2_026_467 #0
+@sql_patient_attribute_id = 0 #16_858_825 #0
 
 @current_district_type = PersonAttributeType.find_by_name('Current district')
 @current_ta_type       = PersonAttributeType.find_by_name('Current traditional authority')
@@ -26,20 +26,20 @@
 @first_loop2 = true
   
 File.open("#{Rails.root}/log/people.sql", "a+"){|f| 
-#   string =<<EOF
-# INSERT INTO people (person_id, couchdb_person_id, given_name,middle_name,family_name,gender,birthdate,birthdate_estimated,died,deathdate,deathdate_estimated,location_created_at, creator,created_at,updated_at) VALUES 
-# EOF
+  string =<<EOF
+INSERT INTO people (person_id, couchdb_person_id, given_name,middle_name,family_name,gender,birthdate,birthdate_estimated,died,deathdate,deathdate_estimated,location_created_at, creator,created_at,updated_at) VALUES 
+EOF
 
-#   f << string
+  f << string
 }
 
 
 File.open("#{Rails.root}/log/person_attributes.sql", "a+"){|f| 
-#   string =<<EOF
-# INSERT INTO person_attributes (person_attribute_id, couchdb_person_id, person_id, couchdb_person_attribute_type_id, person_attribute_type_id, couchdb_person_attribute_id, value, created_at, updated_at) VALUES 
-# EOF
+  string =<<EOF
+INSERT INTO person_attributes (person_attribute_id, couchdb_person_id, person_id, couchdb_person_attribute_type_id, person_attribute_type_id, couchdb_person_attribute_id, value, created_at, updated_at) VALUES 
+EOF
 
-#   f << string
+  f << string
 }
 
 
@@ -80,12 +80,12 @@ EOF
 end
 
 def start
-	# names = get_database_names
-  names = ["openmrs_QECH_ART", "openmrs_RU", "openmrs_SAL", "openmrs_SLK", 
-    "openmrs_SL_ART", "openmrs_SMH", "openmrs_STH", "openmrs_STJM", "openmrs_SUC_ART", 
-    "openmrs_TBHC", "openmrs_TDHC", "openmrs_THY", "openmrs_TKHC_ART", 
-    "openmrs_ZCH_ANC_DDE_demographics", "openmrs_ZCH_ARV_ART", "openmrs_ZINGW_ART", 
-    "openmrs_mbangombe", "openmrs_namasalima", "openmrs_ngoni", "openmrs_ukwe"]
+  names = get_database_names
+  # names = ["openmrs_QECH_ART", "openmrs_RU", "openmrs_SAL", "openmrs_SLK", 
+  #   "openmrs_SL_ART", "openmrs_SMH", "openmrs_STH", "openmrs_STJM", "openmrs_SUC_ART", 
+  #   "openmrs_TBHC", "openmrs_TDHC", "openmrs_THY", "openmrs_TKHC_ART", 
+  #   "openmrs_ZCH_ANC_DDE_demographics", "openmrs_ZCH_ARV_ART", "openmrs_ZINGW_ART", 
+  #   "openmrs_mbangombe", "openmrs_namasalima", "openmrs_ngoni", "openmrs_ukwe"]
 	names.sort.each_with_index do |databasename, i|
 		patient_ids = get_version4_patient_ids(databasename)
 		push_records_tocouchdb(patient_ids, databasename) unless patient_ids.blank?
@@ -97,7 +97,7 @@ end
 
 def push_records_tocouchdb(patient_ids, database_name)
   (patient_ids || []).each_with_index do |patient_id, i|
-    next if i < 229_810 && database_name == "openmrs_QECH_ART"
+    # next if i < 229_810 && database_name == "openmrs_QECH_ART"
     #create a patient_id that will be used in the SQL file
     @sql_patient_id += 1
     
@@ -350,13 +350,13 @@ def push_to_person_attribute_sql_file(couchdb, person_attribute_type_id)
   
   if @first_loop2 == true
     string =<<EOF
-(#{@sql_patient_attribute_id}, "#{couchdb['person_id']}", #{@sql_patient_id},"#{couchdb['person_attribute_type_id']}", #{person_attribute_type_id},"#{couchdb['person_attribute_type_id']}","#{couchdb['value']}","#{couchdb['created_at']}","#{couchdb['updated_at']}")
+(#{@sql_patient_attribute_id}, "#{couchdb['person_id']}", #{@sql_patient_id},"#{couchdb['person_attribute_type_id']}", #{person_attribute_type_id},"#{couchdb['person_attribute_id']}","#{couchdb['value']}","#{couchdb['created_at']}","#{couchdb['updated_at']}")
 EOF
 
     @first_loop2 = false
   else
     string =<<EOF
-, (#{@sql_patient_attribute_id}, "#{couchdb['person_id']}", #{@sql_patient_id},"#{couchdb['person_attribute_type_id']}", #{person_attribute_type_id},"#{couchdb['person_attribute_type_id']}","#{couchdb['value']}","#{couchdb['created_at']}","#{couchdb['updated_at']}")
+, (#{@sql_patient_attribute_id}, "#{couchdb['person_id']}", #{@sql_patient_id},"#{couchdb['person_attribute_type_id']}", #{person_attribute_type_id},"#{couchdb['person_attribute_id']}","#{couchdb['value']}","#{couchdb['created_at']}","#{couchdb['updated_at']}")
 EOF
 
   end
