@@ -1,6 +1,6 @@
 @start_at = Time.now()
-@sql_patient_id = 0 #2_026_467 #0
-@sql_patient_attribute_id = 0 #16_858_825 #0
+@sql_patient_id = 217930 #0 #2_026_467 #0
+@sql_patient_attribute_id = 2000076 #0 #16_858_825 #0
 
 @current_district_type = PersonAttributeType.find_by_name('Current district')
 @current_ta_type       = PersonAttributeType.find_by_name('Current traditional authority')
@@ -31,7 +31,7 @@ File.open("#{Rails.root}/log/people.sql", "a+"){|f|
 #EOF
 
 #   f << string
-    f << ","
+    f << ", "
 }
 
 
@@ -41,7 +41,7 @@ File.open("#{Rails.root}/log/person_attributes.sql", "a+"){|f|
 #EOF
 
 #   f << string
-    f << ","
+    f << ", "
 }
 
 
@@ -83,7 +83,7 @@ end
 
 def start
   names = get_database_names
-  names = ["openmrs_DZA","openmrs_EKW","openmrs_EMB","openmrs_GW_ART","openmrs_KA","openmrs_KADIDI_ARV_ART",
+  names = ["openmrs_DOW","openmrs_DZA","openmrs_EKW","openmrs_EMB","openmrs_GW_ART","openmrs_KA","openmrs_KADIDI_ARV_ART",
 	   "openmrs_KAL_ART","openmrs_KAP","openmrs_KAS","openmrs_KCH","openmrs_KCH_ANC","openmrs_KJNH_ARV_ART","openmrs_KKHO",
 	   "openmrs_KLLU_ARV_ART","openmrs_KRH","openmrs_KW","openmrs_LIK_ART","openmrs_LJK","openmrs_LKB","openmrs_LKL_ART",
 	   "openmrs_LLH","openmrs_LMB_ANC_DDE_demographics","openmrs_LMB_ART_DDE_demographics","openmrs_LR_ARV","openmrs_LU_ARV",
@@ -110,7 +110,7 @@ end
 
 def push_records_tocouchdb(patient_ids, database_name)
   (patient_ids || []).each_with_index do |patient_id, i|
-    # next if i < 229_810 && database_name == "openmrs_QECH_ART"
+    next if i < 25_000 && database_name == "openmrs_DOW"
     #create a patient_id that will be used in the SQL file
     @sql_patient_id += 1
     
