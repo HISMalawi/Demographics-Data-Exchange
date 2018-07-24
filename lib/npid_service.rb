@@ -19,10 +19,12 @@ module NpidService
 
   end
 
-  def self.assign_id_person(person)
+  def self.assign_id_person(person, user)
     ActiveRecord::Base.transaction do
-      npid = LocationNpid.where(assigned: false).limit(1)
-      if npid
+      location_id = user.couchdb_location_id
+      npid = LocationNpid.where(["assigned = FALSE AND
+        couchdb_location_id =?",location_id]).limit(1)
+      unless npid.blank?
         npid  = npid.first
         person.update_attributes(npid: npid.npid)
         npid.update_attributes(assigned: true)

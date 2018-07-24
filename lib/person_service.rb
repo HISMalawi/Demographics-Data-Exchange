@@ -24,6 +24,10 @@ module PersonService
   end
 
   def self.create(params, current_user)
+    location_npids = LocationNpid.where(["couchdb_location_id = ? 
+      AND assigned = FALSE",current_user.couchdb_location_id])
+    return {} if location_npids.blank?
+
     given_name              = params[:given_name]
     family_name             = params[:family_name]
     middle_name             = params[:middle_name]
