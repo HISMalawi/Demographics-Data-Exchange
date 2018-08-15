@@ -52,6 +52,7 @@ class ElasticsearchPersonDAO
       "mappings" => {
         "_doc" => {
           "properties" => {
+            "id" => {"type" => "text"},   # We using couch doc_id which comes as a string.
             "family_name" => {"type" => "text"},
             "family_name_soundex" => {"type" => "text"},
             "given_name" => {"type" => "text"},
