@@ -49,7 +49,7 @@ class PeopleMatchingService
   #
   # @see DDEPersonTransformer
   def find_duplicates(benchmark, threshold: MINIMUM_SIMILARITY_SCORE, use_soundex: false)
-    #
+    # Convert benchmark into a form that can be used for searching in people dao
     search_data = FIELDS_TO_MATCH.inject({}) do |search_data, field|
       value = benchmark[field]
 
@@ -99,7 +99,18 @@ class PeopleMatchingService
 
   MINIMUM_SIMILARITY_SCORE = 0.8
 
-  WHITE_SIMILARITY_SCORER = lambda { |a, b| WhiteSimilarity.similarity(a, b) }
+  WHITE_SIMILARITY_SCORER = lambda do |a, b|
+    # HACK: WhiteSimilarity seems to have a problem handling 1 character strings.
+    # eg >> WhiteSimilarity.similarity('M', 'M') => NaN
+    # If we come across a 1 char string we roll our own basic algorithm
+    if a.size == 0 or b.size == 0
+      return 0.0
+    elsif a.size == 1
+      return a[0] == b[0] ? 1 / b.size : 0.0
+    else
+      WhiteSimilarity.similarity(a, b)
+    end
+  end
 
   FIELD_SPECS = {
     "given_name" => {scorer: WHITE_SIMILARITY_SCORER},
