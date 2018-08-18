@@ -76,9 +76,8 @@ class HashMatcher
       scorer = field_spec[:scorer]
       weight = field_spec[:weight]
 
-      # We love symbols for field names but string are welcome too:
-      rvalue = hash[field] or hash[field.to_s]
-      score = rvalue ? scorer.(field_spec[:value], rvalue) * weight : 0
+      rvalue = hash[field]
+      score = rvalue ? scorer.(field_spec[:value].strip, rvalue.strip) * weight : 0
 
       [current_score + score, total_score + weight]
     end

@@ -1,3 +1,7 @@
+require "people_matching_service/elasticsearch_client"
+require "people_matching_service/elasticsearch_person_dao"
+require "people_matching_service/dde_person_transformer"
+
 module PersonService
   def self.assign_npid(params)
     couchdb_person = CouchdbPerson.find(params[:doc_id])
@@ -95,7 +99,7 @@ module PersonService
 
   def self.after_create_get_person_obj(person, params)
     
-    return {
+    person = {
       given_name:   person.given_name,
       family_name:  person.family_name,
       middle_name:  person.middle_name,
@@ -120,6 +124,13 @@ module PersonService
       npid: (person.npid rescue nil),
       doc_id: person.id
     }
+
+    es_host, es_port = Rails.application.config.elasticsearch
+    es_client = ElasticsearchClient.new host: es_host, port: es_port
+    es_person_dao = ElasticsearchPersonDAO.new es_client   
+    es_person_dao.save DDEPersonTransformer.transform(person)
+
+    person
   end
 
   def self.update_person(params)
@@ -370,6 +381,5 @@ module PersonService
 
     return people_arr
   end
-  
 end
 
