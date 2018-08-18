@@ -28,15 +28,36 @@ class ElasticsearchPersonDAO
 
   def search(data)
     LOGGER.debug "Searching in Elasticsearch for people matching: #{data}"
+    should_sub_query = data.collect do |field, value|
+      complementary_field = COMPLEMENTARY_FIELDS[field]
+      if complementary_field
+        # Build or query for complementary fields in case the two are inverted
+        # eg. given_name and last_name
+        print "#{data} ... #{complementary_field}\n"
+        {
+          bool: {
+            should: [
+              {match: {field => value}},
+              {match: {field => data[complementary_field]}},
+            ],
+            minimum_should_match: 1,
+          },
+        }
+      else
+        {match: {field => value}}
+      end
+    end
+
     query = {
-      "query" => {
-        "bool" => {
-          "should" => data.collect { |f, v| {match: {f => v}} },
-          "minimum_should_match" => (MINIMUM_SHOULD_MATCH_PERCENTAGE * data.size).round,
+      query: {
+        bool: {
+          should: should_sub_query,
+          minimum_should_match: (MINIMUM_SHOULD_MATCH_PERCENTAGE * data.size).round,
         },
       },
     }
-    hits = @elasticsearch_client.post(expand_path("_search"), query)["hits"]["hits"]
+
+    hits = @elasticsearch_client.post(expand_path("_search?size=25"), query)["hits"]["hits"]
     # Our users need not know of our guts - let's give them their people
     hits.collect { |hit| hit["_source"] }
   end
@@ -57,7 +78,7 @@ class ElasticsearchPersonDAO
             "family_name_soundex" => {"type" => "text"},
             "given_name" => {"type" => "text"},
             "given_name_soundex" => {"type" => "text"},
-            "birth_date" => {"type" => "date"},
+            "birthdate" => {"type" => "date"},
             "gender" => {"type" => "text"},
             "home_district" => {"type" => "text"},
             "home_district_soundex" => {"type" => "text"},
@@ -94,6 +115,13 @@ class ElasticsearchPersonDAO
   LOGGER = Logger.new STDOUT
 
   MINIMUM_SHOULD_MATCH_PERCENTAGE = 0.8
+
+  COMPLEMENTARY_FIELDS = {
+    "given_name" => "family_name",
+    "given_name_soundex" => "family_name_soundex",
+    "family_name" => "given_name",
+    "family_name_soundex" => "given_name_soundex",
+  }
 
   # Prepends index and document type to path
   def expand_path(path)

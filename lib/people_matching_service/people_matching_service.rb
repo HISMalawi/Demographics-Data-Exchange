@@ -38,7 +38,7 @@ class PeopleMatchingService
   #     - :given_name
   #     - :family_name
   #     - :gender
-  #     - :birth_date
+  #     - :birthdate
   #     - :home_district
   #     - :home_traditional_authority
   #     - :home_village
@@ -90,7 +90,7 @@ class PeopleMatchingService
 
   LOGGER = Logger.new STDOUT
 
-  FIELDS_TO_MATCH = %w{given_name family_name gender birth_date home_district
+  FIELDS_TO_MATCH = %w{given_name family_name gender birthdate home_district
                        home_traditional_authority home_village}
 
   # These fields have to get a soundex generated
@@ -119,6 +119,6 @@ class PeopleMatchingService
     "home_village" => {scorer: WHITE_SIMILARITY_SCORER},
     "gender" => {scorer: WHITE_SIMILARITY_SCORER},
     "home_traditional_authority" => {scorer: WHITE_SIMILARITY_SCORER},
-    "birth_date" => {scorer: WHITE_SIMILARITY_SCORER},    # Guard against typos
+    "birthdate" => {scorer: WHITE_SIMILARITY_SCORER},    # Guard against typos
   }
 end

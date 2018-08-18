@@ -46,7 +46,7 @@ Rails.application.routes.draw do
   post "v1/merge_people", to: "api/v1/merge#merge"
   post "v1/reassign_npid", to: "api/v1/people#reassign_npid"
 
-  get "v1/people/match", to: "api/v1/people_match#get"
+  post "v1/search/people", to: "api/v1/people_match#get"
 
   root to: "api/v1/user#index"
 end
