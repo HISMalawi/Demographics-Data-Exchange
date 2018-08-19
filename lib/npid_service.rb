@@ -49,8 +49,8 @@ module NpidService
         person.update_attributes(npid: npid.npid)
 
         # Assign npid to a mysql person.
-        mysql_person = Person.find_by_couchdb_person_id(person["_id"])
-        mysql_person.update_attributes(npid: person["npid"])
+        mysql_person = Person.find_by_couchdb_person_id(person.id)
+        mysql_person.update_attributes(npid: person.npid)
 
         # Update npid in the location npids table to assigned.
         # Both in MySQL and CouchDb.
