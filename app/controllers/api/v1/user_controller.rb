@@ -29,7 +29,7 @@ class Api::V1::UserController < ApplicationController
                        email: couchdb_user.email, password: params[:password], 
                        location_id: mysql_location_id, couchdb_location_id: couchdb_user.location_id)
 
-    couchdb_user.update_attributes(password_digest: user.password)
+    couchdb_user.update_attributes(password_digest: user.password_digest)
 
     if user
       response = {status: 200, message: "User created successfully"}
