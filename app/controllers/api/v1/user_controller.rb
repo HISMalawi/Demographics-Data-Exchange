@@ -26,7 +26,8 @@ class Api::V1::UserController < ApplicationController
                                       email: params[:email], password_digest: "password_digest") #password_digest will be updated later
 
     user = User.create(username: params[:username], couchdb_user_id: couchdb_user.id,
-                       email: couchdb_user.email, password: params[:password], location_id: mysql_location_id)
+                       email: couchdb_user.email, password: params[:password], 
+                       location_id: mysql_location_id, couchdb_location_id: couchdb_user.couchdb_location_id)
 
     couchdb_user.update_attributes(password_digest: user.password_digest)
 
