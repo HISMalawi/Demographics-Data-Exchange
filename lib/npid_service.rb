@@ -46,7 +46,6 @@ module NpidService
         # Update npid in the location npids table to assigned.
         # Both in MySQL and CouchDb.
         npid.update_attributes(assigned: true)
-        raise npid.inspect
         couchdb_location_npid = CouchdbLocationNpid.find(npid.couchdb_location_npid_id)
         couchdb_location_npid.update_attributes(assigned: true)
 
