@@ -5,10 +5,13 @@ module NpidService
     NpidRegistrationQue.create(couchdb_person_id: couchdb_person.id, creator: User.current.id)
   end
 
+  # Assign Npids to a Site/Location.
+  # Takes the number of requested IDs and requesting user.
   def self.assign(number_of_ids, current_user)
-
+    # Gets available unassigned npids from master npid table.
     available_ids = Npid.where(assigned: false).limit(number_of_ids)
 
+    # Assign the available npids to a site /location.
     (available_ids || []).each do |n|
       ActiveRecord::Base.transaction do
         CouchdbLocationNpid.create(npid: n.npid, 
@@ -19,17 +22,34 @@ module NpidService
 
   end
 
+  #   Assign npid to a patient.
   def self.assign_id_person(person, user)
     ActiveRecord::Base.transaction do
+      # Get DDE User couchdb location id.
       location_id = user.couchdb_location_id
+
+      # Get all unassigned npids for this site/location.
       npid = LocationNpid.where(["assigned = FALSE AND
         couchdb_location_id =?",location_id]).limit(1)
+      
+      # Assign npid to a person if unassigned npids exists.
       unless npid.blank?
         npid  = npid.first
-        person.update_attributes(npid: npid.npid)
-        npid.update_attributes(assigned: true)
 
-        ############# void National patient identifier if it exists
+        # Assign npid to a couchdb person.
+        person.update_attributes(npid: npid.npid)
+
+        # Assign npid to a mysql person.
+        mysql_person = Person.find_by_couchdb_person_id(person["_id"])
+        mysql_person.update_attributes(npid: person["npid"])
+
+        # Update npid in the location npids table to assigned.
+        # Both in MySQL and CouchDb.
+        npid.update_attributes(assigned: true)
+        couchdb_location_npid = CouchdbLocationNpid.find(npid.couchdb_location_npid_id)
+        couchdb_location_npid.update_attributes(assigned: true)
+
+        ############# Void National patient identifier if it exists
         attribute_type = PersonAttributeType.find_by_name('National patient identifier')
         attributes = PersonAttribute.where("couchdb_person_id = ? 
           AND person_attribute_type_id = ?", person.id, attribute_type.id) 
