@@ -80,7 +80,7 @@ class PeopleMatchingService
                      "\n\tbenchmark: #{benchmark}"
         next
       end
-      matches << {person: person, score: score}
+      matches << {person: person, score: score.round(2)}
     end
 
     matches
