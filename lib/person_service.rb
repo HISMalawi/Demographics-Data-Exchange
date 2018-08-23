@@ -303,7 +303,7 @@ module PersonService
     gender      = params[:gender]
     
     people = Person.where(["given_name = ? AND family_name = ? AND gender = ?", 
-      given_name, family_name, gender])
+      given_name, family_name, gender]).limit(10)
 
     people_arr = []
     
