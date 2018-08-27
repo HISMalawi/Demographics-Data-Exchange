@@ -34,7 +34,7 @@ module NpidService
   #assigning individual npid to clients
   def self.assign_npid(couchdb_person)
     available_npid = LocationNpid.where(assigned: 0, 
-      location_id: User.current.location_id).limit(100).map{|i| i.npid}.sample.first rescue nil
+      location_id: User.current.location_id).limit(100).map{|i| i.npid}.sample rescue nil
 
     unless available_npid.blank?
       ActiveRecord::Base.transaction do 
