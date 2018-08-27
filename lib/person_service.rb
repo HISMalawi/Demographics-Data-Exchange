@@ -62,13 +62,16 @@ module PersonService
         location_created_at: current_user.couchdb_location_id,
         birthdate_estimated: birthdate_estimated, creator: current_user.couchdb_user_id)
     
-      #####################
-      NpidService.que(couchdb_person)
-      #####################
       person = Person.create(given_name: given_name, family_name: family_name,
         middle_name: middle_name, gender: gender, birthdate: birthdate, 
         birthdate_estimated: birthdate_estimated, location_created_at: current_user.location_id, 
         couchdb_person_id: couchdb_person.id, creator: current_user.id)
+
+      #####################
+      #NpidService.que(couchdb_person)
+      NpidService.assign_npid(couchdb_person)
+      #####################
+
     end
    
     if couchdb_person
@@ -302,7 +305,8 @@ module PersonService
     family_name = params[:family_name]
     gender      = params[:gender]
     
-    people = Person.where(["given_name = ? AND family_name = ? AND gender = ?", 
+    people = Person.where(["given_name = ? 
+      AND family_name = ? AND gender = ?", 
       given_name, family_name, gender]).limit(10)
 
     people_arr = []

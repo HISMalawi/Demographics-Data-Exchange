@@ -31,6 +31,27 @@ module NpidService
 
   end
 
+  #assigning individual npid to clients
+  def self.assign_npid(couchdb_person)
+    available_npid = LocationNpid.where(assigned: 0, 
+      location_id: User.current.location_id).limit(100).map{|i| i.npid}.sample.first rescue nil
+
+    unless available_npid.blank?
+      ActiveRecord::Base.transaction do 
+        location_npid = LocationNpid.find_by_npid(available_npid)
+        location_npid.update_attributes(assigned: 1)
+        couchdb_location_npid = CouchdbLocationNpid.find(location_npid.couchdb_location_npid_id)
+        couchdb_location_npid.update_attributes(assigned: 1)
+
+        couchdb_person.update_attributes(npid: available_npid)
+        Person.find_by_couchdb_person_id(couchdb_person.id).update_attributes(npid: available_npid)
+        return true
+      end
+    end
+
+    return false
+  end
+
   #   Assign npid to a patient.
   def self.assign_id_person(person, user)
     ActiveRecord::Base.transaction do
