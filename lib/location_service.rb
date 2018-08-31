@@ -23,6 +23,30 @@ module LocationService
     return locations
   end
 
+  def self.find_location(location_id)
+    query = Location.where(couchdb_location_id: location_id)
+    if query.blank?
+      return {}
+    end
+    location = []
+    (query || []).each do |l|
+      location_tags = LocationTag.where("l.couchdb_location_id = ?",
+                          l.couchdb_location_id).joins("INNER JOIN location_tag_maps m
+        ON m.location_tag_id = location_tags.location_tag_id
+        INNER JOIN locations l ON l.location_id = m.location_id").select("location_tags.*")
+      parent = Location.find(l.parent_location).name rescue "Unknown"
+      location << {
+        name: l.name,
+        doc_id: l.couchdb_location_id,
+        latitude: l.latitude,
+        longitude: l.longitude,
+        code: l.code,
+        location_tags: location_tags.map(&:name),
+       parent_location: parent,
+      }
+    end
+  end
+
   def self.get_locations(params)
     name = params[:name]
 
