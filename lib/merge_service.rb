@@ -12,50 +12,53 @@ module MergeService
     but secondary_person has and we give those
     attributes to the primary_person
 =end
-    secondary_person_attributes = PersonAttribute.where(couchdb_person_id: secondary_doc_id)
-    
-    (secondary_person_attributes || []).each do |secondary_person_attribute|
-     attributes = PersonAttribute.where("couchdb_person_id = ? AND 
-          couchdb_person_attribute_type_id = ?", primary_doc_id, 
-              secondary_person_attribute.couchdb_person_attribute_type_id)  
-        
+   
+    primary_person_attributes    = PersonAttribute.where(couchdb_person_id: primary_doc_id)
+    secondary_person_attributes  = PersonAttribute.where(couchdb_person_id: secondary_doc_id)
+    npids = []
+    npid_attribute_type = PersonAttributeType.find_by_name('National patient identifier')
 
-      if attributes.blank?
-        CouchdbPersonAttribute.create(value: secondary_person_attribute.value, person_id: primary_doc_id,
-          person_attribute_type_id: secondary_person_attribute.couchdb_person_attribute_type_id)
-  
-        couchdb_person_attribute = CouchdbPersonAttribute.find(secondary_person_attribute.couchdb_person_attribute_id)
-        couchdb_person_attribute.update_attributes(voided: true, void_reason: void_reason)
-        
-      else
-        attributes.each do |attribute|  
-          #if (attribute.value.squish.upcase != secondary_person_attribute.value.squish.upcase)
-            #CouchdbPersonAttribute.create(value: secondary_person_attribute.value, person_id: primary_doc_id,
-              #person_attribute_type_id: secondary_person_attribute.couchdb_person_attribute_type_id)
-          #end
-          
-          couchdb_person_attribute = CouchdbPersonAttribute.find(secondary_person_attribute.couchdb_person_attribute_id)
-          couchdb_person_attribute.update_attributes(voided: true, void_reason: void_reason)
-        end
-      end
-
-    end
-
-    unless secondary_person.npid.blank?
-      attribute = PersonAttribute.where("couchdb_person_id = ? AND value = ?", 
-      primary_doc_id, secondary_person.npid)  
+    (secondary_person_attributes || []).each do |secondary_attribute|
+      available = PersonAttribute.where("couchdb_person_id = ? 
+        AND person_attribute_type_id = ?", primary_doc_id, secondary_attribute.person_attribute_type_id)
       
-      unless attribute.blank?
-        person_attribute_type = PersonAttributeType.where(name: 'National patient identifier')
-        type_id = person_attribute_type.first.couchdb_person_attribute_type_id
+      npids << secondary_attribute.value if secondary_attribute.person_attribute_type_id == npid_attribute_type
 
-        CouchdbPersonAttribute.create(value: secondary_person.npid, person_id: primary_doc_id,
-          person_attribute_type_id: type_id)
+      if available.blank?
+        couchdb_attribute = CouchdbPersonAttribute.find(secondary_attribute.couchdb_person_attribute_id)
+        couchdb_attribute.update_attributes(voided: 1, void_reason: void_reason)
+        secondary_attribute.update_attributes(voided: 1, void_reason: void_reason)
+ 
+        new_attribute = CouchdbPersonAttribute.create(value: couchdb_attribute.value, 
+          person_attribute_type_id: couchdb_attribute.person_attribute_type_id, person_id: primary_doc_id)
+        
+        PersonAttribute.create(value: couchdb_attribute.value, couchdb_person_id: primary_doc_id,
+          person_id: primary_person.id, person_attribute_type_id: secondary_attribute.person_attribute_type_id,
+          couchdb_person_attribute_id: new_attribute.id) 
+      else
+        couchdb_attribute = CouchdbPersonAttribute.find(secondary_attribute.couchdb_person_attribute_id)
+        couchdb_attribute.update_attributes(voided: 1, void_reason: void_reason)
+        secondary_attribute.update_attributes(voided: 1, void_reason: void_reason)
+      end
+
+    end
+  
+    npids << primary_person.npid unless primary_person.npid.blank?
+    npids = npids.uniq rescue []
+    
+    CouchdbPerson.find(secondary_doc_id).update_attributes(void_reason: void_reason: voided: 1)
+    secondary_person.update_attributes(void_reason: void_reason, voided: 1)
+
+
+    if primary_person.npid.blank? && !npids.blank?
+      begin
+        if npids[0].length == 6
+          primary_person.update_attributes(npid: npids[0])
+        end
+      rescue
+        ### to be completed 
       end
     end
-
-    couchdb_secondary_person = CouchdbPerson.find(secondary_doc_id)
-    couchdb_secondary_person.update_attributes(voided: true, void_reason: void_reason)
     
     return PersonService.get_person_obj(primary_person) 
   end

@@ -71,8 +71,8 @@ module ValidateParams
   
   def self.merge_people(params)
     missing_parameters = []
-    missing_parameters << "primary_npid" if params[:primary_npid].blank?
-    missing_parameters << "secondary_npid" if params[:secondary_npid].blank?
+    missing_parameters << "primary_person_doc_id" if params[:primary_person_doc_id].blank?
+    missing_parameters << "secondary_person_doc_id" if params[:secondary_person_doc_id].blank?
     
     return [] if missing_parameters.blank?
     return {status: 400, message: "Missing the following parameters: #{missing_parameters.join(', ')}"}
