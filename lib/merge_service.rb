@@ -46,7 +46,7 @@ module MergeService
     npids << primary_person.npid unless primary_person.npid.blank?
     npids = npids.uniq rescue []
     
-    CouchdbPerson.find(secondary_doc_id).update_attributes(void_reason: void_reason: voided: 1)
+    CouchdbPerson.find(secondary_doc_id).update_attributes(void_reason: void_reason, voided: 1)
     secondary_person.update_attributes(void_reason: void_reason, voided: 1)
 
 
