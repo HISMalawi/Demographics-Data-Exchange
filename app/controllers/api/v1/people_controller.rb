@@ -85,7 +85,7 @@ class Api::V1::PeopleController < ApplicationController
   end
 
   def reassign_npid
-    person = PersonService.assign_npid(params)
+    person = PersonService.reassign_npid(params)
     render json: person
   end
 end

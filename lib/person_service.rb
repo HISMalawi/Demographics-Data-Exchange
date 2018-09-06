@@ -3,6 +3,19 @@ require "people_matching_service/elasticsearch_person_dao"
 require "people_matching_service/dde_person_transformer"
 
 module PersonService
+  
+  def self.reassign_npid(params)
+    couchdb_person = CouchdbPerson.find(params[:doc_id])
+    return {} if couchdb_person.blank?
+    person = Person.find_by_couchdb_person_id(couchdb_person.id)
+
+    couchdb_person.update_attributes(npid: nil)
+    person.update_attributes(npid: nil)
+
+    NpidService.assign_npid(couchdb_person)   
+    return self.get_person_obj(person)
+  end
+
   def self.assign_npid(params)
     couchdb_person = CouchdbPerson.find(params[:doc_id])
     return {} if couchdb_person.blank?
@@ -77,24 +90,7 @@ module PersonService
     if couchdb_person
       attributes = PersonAttributeService.create(params[:attributes], couchdb_person)
     end
-
-    count = 0
-
-    while (couchdb_person.npid.blank? == true) do
-      couchdb_person = CouchdbPerson.find(couchdb_person.id)
-      npids_assigned = (couchdb_person.npid.blank? == true ? false : true)
-      if (couchdb_person.npid.blank? == false)
-        return self.after_create_get_person_obj(couchdb_person, params[:attributes])
-        break
-      end
     
-      if count == 5000
-        puts "################## 1  #{couchdb_person.npid.blank?}"
-        break
-      end
-      count+= 1
-    end
-
     return self.after_create_get_person_obj(couchdb_person, params[:attributes])
   end
 
