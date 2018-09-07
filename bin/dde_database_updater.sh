@@ -1,14 +1,6 @@
 #!/bin/bash
 ENV=$1
 
-
-
-Updatecouchdbrole () {
-  key='_id';
-  value=$(echo $1 | sed 's/{.*\'$key'":"*\([0-9a-zA-Z|.|_|-|\/]*\)"*,*.*}/\1/');
-  echo $value
-}
-
 MYSQL_USERNAME=`ruby -ryaml -e "puts YAML::load_file('../config/database.yml')['${ENV}']['username']"`
 MYSQL_PASSWORD=`ruby -ryaml -e "puts YAML::load_file('../config/database.yml')['${ENV}']['password']"`
 MYSQL_DATABASE=`ruby -ryaml -e "puts YAML::load_file('../config/database.yml')['${ENV}']['database']"`
@@ -22,6 +14,24 @@ COUCH_HOST=`ruby -ryaml -e "puts YAML::load_file('../config/couchdb.yml')['${ENV
 COUCH_PORT=`ruby -ryaml -e "puts YAML::load_file('../config/couchdb.yml')['${ENV}']['port']"`
 COUCH_PROTOCOL=`ruby -ryaml -e "puts YAML::load_file('../config/couchdb.yml')['${ENV}']['protocol']"`
 COUCH_DATABASE=${COUCH_PREFIX}_${COUCH_SUFFIX}
+
+
+
+Updatecouchdbrole () {
+  echo "$1" > ../log/current_doc.txt
+  CURR_DOC_ID=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['_id']"`;
+  CURR_DOC_ROLE=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['role']"`;
+  CURR_DOC_DESC=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['_id']"`;
+  SELECT_QUERY="SELECT * FROM roles WHERE couchdb_role_id = '${CURR_DOC_ID}';";
+  
+  RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SELECT_QUERY"`; 
+  echo $RESULT
+  if [[ $RESULT = *"role_id"* ]] ; then
+    echo "Update"
+  else
+    echo "Insert"
+  fi
+}
 
 # Check if last_sequence.txt file exists
 if [ ! -x ../log/last_sequence.txt ] ; then
@@ -53,7 +63,7 @@ do
     DOC=`curl "${COUCH_PROTOCOL}://${COUCH_HOST}:${COUCH_PORT}/${COUCH_DATABASE}/${DOC_ID}"`;
 
     if [[ $DOC = *"CouchdbRole"* ]] ; then
-      Updatecouchdbrole $DOC;
+      Updatecouchdbrole "$DOC"
     fi
     exit;
   fi
