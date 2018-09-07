@@ -21,17 +21,35 @@ Updatecouchdbrole () {
   echo "$1" > ../log/current_doc.txt
   CURR_DOC_ID=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['_id']"`;
   CURR_DOC_ROLE=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['role']"`;
-  CURR_DOC_DESC=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['_id']"`;
-  SELECT_QUERY="SELECT * FROM roles WHERE couchdb_role_id = '${CURR_DOC_ID}';";
+  CURR_DOC_DESC=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['description']"`;
+  SQL_QUERY="SELECT * FROM roles WHERE couchdb_role_id = '${CURR_DOC_ID}';";
   
-  RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SELECT_QUERY"`; 
+  RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
   echo $RESULT
   if [[ $RESULT = *"role_id"* ]] ; then
-    echo "Update"
+    SQL_QUERY="UPDATE roles SET role=\"${CURR_DOC_ROLE}\", description=\"${CURR_DOC_DESC}\" WHERE couchdb_role_id = \"${CURR_DOC_ID}\""; 
   else
-    echo "Insert"
+    SQL_QUERY="INSERT INTO roles (role_id, couchdb_role_id, role, description, created_at, updated_at) VALUES(NULL, \"${CURR_DOC_ID}\",\"${CURR_DOC_ROLE}\",\"${CURR_DOC_DESC}\",\"$(echo date)\",\"$(echo date)\")";
   fi
+
+  `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
+  echo "UPDATED: ${CURR_DOC_ID} ...${SQL_QUERY}" 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # Check if last_sequence.txt file exists
 if [ ! -x ../log/last_sequence.txt ] ; then
