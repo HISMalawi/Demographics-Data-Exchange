@@ -104,13 +104,13 @@ UpdatecouchdbPerson () {
   RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
   if [[ ! -z "${LOCATION_ID}" ]] ; then
     if [[ ! -z "${RESULT}" ]] ; then
-      SQL_QUERY="UPDATE people SET given_name=\"${CURR_GIVEN_NAME}\", middle_name=\"${CURR_DOC_MIDDLE_NAME}\","
+      SQL_QUERY="UPDATE people SET given_name=\"${CURR_DOC_GIVEN_NAME}\", middle_name=\"${CURR_DOC_MIDDLE_NAME}\","
       SQL_QUERY="$SQL_QUERY family_name=\"${CURR_DOC_FAMILY_NAME}\", gender=\"${CURR_DOC_GENDER}\","
       SQL_QUERY="$SQL_QUERY birthdate=\"${CURR_DOC_BIRTHDATE}\", birthdate_estimated=\"${CURR_DOC_BIRTHDATE_EST}\","
       SQL_QUERY="$SQL_QUERY died=\"${CURR_DOC_DIED}\", deathdate=\"${CURR_DOC_DEATHDATE}\", deathdate_estimated=\"${CURR_DOC_DEATHDATE_EST}\","
       SQL_QUERY="$SQL_QUERY voided=\"${CURR_DOC_VOIDED}\", date_voided=\"${CURR_DOC_DATE_VOIDED}\", void_reason=\"${CURR_DOC_VOID_REASON}\","
       SQL_QUERY="$SQL_QUERY npid=\"${CURR_DOC_NPID}\", location_created_at=\"${CURR_DOC_LOCATION_CREATED}\","
-      SQL_QUERY="$SQL_QUERY creator=\"${USER_ID}\", created_at=\"${CURR_DOC_CREATED_AT}\", updated_at=\"$(echo date)\");"
+      SQL_QUERY="$SQL_QUERY creator=\"${USER_ID}\", created_at=\"${CURR_DOC_CREATED_AT}\", updated_at=\"$(echo date)\";"
       echo $SQL_QUERY
     
       echo "UPDATING: ${CURR_DOC_ID}" 
@@ -181,17 +181,17 @@ do
     DOC_ID=`echo "${DOC_ID//,}"`;
     DOC_ID=`echo "${DOC_ID//\"}"`;
     DOC=`curl "${COUCH_PROTOCOL}://${COUCH_HOST}:${COUCH_PORT}/${COUCH_DATABASE}/${DOC_ID}"`;
+    echo "$DOC" > ../log/current_doc.txt
+    TYPE=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['type']"`;
 
-    if [[ $DOC = *"CouchdbRole"* ]] ; then
+    if [[ $TYPE = "CouchdbRole" ]] ; then
       Updatecouchdbrole "$DOC"
     fi
-    if [[ $DOC = *"CouchdbUser"* ]] ; then
+    if [[ $TYPE = "CouchdbUser" ]] ; then
       Updatecouchdbuser "$DOC"
     fi
-    if [[ $DOC = "CouchdbPerson" ]] ; then
-      echo $DOC
+    if [[ $TYPE = "CouchdbPerson" ]] ; then
       UpdatecouchdbPerson "$DOC"
-      exit
     fi
     #exit;
   fi
