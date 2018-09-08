@@ -15,12 +15,22 @@ COUCH_PORT=`ruby -ryaml -e "puts YAML::load_file('../config/couchdb.yml')['${ENV
 COUCH_PROTOCOL=`ruby -ryaml -e "puts YAML::load_file('../config/couchdb.yml')['${ENV}']['protocol']"`
 COUCH_DATABASE=${COUCH_PREFIX}_${COUCH_SUFFIX}
 
+get_mysql_person_id_from_couch_db () {
+  SQL_QUERY="SELECT person_id FROM people WHERE couchdb_person_id = '$1'"
+  SQL_RESULTS=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
+  PERSON_ID=`echo $SQL_RESULTS | awk '{split($0,a," "); print a[2]}'`;
+}
+
+get_mysql_person_attribute_type_id_from_couch_db () {
+  SQL_QUERY="SELECT person_attribute_type_id FROM person_attribute_types WHERE couchdb_person_attribute_type_id = '$1'"
+  SQL_RESULTS=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
+  PERSON_ATTRIBUTE_TYPE_ID=`echo $SQL_RESULTS | awk '{split($0,a," "); print a[2]}'`;
+}
+
 get_mysql_location_from_couchdb () {
   SQL_QUERY="SELECT location_id FROM locations WHERE couchdb_location_id = '$1'"
   SQL_RESULTS=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
   LOCATION_ID=`echo $SQL_RESULTS | awk '{split($0,a," "); print a[2]}'`;
-
-  # echo ${SQL_RESULTS}
 }
 get_mysql_user_id_from_couchdb () {
   SQL_QUERY="SELECT user_id FROM users WHERE couchdb_user_id = '$1'"
@@ -36,7 +46,7 @@ Updatecouchdbrole () {
   SQL_QUERY="SELECT * FROM roles WHERE couchdb_role_id = '${CURR_DOC_ID}';";
   
   RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
-  echo $RESULT
+
   if [[ $RESULT = *"role_id"* ]] ; then
     SQL_QUERY="UPDATE roles SET role=\"${CURR_DOC_ROLE}\", description=\"${CURR_DOC_DESC}\" WHERE couchdb_role_id = \"${CURR_DOC_ID}\""; 
   else
@@ -60,10 +70,10 @@ Updatecouchdbuser () {
   CURR_DOC_CREATED_AT=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['created_at']"`;
   
   get_mysql_location_from_couchdb "${CURR_DOC_LOCATION_ID}";
-  #MYSQL_LOCATION_ID=$?
   
   SQL_QUERY="SELECT * FROM users WHERE couchdb_user_id = '${CURR_DOC_ID}';";
   RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
+
   if [[ ! -z "$LOCATION_ID" ]] ; then
     if [[ ! -z "$RESULT" ]] ; then
       SQL_QUERY="UPDATE users SET username=\"${CURR_DOC_USERNAME}\", email=\"${CURR_DOC_EMAIL}\", password_digest=\"${CURR_DOC_PASSWORD}\", couchdb_location_id=\"${CURR_DOC_LOCATION_ID}\", location_id=\"${LOCATION_ID}\",voided=\"${CURR_DOC_VOIDED}\", void_reason=\"${CURR_DOC_VOID_REASON}\" WHERE couchdb_user_id = \"${CURR_DOC_ID}\";"
@@ -95,13 +105,13 @@ UpdatecouchdbPerson () {
   CURR_DOC_LOCATION_CREATED=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['location_created_at']"`;
   CURR_DOC_CREATOR=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['creator']"`;
   CURR_DOC_CREATED_AT=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['created_at']"`;
-  echo $CURR_DOC_FAMILY_NAME
     
   get_mysql_location_from_couchdb "${CURR_DOC_LOCATION_ID}";
   get_mysql_user_id_from_couchdb "${CURR_DOC_CREATOR}"
 
   SQL_QUERY="SELECT * FROM people WHERE couchdb_person_id = '${CURR_DOC_ID}';";
   RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
+
   if [[ ! -z "${LOCATION_ID}" ]] ; then
     if [[ ! -z "${RESULT}" ]] ; then
       SQL_QUERY="UPDATE people SET given_name=\"${CURR_DOC_GIVEN_NAME}\", middle_name=\"${CURR_DOC_MIDDLE_NAME}\","
@@ -111,9 +121,8 @@ UpdatecouchdbPerson () {
       SQL_QUERY="$SQL_QUERY voided=\"${CURR_DOC_VOIDED}\", date_voided=\"${CURR_DOC_DATE_VOIDED}\", void_reason=\"${CURR_DOC_VOID_REASON}\","
       SQL_QUERY="$SQL_QUERY npid=\"${CURR_DOC_NPID}\", location_created_at=\"${CURR_DOC_LOCATION_CREATED}\","
       SQL_QUERY="$SQL_QUERY creator=\"${USER_ID}\", created_at=\"${CURR_DOC_CREATED_AT}\", updated_at=\"$(echo date)\";"
-      echo $SQL_QUERY
     
-      echo "UPDATING: ${CURR_DOC_ID}" 
+      echo "UPDATING PERSON: ${CURR_DOC_ID}" 
     else
       SQL_QUERY="INSERT INTO people (couchdb_person_id, given_name, middle_name, family_name, gender, birthdate,"
       SQL_QUERY="$SQL_QUERY birthdate_estimated, died, deathdate, deathdate_estimated,npid, location_created_at,"
@@ -124,11 +133,91 @@ UpdatecouchdbPerson () {
       SQL_QUERY="$SQL_QUERY \"${CURR_DOC_DEATHDATE_EST}\",\"${CURR_DOC_NPID}\", \"${CURR_DOC_LOCATION_CREATED}\","
       SQL_QUERY="$SQL_QUERY \"${CURR_DOC_CREATED_AT}\", \"${CURR_DOC_UPDATED_AT}\", \"${CURR_DOC_VOIDED}\","
       SQL_QUERY="$SQL_QUERY \"${CURR_DOC_VOID_REASON}\", \"${CURR_DOC_DATE_VOIDED}\")";
-      echo "CREATING: ${CURR_DOC_ID}" 
+
+      echo "CREATING PERSON: ${CURR_DOC_ID}" 
     fi
     `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
   fi
   
+}
+
+UpdatecouchdbPersonAttribute () {
+  echo "$1" > ../log/current_doc.txt
+  CURR_DOC_ID=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['_id']"`;
+  CURR_DOC_PERSON_ATTR_TYPE=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['person_attribute_type_id']"`;
+  CURR_DOC_PERSON=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['person_id']"`;
+  CURR_DOC_VALUE=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['value']"`;
+  CURR_DOC_VOIDED=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['voided']"`;
+  CURR_DOC_VOID_REASON=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['void_reason']"`;
+
+  get_mysql_person_attribute_type_id_from_couch_db "${CURR_DOC_PERSON_ATTR_TYPE}"
+  get_mysql_person_id_from_couch_db "${CURR_DOC_PERSON}"
+
+  SQL_QUERY="SELECT * FROM person_attributes WHERE person_id = '${PERSON_ID}' and attribute_type_id = '${PERSON_ATTRIBUTE_TYPE_ID}';";
+  RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
+
+  if [[ ! -z "${PERSON_ID}" ]] ; then
+    if [[ ! -z "${RESULT}" ]] ; then
+      SQL_QUERY="UPDATE person_attributes SET value=\"${CURR_DOC_VALUE}\", voided=\"${CURR_DOC_VOIDED}\", void_reason=\"${CURR_VOID_REASON}\";"
+      
+      echo "UPDATING PERSON ATTRIBUTE: ${CURR_DOC_ID}" 
+    else
+      SQL_QUERY="INSERT INTO person_attributes (person_id, couchdb_person_id, couchdb_person_attribute_type_id,"
+      SQL_QUERY="${SQL_QUERY} couchdb_person_attribute_id, voided, void_reason, person_attribute_type_id, value) "
+      SQL_QUERY="${SQL_QUERY} VALUES(\"${PERSON_ID}\", \"${CURR_DOC_PERSON}\", \"${CURR_DOC_PERSON_ATTR_TYPE}\","
+      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_ID}\", \"${CURR_DOC_VOIDED}\", \"${CURR_DOC_VOID_REASON}\","
+      SQL_QUERY="${SQL_QUERY} \"${PERSON_ATTRIBUTE_TYPE_ID}\",\"${CURR_DOC_VALUE}\");"
+      
+      echo "INSERTING PERSON ATTRIBUTE: ${CURR_DOC_ID}" 
+    fi
+    `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
+  fi  
+}
+
+UpdatecouchdbLocationNpid () {
+  echo "$1" > ../log/current_doc.txt
+  CURR_DOC_ID=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['_id']"`;
+  CURR_DOC_NPID=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['npid']"`;
+  CURR_DOC_ASSIGNED=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['assigned']"`;
+  CURR_DOC_LOCATION=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['location_id']"`;
+  
+  get_mysql_location_from_couchdb "${CURR_DOC_LOCATION}"
+  
+  SQL_QUERY="SELECT * FROM location_npids WHERE couchdb_location_npid_id = '${CURR_DOC_ID}';";
+  RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
+  
+  if [[ ! -z "${LOCATION_ID}" ]] ; then
+    if [[ ! -z "${RESULT}" ]] ; then
+      SQL_QUERY="UPDATE location_npids SET npid=\"${CURR_DOC_NPID}\", couchdb_location_id=\"${CURR_DOC_LOCATION}\","
+      SQL_QUERY="${SQL_QUERY} location_id=\"${LOCATION_ID}\", assigned=\"${CURR_DOC_ASSIGNED}\";"
+      
+      echo "UPDATING LOCATION NPID: ${CURR_DOC_ID}" 
+    else
+      SQL_QUERY="INSERT INTO location_npids (npid, couchdb_location_id, location_id, couchdb_location_npid_id)"
+      SQL_QUERY="${SQL_QUERY} VALUES(\"${CURR_DOC_NPID}\", \"${CURR_DOC_LOCATION}\", \"${LOCATION_ID}\","
+      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_ID}\");"
+
+      echo "CREATING LOCATION NPID: ${CURR_DOC_ID}" 
+    fi
+    `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
+  fi
+
+}
+
+UpdatecouchdbFootPrint () {
+  echo "$1" > ../log/current_doc.txt
+  CURR_DOC_ID=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['_id']"`;
+  CURR_DOC_USER=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['user_id']"`;
+  CURR_DOC_PERSON=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['person_id']"`;
+
+  get_mysql_person_id_from_couch_db "${CURR_DOC_PERSON}"
+  get_mysql_user_id_from_couchdb "${CURR_DOC_USER}"
+
+  SQL_QUERY="INSERT INTO footprints (couchdb_foot_print_id, user_id, couchdb_user_id, person_id, couchdb_person_id)"
+  SQL_QUERY="${SQL_QUERY} VALUE(\"${CURR_DOC_ID}\", \"${USER_ID}\", \"${CURR_DOC_USER}\", \"${PERSON_ID}\", \"${CURR_DOC_PERSON}\");"
+    
+  `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
+
 }
 
 
@@ -187,11 +276,25 @@ do
     if [[ $TYPE = "CouchdbRole" ]] ; then
       Updatecouchdbrole "$DOC"
     fi
+    
     if [[ $TYPE = "CouchdbUser" ]] ; then
       Updatecouchdbuser "$DOC"
     fi
+    
     if [[ $TYPE = "CouchdbPerson" ]] ; then
       UpdatecouchdbPerson "$DOC"
+    fi
+    
+    if [[ $TYPE = "CouchdbPersonAttribute" ]] ; then
+      UpdatecouchdbPersonAttribute "$DOC"
+    fi
+    
+    if [[ $TYPE = "CouchdbLocationNpid" ]] ; then
+      UpdatecouchdbLocationNpid "$DOC"
+    fi
+    
+    if [[ $TYPE = "CouchdbFootPrint" ]] ; then
+      UpdatecouchdbFootPrint "$DOC"
     fi
     #exit;
   fi
