@@ -296,7 +296,7 @@ do
     if [[ $TYPE = "CouchdbFootPrint" ]] ; then
       UpdatecouchdbFootPrint "$DOC"
     fi
-    #exit;
+    echo "Updated record:  ${DOC_ID}";
   fi
 done
 
