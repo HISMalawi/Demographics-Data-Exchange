@@ -79,7 +79,7 @@ Updatecouchdbuser () {
       SQL_QUERY="UPDATE users SET username=\"${CURR_DOC_USERNAME}\", email=\"${CURR_DOC_EMAIL}\", password_digest=\"${CURR_DOC_PASSWORD}\", couchdb_location_id=\"${CURR_DOC_LOCATION_ID}\", location_id=\"${LOCATION_ID}\",voided=\"${CURR_DOC_VOIDED}\", void_reason=\"${CURR_DOC_VOID_REASON}\" WHERE couchdb_user_id = \"${CURR_DOC_ID}\";"
       echo "UPDATING: ${CURR_DOC_ID}" 
     else
-      SQL_QUERY="INSERT INTO users (couchdb_user_id, username, email, password_digest, couch_location_id, location_id)VALUES(\"${CURR_DOC_ID}\",\"${CURR_DOC_USERNAME}\",\"${CURR_DOC_EMAIL}\",\"${CURR_DOC_PASSWORD}\",\"${CURR_DOC_LOCATION_ID}\",\"${LOCATION_ID}\");"
+      SQL_QUERY="INSERT INTO users (couchdb_user_id, username, email, password_digest, couchdb_location_id, location_id)VALUES(\"${CURR_DOC_ID}\",\"${CURR_DOC_USERNAME}\",\"${CURR_DOC_EMAIL}\",\"${CURR_DOC_PASSWORD}\",\"${CURR_DOC_LOCATION_ID}\",\"${LOCATION_ID}\");"
       echo "CREATING: ${CURR_DOC_ID}" 
     fi
 
@@ -153,7 +153,7 @@ UpdatecouchdbPersonAttribute () {
   get_mysql_person_attribute_type_id_from_couch_db "${CURR_DOC_PERSON_ATTR_TYPE}"
   get_mysql_person_id_from_couch_db "${CURR_DOC_PERSON}"
 
-  SQL_QUERY="SELECT * FROM person_attributes WHERE person_id = '${PERSON_ID}' and attribute_type_id = '${PERSON_ATTRIBUTE_TYPE_ID}';";
+  SQL_QUERY="SELECT * FROM person_attributes WHERE person_id = '${PERSON_ID}' and person_attribute_type_id = '${PERSON_ATTRIBUTE_TYPE_ID}';";
   RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
 
   if [[ ! -z "${PERSON_ID}" ]] ; then
@@ -185,7 +185,7 @@ UpdatecouchdbLocationNpid () {
   
   SQL_QUERY="SELECT * FROM location_npids WHERE couchdb_location_npid_id = '${CURR_DOC_ID}';";
   RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
-  
+  echo $RESULT 
   if [[ ! -z "${LOCATION_ID}" ]] ; then
     if [[ ! -z "${RESULT}" ]] ; then
       SQL_QUERY="UPDATE location_npids SET npid=\"${CURR_DOC_NPID}\", couchdb_location_id=\"${CURR_DOC_LOCATION}\","
@@ -243,7 +243,7 @@ UpdatecouchdbFootPrint () {
 
 
 # Check if last_sequence.txt file exists
-if [ ! -x ../log/last_sequence.txt ] ; then
+if [ ! -e ../log/last_sequence.txt ] ; then
     touch ../log/last_sequence.txt
     echo "last_seq: 0" > ../log/last_sequence.txt
 fi
@@ -300,8 +300,8 @@ do
   fi
 done
 
-
-
+LAST_SEQ=`ruby -ryaml -e "puts YAML::load_file('../log/latest_coucdb_docs.txt')['last_seq']"`;
+echo "last_seq: ${LAST_SEQ}" > ../log/last_sequence.txt
 
 exit;
 
