@@ -118,7 +118,20 @@ UpdatecouchdbPerson () {
   CURR_DOC_LOCATION_CREATED=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['location_created_at']"`;
   CURR_DOC_CREATOR=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['creator']"`;
   CURR_DOC_CREATED_AT=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['created_at']"`;
+  UPDATED_AT=`echo date`
+
+  if [[ -z "${CURR_DOC_DEATHDATE}" ]] ; then
+    CURR_DOC_DEATHDATE="NULL"
+  fi
     
+  if [[ -z "${CURR_DOC_DATE_VOIDED}" ]] ; then
+    CURR_DOC_DATE_VOIDED="NULL"
+  fi
+  
+  if [[ -z "${CURR_DOC_DEATHDATE}" ]] ; then
+    CURR_DOC_DEATHDATE="NULL"
+  fi
+
   get_mysql_location_from_couchdb "${CURR_DOC_LOCATION_CREATED}";
   get_mysql_user_id_from_couchdb "${CURR_DOC_CREATOR}"
 
@@ -133,7 +146,7 @@ UpdatecouchdbPerson () {
       SQL_QUERY="$SQL_QUERY died=\"${CURR_DOC_DIED}\", deathdate=\"${CURR_DOC_DEATHDATE}\", deathdate_estimated=\"${CURR_DOC_DEATHDATE_EST}\","
       SQL_QUERY="$SQL_QUERY voided=\"${CURR_DOC_VOIDED}\", date_voided=\"${CURR_DOC_DATE_VOIDED}\", void_reason=\"${CURR_DOC_VOID_REASON}\","
       SQL_QUERY="$SQL_QUERY npid=\"${CURR_DOC_NPID}\", location_created_at=\"${CURR_DOC_LOCATION_CREATED}\","
-      SQL_QUERY="$SQL_QUERY creator=\"${USER_ID}\", created_at=\"${CURR_DOC_CREATED_AT}\", updated_at=\"$(echo date)\";"
+      SQL_QUERY="$SQL_QUERY creator=\"${USER_ID}\", created_at=\"${CURR_DOC_CREATED_AT}\", updated_at=\"${UPDATED_AT}\";"
     
       echo "UPDATING PERSON: ${CURR_DOC_ID}" 
     else
