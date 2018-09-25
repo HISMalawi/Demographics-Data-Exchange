@@ -6,9 +6,19 @@ module PersonAttributeService
     #occupation .... 
     if !params[:occupation].blank?
       attribute_type = PersonAttributeType.find_by_name('Occupation')
+      ## Create attributes in couchdb
       attribute = CouchdbPersonAttribute.create(value: params[:occupation], 
         person_id: couchdb_person.id,
         person_attribute_type_id: attribute_type.couchdb_person_attribute_type_id)
+      ## Create attributes in MySQL.
+      person = Person.find_by_couchdb_person_id(couchdb_person.id)
+      PersonAttribute.create(couchdb_person_id: couchdb_person.id,
+        value: params[:occupation], 
+        person_id: person.id,
+        couchdb_person_attribute_type_id: attribute_type.couchdb_person_attribute_type_id,
+        person_attribute_type_id: attribute_type.id,
+        couchdb_person_attribute_id: attribute.id)
+
       attributes << [attribute_type.name, attribute.value]
     end  
 
