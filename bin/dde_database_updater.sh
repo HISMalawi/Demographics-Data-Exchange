@@ -120,10 +120,10 @@ UpdatecouchdbPerson () {
   CURR_DOC_CREATED_AT=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['created_at']"`;
   CURR_DOC_UPDATED_AT=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['updated_at']"`;
 
-  if [[ -z "${CURR_DOC_DEATHDATE}" ]] ; then
-    CURR_DOC_DEATHDATE="NULL"
+  if [[ -z "${CURR_DOC_BIRTHDATE}" ]] ; then
+    CURR_DOC_BIRTHDATE="NULL"
   else
-    CURR_DOC_DEATHDATE="\"${CURR_DOC_DEATHDATE}\""
+    CURR_DOC_BIRTHDATE="\"${CURR_DOC_BIRTHDATE}\""
   fi
     
   if [[ -z "${CURR_DOC_DATE_VOIDED}" ]] ; then
@@ -132,10 +132,10 @@ UpdatecouchdbPerson () {
     CURR_DOC_DATE_VOIDED="\"${CURR_DOC_DATE_VOIDED}\""
   fi
   
-  if [[ -z "${CURR_DOC_DEATHDATE}" ]] ; then
-    CURR_DOC_DEATHDATE="NULL"
-  else
+  if [[ ! -z "${CURR_DOC_DEATHDATE}" ]] ; then
     CURR_DOC_DEATHDATE="\"${CURR_DOC_DEATHDATE}\""
+  else
+    CURR_DOC_DEATHDATE="NULL"
   fi
 
   get_mysql_location_from_couchdb "${CURR_DOC_LOCATION_CREATED}";
@@ -154,6 +154,7 @@ UpdatecouchdbPerson () {
       SQL_QUERY="$SQL_QUERY npid=\"${CURR_DOC_NPID}\", location_created_at=\"${CURR_DOC_LOCATION_CREATED}\","
       SQL_QUERY="$SQL_QUERY creator=\"${USER_ID}\", created_at=\"${CURR_DOC_CREATED_AT}\", updated_at=\"${CURR_DOC_UPDATED_AT}\""
       SQL_QUERY="$SQL_QUERY WHERE couchdb_person_id = \"${CURR_DOC_ID}\";"
+      echo $SQL_QUERY
     
       echo "UPDATING PERSON: ${CURR_DOC_ID}" 
     else
@@ -161,12 +162,12 @@ UpdatecouchdbPerson () {
       SQL_QUERY="$SQL_QUERY birthdate_estimated, died, deathdate, deathdate_estimated,npid, location_created_at,"
       SQL_QUERY="$SQL_QUERY created_at, updated_at, voided, void_reason, date_voided) "
       SQL_QUERY="$SQL_QUERY VALUES(\"${CURR_DOC_ID}\",\"${CURR_DOC_GIVEN_NAME}\", \"${CURR_DOC_MIDDLE_NAME}\","
-      SQL_QUERY="$SQL_QUERY \"${CURR_DOC_FAMILY_NAME}\", \"${CURR_DOC_GENDER}\", \"${CURR_DOC_BIRTHDATE}\", "
-      SQL_QUERY="$SQL_QUERY ${CURR_DOC_BIRTHDATE_EST}, ${CURR_DOC_DIED}, \"${CURR_DOC_DEATHDATE}\","
+      SQL_QUERY="$SQL_QUERY \"${CURR_DOC_FAMILY_NAME}\", \"${CURR_DOC_GENDER}\", ${CURR_DOC_BIRTHDATE}, "
+      SQL_QUERY="$SQL_QUERY ${CURR_DOC_BIRTHDATE_EST}, ${CURR_DOC_DIED}, ${CURR_DOC_DEATHDATE},"
       SQL_QUERY="$SQL_QUERY ${CURR_DOC_DEATHDATE_EST},\"${CURR_DOC_NPID}\", \"${CURR_DOC_LOCATION_CREATED}\","
       SQL_QUERY="$SQL_QUERY \"${CURR_DOC_CREATED_AT}\", \"${CURR_DOC_UPDATED_AT}\", ${CURR_DOC_VOIDED},"
       SQL_QUERY="$SQL_QUERY \"${CURR_DOC_VOID_REASON}\", \"${CURR_DOC_DATE_VOIDED}\")";
-
+      echo $SQL_QUERY
       echo "CREATING PERSON: ${CURR_DOC_ID}" 
     fi
     `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
