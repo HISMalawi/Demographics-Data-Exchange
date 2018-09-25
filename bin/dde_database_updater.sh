@@ -154,7 +154,6 @@ UpdatecouchdbPerson () {
       SQL_QUERY="$SQL_QUERY npid=\"${CURR_DOC_NPID}\", location_created_at=\"${CURR_DOC_LOCATION_CREATED}\","
       SQL_QUERY="$SQL_QUERY creator=\"${USER_ID}\", created_at=\"${CURR_DOC_CREATED_AT}\", updated_at=\"${CURR_DOC_UPDATED_AT}\""
       SQL_QUERY="$SQL_QUERY WHERE couchdb_person_id = \"${CURR_DOC_ID}\";"
-      echo $SQL_QUERY
     
       echo "UPDATING PERSON: ${CURR_DOC_ID}" 
     else
@@ -167,7 +166,7 @@ UpdatecouchdbPerson () {
       SQL_QUERY="$SQL_QUERY ${CURR_DOC_DEATHDATE_EST},\"${CURR_DOC_NPID}\", \"${CURR_DOC_LOCATION_CREATED}\","
       SQL_QUERY="$SQL_QUERY \"${CURR_DOC_CREATED_AT}\", \"${CURR_DOC_UPDATED_AT}\", ${CURR_DOC_VOIDED},"
       SQL_QUERY="$SQL_QUERY \"${CURR_DOC_VOID_REASON}\", \"${CURR_DOC_DATE_VOIDED}\")";
-      echo $SQL_QUERY
+
       echo "CREATING PERSON: ${CURR_DOC_ID}" 
     fi
     `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
