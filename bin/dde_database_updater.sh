@@ -88,11 +88,20 @@ Updatecouchdbuser () {
 
   if [[ ! -z "$LOCATION_ID" ]] ; then
     if [[ ! -z "$RESULT" ]] ; then
-      SQL_QUERY="UPDATE users SET username=\"${CURR_DOC_USERNAME}\", email=\"${CURR_DOC_EMAIL}\", password_digest=\"${CURR_DOC_PASSWORD}\", couchdb_location_id=\"${CURR_DOC_LOCATION_ID}\", location_id=\"${LOCATION_ID}\",voided=\"${CURR_DOC_VOIDED}\", void_reason=\"${CURR_DOC_VOID_REASON}\" WHERE couchdb_user_id = \"${CURR_DOC_ID}\";"
-      echo "UPDATING: ${CURR_DOC_ID}" 
+      SQL_QUERY="UPDATE users SET username=\"${CURR_DOC_USERNAME}\", email=\"${CURR_DOC_EMAIL}\","
+      SQL_QUERY="${SQL_QUERY} password_digest=\"${CURR_DOC_PASSWORD}\", couchdb_location_id=\"${CURR_DOC_LOCATION_ID}\","
+      SQL_QUERY="${SQL_QUERY} location_id=\"${LOCATION_ID}\",voided=${CURR_DOC_VOIDED},"
+      SQL_QUERY="${SQL_QURY} void_reason=\"${CURR_DOC_VOID_REASON}\" WHERE couchdb_user_id = \"${CURR_DOC_ID}\";"
+      
+      echo "UPDATING USER: ${CURR_DOC_ID}" 
     else
-      SQL_QUERY="INSERT INTO users (couchdb_user_id, username, email, password_digest, couchdb_location_id, location_id)VALUES(\"${CURR_DOC_ID}\",\"${CURR_DOC_USERNAME}\",\"${CURR_DOC_EMAIL}\",\"${CURR_DOC_PASSWORD}\",\"${CURR_DOC_LOCATION_ID}\",\"${LOCATION_ID}\");"
-      echo "CREATING: ${CURR_DOC_ID}" 
+      SQL_QUERY="INSERT INTO users (couchdb_user_id, username, email, password_digest, couchdb_location_id,"
+      SQL_QUERY="${SQL_QUERY} location_id, voided, void_reason,created_at,updated_at) VALUES(\"${CURR_DOC_ID}\","
+      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_USERNAME}\",\"${CURR_DOC_EMAIL}\",\"${CURR_DOC_PASSWORD}\","
+      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_LOCATION_ID}\",\"${LOCATION_ID}\", ${CURR_DOC_VOIDED},"
+      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_VOID_REASON}\",\"${CURR_DOC_CREATED_AT}\",${CURR_DOC_UPDATED_AT});"
+
+      echo "CREATING USER: ${CURR_DOC_ID}" 
     fi
 
     `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
