@@ -194,7 +194,7 @@ UpdatecouchdbPersonAttribute () {
   if [[ ! -z "${PERSON_ID}" ]] ; then
     if [[ ! -z "${RESULT}" ]] ; then
       SQL_QUERY="UPDATE person_attributes SET value=\"${CURR_DOC_VALUE}\", voided=${CURR_DOC_VOIDED},"
-      SQL_QUERY="${SQL_QUERY} void_reason=\"${CURR_VOID_REASON}\" created_at=\"${CURR_DOC_CREATED_AT}\""
+      SQL_QUERY="${SQL_QUERY} void_reason=\"${CURR_VOID_REASON}\", created_at=\"${CURR_DOC_CREATED_AT}\","
       SQL_QUERY="${SQL_QUERY} updated_at=\"${CURR_DOC_UPDATED_AT}\" WHERE person_id = \"${PERSON_ID}\""
       SQL_QUERY="${SQL_QUERY} and person_attribute_type_id = \"${PERSON_ATTRIBUTE_TYPE_ID}\";"
       
