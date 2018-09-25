@@ -253,12 +253,17 @@ UpdatecouchdbFootPrint () {
   CURR_DOC_ID=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['_id']"`;
   CURR_DOC_USER=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['user_id']"`;
   CURR_DOC_PERSON=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['person_id']"`;
+  CURR_DOC_CREATED_AT=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['created_at']"`;
+  CURR_DOC_UPDATED_AT=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['updated_at']"`;
 
   get_mysql_person_id_from_couch_db "${CURR_DOC_PERSON}"
   get_mysql_user_id_from_couchdb "${CURR_DOC_USER}"
 
-  SQL_QUERY="INSERT INTO foot_prints (couchdb_foot_print_id, user_id, couchdb_user_id, person_id, couchdb_person_id)"
-  SQL_QUERY="${SQL_QUERY} VALUE(\"${CURR_DOC_ID}\", \"${USER_ID}\", \"${CURR_DOC_USER}\", \"${PERSON_ID}\", \"${CURR_DOC_PERSON}\");"
+  SQL_QUERY="INSERT INTO foot_prints (couchdb_foot_print_id, user_id, couchdb_user_id, person_id,"
+  SQL_QUERY="${SQL_QUERY} couchdb_person_id, created_at, updated_at)"
+  SQL_QUERY="${SQL_QUERY} VALUE(\"${CURR_DOC_ID}\", \"${USER_ID}\", \"${CURR_DOC_USER}\","
+  SQL_QUERY="${SQL_QUERY} \"${PERSON_ID}\", \"${CURR_DOC_PERSON}\",\"${CURR_DOC_CREATED_AT}\","
+  SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_UPDATED_AT}\");"
     
   `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
 
