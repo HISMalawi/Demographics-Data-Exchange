@@ -257,7 +257,7 @@ UpdatecouchdbFootPrint () {
   get_mysql_person_id_from_couch_db "${CURR_DOC_PERSON}"
   get_mysql_user_id_from_couchdb "${CURR_DOC_USER}"
 
-  SQL_QUERY="INSERT INTO footprints (couchdb_foot_print_id, user_id, couchdb_user_id, person_id, couchdb_person_id)"
+  SQL_QUERY="INSERT INTO foot_prints (couchdb_foot_print_id, user_id, couchdb_user_id, person_id, couchdb_person_id)"
   SQL_QUERY="${SQL_QUERY} VALUE(\"${CURR_DOC_ID}\", \"${USER_ID}\", \"${CURR_DOC_USER}\", \"${PERSON_ID}\", \"${CURR_DOC_PERSON}\");"
     
   `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
