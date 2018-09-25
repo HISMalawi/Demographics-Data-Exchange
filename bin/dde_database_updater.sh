@@ -224,7 +224,7 @@ UpdatecouchdbLocationNpid () {
   
   SQL_QUERY="SELECT * FROM location_npids WHERE couchdb_location_npid_id = '${CURR_DOC_ID}';";
   RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
-  echo $RESULT 
+  
   if [[ ! -z "${LOCATION_ID}" ]] ; then
     if [[ ! -z "${RESULT}" ]] ; then
       SQL_QUERY="UPDATE location_npids SET npid=\"${CURR_DOC_NPID}\", couchdb_location_id=\"${CURR_DOC_LOCATION}\","
