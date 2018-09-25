@@ -201,10 +201,11 @@ UpdatecouchdbPersonAttribute () {
       echo "UPDATING PERSON ATTRIBUTE: ${CURR_DOC_ID}" 
     else
       SQL_QUERY="INSERT INTO person_attributes (person_id, couchdb_person_id, couchdb_person_attribute_type_id,"
-      SQL_QUERY="${SQL_QUERY} couchdb_person_attribute_id, voided, void_reason, person_attribute_type_id, value) "
-      SQL_QUERY="${SQL_QUERY} VALUES(\"${PERSON_ID}\", \"${CURR_DOC_PERSON}\", \"${CURR_DOC_PERSON_ATTR_TYPE}\","
-      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_ID}\", \"${CURR_DOC_VOIDED}\", \"${CURR_DOC_VOID_REASON}\","
-      SQL_QUERY="${SQL_QUERY} \"${PERSON_ATTRIBUTE_TYPE_ID}\",\"${CURR_DOC_VALUE}\");"
+      SQL_QUERY="${SQL_QUERY} couchdb_person_attribute_id, voided, void_reason, person_attribute_type_id, value,"
+      SQL_QUERY="${SQL_QUERY} created_at, updated_at) VALUES(\"${PERSON_ID}\", \"${CURR_DOC_PERSON}\","
+      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_PERSON_ATTR_TYPE}\",\"${CURR_DOC_ID}\", \"${CURR_DOC_VOIDED}\","
+      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_VOID_REASON}\",\"${PERSON_ATTRIBUTE_TYPE_ID}\",\"${CURR_DOC_VALUE}\","
+      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_CREATED_AT}\", \"${CURR_DOC_UPDATED_AT}\");"
       
       echo "INSERTING PERSON ATTRIBUTE: ${CURR_DOC_ID}" 
     fi
