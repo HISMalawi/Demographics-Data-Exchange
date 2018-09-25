@@ -321,11 +321,11 @@ echo "last_seq: ${LAST_SEQ}" > ../log/last_sequence.txt
 #REP_SIZE=`ruby -ryaml -e "puts YAML::load_file('../log/replication_status.txt')['size']"`;
 
 #if $REP_SIZE == 0 ; then
-SYNC_FROM_MASTER=`curl -s -k -H "Content-Type: application/json" -X POST -d "{'source': '${SOURCE_URL}', 'target': '${TARGET_URL}', 'connection_timeout': 60000, 'retries_per_request': 20, 'http_connections': 30, 'continuous': true }" "${AUTH_TARGET_URL}/_replicate"`
-echo SYNC_FROM_MASTER > ../log/replication_results.txt
+SYNC_FROM_MASTER=`eval curl -s -k -H \"Content-Type: application/json\" -X POST -d \'{\"source\": \"${SOURCE_URL}\", \"target\": \"${TARGET_URL}\", \"continuous\": true }\' \"${AUTH_TARGET_URL}/_replicate\"`
+echo $SYNC_FROM_MASTER > ../log/replication_results.txt
 REP_ID=`ruby -ryaml -e "puts YAML::load_file('../log/replication_results.txt')['_local_id']"`;
 
-SYNC_TO_MASTER=`curl -s -k -H 'Content-Type: application/json' -X POST -d { source: "${TARGET_URL}", target: "${SOURCE_URL}", connection_timeout: 60000, retries_per_request: 20, http_connections: 30, continuous: true } "${AUTH_SOURCE_URL}/_replicate"`
+SYNC_TO_MASTER=`evel curl -s -k -H \"Content-Type: application/json\" -X POST -d \'{\"source\": \"${TARGET_URL}\", \"target\": \"${SOURCE_URL}\", \"continuous\": true } \"${AUTH_SOURCE_URL}/_replicate\"`
 #else
 #fi
 
