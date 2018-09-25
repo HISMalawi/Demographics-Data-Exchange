@@ -325,7 +325,7 @@ SYNC_FROM_MASTER=`eval curl -s -k -H \"Content-Type: application/json\" -X POST 
 echo $SYNC_FROM_MASTER > ../log/replication_results.txt
 REP_ID=`ruby -ryaml -e "puts YAML::load_file('../log/replication_results.txt')['_local_id']"`;
 
-SYNC_TO_MASTER=`evel curl -s -k -H \"Content-Type: application/json\" -X POST -d \'{\"source\": \"${TARGET_URL}\", \"target\": \"${SOURCE_URL}\", \"continuous\": true } \"${AUTH_SOURCE_URL}/_replicate\"`
+SYNC_TO_MASTER=`eval curl -s -k -H \"Content-Type: application/json\" -X POST -d \'{\"source\": \"${TARGET_URL}\", \"target\": \"${SOURCE_URL}\", \"continuous\": true } \"${AUTH_SOURCE_URL}/_replicate\"`
 #else
 #fi
 
