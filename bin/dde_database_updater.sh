@@ -230,15 +230,15 @@ UpdatecouchdbLocationNpid () {
   if [[ ! -z "${LOCATION_ID}" ]] ; then
     if [[ ! -z "${RESULT}" ]] ; then
       SQL_QUERY="UPDATE location_npids SET npid=\"${CURR_DOC_NPID}\", couchdb_location_id=\"${CURR_DOC_LOCATION}\","
-      SQL_QUERY="${SQL_QUERY} location_id=\"${LOCATION_ID}\", assigned=\"${CURR_DOC_ASSIGNED}\","
+      SQL_QUERY="${SQL_QUERY} location_id=\"${LOCATION_ID}\", assigned=${CURR_DOC_ASSIGNED},"
       SQL_QUERY="${SQL_QUERY} created_at=\"${CURR_DOC_CREATED_AT}\", updated_at=\"${CURR_DOC_UPDATED_AT}\""
       SQL_QUERY="${SQL_QUERY} WHERE couchdb_location_npid_id = \"${CURR_DOC_ID}\";"
       
       echo "UPDATING LOCATION NPID: ${CURR_DOC_ID}" 
     else
-      SQL_QUERY="INSERT INTO location_npids (npid, couchdb_location_id, location_id,"
-      SQL_QUERY="${SQL_QUERY} couchdb_location_npid_id, created_at, updated_at)"
-      SQL_QUERY="${SQL_QUERY} VALUES(\"${CURR_DOC_NPID}\", \"${CURR_DOC_LOCATION}\", \"${LOCATION_ID}\","
+      SQL_QUERY="INSERT INTO location_npids (npid, couchdb_location_id, location_id, assigned"
+      SQL_QUERY="${SQL_QUERY} couchdb_location_npid_id, created_at, updated_at) VALUES(\"${CURR_DOC_NPID}\","
+      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_LOCATION}\", \"${LOCATION_ID}\", ${CURR_DOC_ASSIGNED},"
       SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_ID}\", \"${CURR_DOC_CREATED_AT}\", \"${CURR_DOC_UPDATED_AT}\");"
 
       echo "CREATING LOCATION NPID: ${CURR_DOC_ID}" 
