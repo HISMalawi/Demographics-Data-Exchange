@@ -1,0 +1,17 @@
+development:
+  protocol: http
+  host: localhost
+  port: 5984
+  username: root
+  password: root
+  primary: dde3_master_development
+  bidirectional: true
+
+production:
+  protocol: http
+  host: localhost
+  port: 5984
+  username: root
+  password: root
+  primary: dde3_master_production
+  bidirectional: true

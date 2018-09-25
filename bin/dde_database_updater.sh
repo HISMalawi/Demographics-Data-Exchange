@@ -15,6 +15,18 @@ COUCH_PORT=`ruby -ryaml -e "puts YAML::load_file('../config/couchdb.yml')['${ENV
 COUCH_PROTOCOL=`ruby -ryaml -e "puts YAML::load_file('../config/couchdb.yml')['${ENV}']['protocol']"`
 COUCH_DATABASE=${COUCH_PREFIX}_${COUCH_SUFFIX}
 
+MASTER_USERNAME=`ruby -ryaml -e "puts YAML::load_file('../config/master_couchdb.yml')['${ENV}']['username']"`
+MASTER_PASSWORD=`ruby -ryaml -e "puts YAML::load_file('../config/master_couchdb.yml')['${ENV}']['password']"`
+MASTER_DB=`ruby -ryaml -e "puts YAML::load_file('../config/master_couchdb.yml')['${ENV}']['primary']"`
+MASTER_HOST=`ruby -ryaml -e "puts YAML::load_file('../config/master_couchdb.yml')['${ENV}']['host']"`
+MASTER_PORT=`ruby -ryaml -e "puts YAML::load_file('../config/master_couchdb.yml')['${ENV}']['port']"`
+MASTER_PROTOCOL=`ruby -ryaml -e "puts YAML::load_file('../config/master_couchdb.yml')['${ENV}']['protocol']"`
+
+SOURCE_URL="${MASTER_PROTOCOL}://${MASTER_HOST}:${MASTER_PORT}/${MASTER_DB}"
+AUTH_SOURCE_URL="${MASTER_PROTOCOL}://${MASTER_USERNAME}:${MASTER_PASSWORD}@${MASTER_HOST}:${MASTER_PORT}"
+TARGET_URL="${COUCH_PROTOCOL}://${COUCH_HOST}:${COUCH_PORT}/${COUCH_DATABASE}"
+AUTH_TARGET_URL="${COUCH_PROTOCOL}://${COUCH_USERNAME}:${COUCH_PASSWORD}@${COUCH_HOST}:${COUCH_PORT}"
+
 get_mysql_person_id_from_couch_db () {
   SQL_QUERY="SELECT person_id FROM people WHERE couchdb_person_id = '$1'"
   SQL_RESULTS=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
@@ -91,6 +103,7 @@ UpdatecouchdbPerson () {
   echo "$1" > ../log/current_doc.txt
   CURR_DOC_ID=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['_id']"`;
   CURR_DOC_GIVEN_NAME=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['given_name']"`;
+  CURR_DOC_MIDDLE_NAME=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['middle_name']"`;
   CURR_DOC_FAMILY_NAME=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['family_name']"`;
   CURR_DOC_GENDER=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['gender']"`;
   CURR_DOC_BIRTHDATE=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['birthdate']"`;
@@ -302,6 +315,19 @@ done
 
 LAST_SEQ=`ruby -ryaml -e "puts YAML::load_file('../log/latest_coucdb_docs.txt')['last_seq']"`;
 echo "last_seq: ${LAST_SEQ}" > ../log/last_sequence.txt
+
+#REP_STATUS=`curl "${COUCH_PROTOCOL}://${COUCH_USERNAME}:${COUCH_PASSWORD}@${COUCH_HOST}:${COUCH_PORT}/_active_tasks"`
+#echo ${REP_STATUS} > ../log/replication_status.txt
+#REP_SIZE=`ruby -ryaml -e "puts YAML::load_file('../log/replication_status.txt')['size']"`;
+
+#if $REP_SIZE == 0 ; then
+SYNC_FROM_MASTER=`curl -s -k -H 'Content-Type: application/json' -X POST -d {source: "${SOURCE_URL}", target: "${TARGET_URL}", connection_timeout: 60000, retries_per_request: 20, http_connections: 30, continuous: true } "${AUTH_TARGET_URL}/_replicate"`
+echo SYNC_FROM_MASTER > ../log/replication_results.txt
+REP_ID=`ruby -ryaml -e "puts YAML::load_file('../log/replication_results.txt')['_local_id']"`;
+
+SYNC_TO_MASTER=`curl -s -k -H 'Content-Type: application/json' -X POST -d { source: "${TARGET_URL}", target: "${SOURCE_URL}", connection_timeout: 60000, retries_per_request: 20, http_connections: 30, continuous: true } "${AUTH_SOURCE_URL}/_replicate"`
+#else
+#fi
 
 exit;
 
