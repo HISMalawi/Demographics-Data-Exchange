@@ -91,7 +91,7 @@ Updatecouchdbuser () {
       SQL_QUERY="UPDATE users SET username=\"${CURR_DOC_USERNAME}\", email=\"${CURR_DOC_EMAIL}\","
       SQL_QUERY="${SQL_QUERY} password_digest=\"${CURR_DOC_PASSWORD}\", couchdb_location_id=\"${CURR_DOC_LOCATION_ID}\","
       SQL_QUERY="${SQL_QUERY} location_id=\"${LOCATION_ID}\",voided=${CURR_DOC_VOIDED},"
-      SQL_QUERY="${SQL_QURY} void_reason=\"${CURR_DOC_VOID_REASON}\" WHERE couchdb_user_id = \"${CURR_DOC_ID}\";"
+      SQL_QUERY="${SQL_QUERY} void_reason=\"${CURR_DOC_VOID_REASON}\" WHERE couchdb_user_id = \"${CURR_DOC_ID}\";"
       
       echo "UPDATING USER: ${CURR_DOC_ID}" 
     else
