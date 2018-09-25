@@ -85,6 +85,7 @@ Updatecouchdbuser () {
   
   SQL_QUERY="SELECT * FROM users WHERE couchdb_user_id = '${CURR_DOC_ID}';";
   RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`; 
+  echo "UPDATING USER ${CURR_DOC_ID} .........................."
 
   if [[ ! -z "$LOCATION_ID" ]] ; then
     if [[ ! -z "$RESULT" ]] ; then
@@ -99,12 +100,14 @@ Updatecouchdbuser () {
       SQL_QUERY="${SQL_QUERY} location_id, voided, void_reason,created_at,updated_at) VALUES(\"${CURR_DOC_ID}\","
       SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_USERNAME}\",\"${CURR_DOC_EMAIL}\",\"${CURR_DOC_PASSWORD}\","
       SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_LOCATION_ID}\",\"${LOCATION_ID}\", ${CURR_DOC_VOIDED},"
-      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_VOID_REASON}\",\"${CURR_DOC_CREATED_AT}\",${CURR_DOC_UPDATED_AT});"
+      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_VOID_REASON}\",\"${CURR_DOC_CREATED_AT}\",\"${CURR_DOC_UPDATED_AT}\");"
 
       echo "CREATING USER: ${CURR_DOC_ID}" 
     fi
 
     `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
+    echo ${SQL_QUERY}
+    exit
   fi
 }
 
