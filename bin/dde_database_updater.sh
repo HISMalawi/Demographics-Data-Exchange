@@ -119,7 +119,7 @@ UpdatecouchdbPerson () {
   CURR_DOC_CREATOR=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['creator']"`;
   CURR_DOC_CREATED_AT=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['created_at']"`;
     
-  get_mysql_location_from_couchdb "${CURR_DOC_LOCATION_ID}";
+  get_mysql_location_from_couchdb "${CURR_DOC_LOCATION_CREATED}";
   get_mysql_user_id_from_couchdb "${CURR_DOC_CREATOR}"
 
   SQL_QUERY="SELECT * FROM people WHERE couchdb_person_id = '${CURR_DOC_ID}';";
