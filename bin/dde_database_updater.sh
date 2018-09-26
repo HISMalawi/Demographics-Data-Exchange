@@ -359,7 +359,10 @@ do
 done
 
 LAST_SEQ=`ruby -ryaml -e "puts YAML::load_file('../log/latest_coucdb_docs.txt')['last_seq']"`;
-echo "last_seq: ${LAST_SEQ}" > ../log/last_sequence.txt
+
+if [[ ! -z "${LAST_SEQ}" ]] ; then
+  echo "last_seq: ${LAST_SEQ}" > ../log/last_sequence.txt
+fi
 
 #REP_STATUS=`curl "${COUCH_PROTOCOL}://${COUCH_USERNAME}:${COUCH_PASSWORD}@${COUCH_HOST}:${COUCH_PORT}/_active_tasks"`
 #echo ${REP_STATUS} > ../log/replication_status.txt
