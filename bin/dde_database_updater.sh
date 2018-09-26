@@ -160,7 +160,7 @@ UpdatecouchdbPerson () {
       SQL_QUERY="$SQL_QUERY birthdate=${CURR_DOC_BIRTHDATE}, birthdate_estimated=${CURR_DOC_BIRTHDATE_EST},"
       SQL_QUERY="$SQL_QUERY died=${CURR_DOC_DIED}, deathdate=${CURR_DOC_DEATHDATE}, deathdate_estimated=${CURR_DOC_DEATHDATE_EST},"
       SQL_QUERY="$SQL_QUERY voided=${CURR_DOC_VOIDED}, date_voided=${CURR_DOC_DATE_VOIDED}, void_reason=\"${CURR_DOC_VOID_REASON}\","
-      SQL_QUERY="$SQL_QUERY npid=\"${CURR_DOC_NPID}\", location_created_at=\"${CURR_DOC_LOCATION_CREATED}\","
+      SQL_QUERY="$SQL_QUERY npid=\"${CURR_DOC_NPID}\", location_created_at=\"${LOCATION_ID}\","
       SQL_QUERY="$SQL_QUERY creator=\"${USER_ID}\", created_at=\"${CURR_DOC_CREATED_AT}\", updated_at=\"${CURR_DOC_UPDATED_AT}\""
       SQL_QUERY="$SQL_QUERY WHERE couchdb_person_id = \"${CURR_DOC_ID}\";"
     
@@ -172,7 +172,7 @@ UpdatecouchdbPerson () {
       SQL_QUERY="$SQL_QUERY VALUES(\"${CURR_DOC_ID}\",\"${CURR_DOC_GIVEN_NAME}\", \"${CURR_DOC_MIDDLE_NAME}\","
       SQL_QUERY="$SQL_QUERY \"${CURR_DOC_FAMILY_NAME}\", \"${CURR_DOC_GENDER}\", ${CURR_DOC_BIRTHDATE}, "
       SQL_QUERY="$SQL_QUERY ${CURR_DOC_BIRTHDATE_EST}, ${CURR_DOC_DIED}, ${CURR_DOC_DEATHDATE},"
-      SQL_QUERY="$SQL_QUERY ${CURR_DOC_DEATHDATE_EST},\"${CURR_DOC_NPID}\", \"${CURR_DOC_LOCATION_CREATED}\","
+      SQL_QUERY="$SQL_QUERY ${CURR_DOC_DEATHDATE_EST},\"${CURR_DOC_NPID}\", \"${LOCATION_ID}\","
       SQL_QUERY="$SQL_QUERY \"${CURR_DOC_CREATED_AT}\", \"${CURR_DOC_UPDATED_AT}\", ${CURR_DOC_VOIDED},"
       SQL_QUERY="$SQL_QUERY \"${CURR_DOC_VOID_REASON}\", \"${CURR_DOC_DATE_VOIDED}\")";
 
