@@ -18,4 +18,8 @@ class Api::V1::LocationController < ApplicationController
   def get_locations
     render json: LocationService.get_locations(params)
   end
+
+  def get_regions
+    render json: LocationService.get_regions()
+  end
 end
