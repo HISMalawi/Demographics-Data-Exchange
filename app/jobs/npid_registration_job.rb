@@ -4,6 +4,6 @@ class NpidRegistrationJob
   def perform()
    SuckerPunch.logger.info "NPID registration at work ..."
    NpidRegistrationService.assign_ids
-   NpidRegistrationJob.perform_in(1)
-  end rescue NpidRegistrationJob.perform_in(1)
+   #NpidRegistrationJob.perform_in(1)
+  end #rescue NpidRegistrationJob.perform_in(1)
 end

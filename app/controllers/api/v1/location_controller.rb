@@ -20,6 +20,11 @@ class Api::V1::LocationController < ApplicationController
   end
 
   def get_regions
-    render json: LocationService.get_regions()
+    render json: LocationService.get_regions
   end
+
+  def regional_stats
+    render json: LocationService.fetch_regional_stats
+  end
+
 end

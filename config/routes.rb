@@ -48,6 +48,7 @@ Rails.application.routes.draw do
 
   post "v1/search/people", to: "api/v1/people_match#get"
   get   "v1/get_regions", to: "api/v1/location#get_regions"
+  get   "v1/get_regional_stats", to: "api/v1/location#regional_stats"
 
   root to: "api/v1/user#index"
 end

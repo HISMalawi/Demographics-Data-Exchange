@@ -120,6 +120,41 @@ module LocationService
 
   end
 
+  def self.fetch_regional_stats
+    @stats = {}
+    ( Region.all || [] ).each do |r|
+      region_name = r.name.downcase
+      @stats["#{region_name}"] = {}
+      districts = RegionDistrict.where(region_id: r.id)
+      
+      ( districts || [] ).each do |d|
+        district_sites = 0
+        allocated_ids = 0
+        assigned_ids = 0
+        district = Location.where(location_id: d.id).first
+        @stats["#{region_name}"]["#{district.name}"] = {}
+        
+        ( DistrictSite.where(district_id: d.id) || [] ).each do |s|
+          site = Location.where(location_id: s.site_id).first
+          #sites << s.site_id
+          total_ids = LocationNpid.where(location_id: s.site_id).count
+          total_assigned = LocationNpid.where(["location_id = ? and assigned = 1", s.site_id]).count 
+          allocated_ids += total_ids.to_i
+          assigned_ids += total_assigned.to_i
+          district_sites += 1
+        end
+
+        @stats["#{region_name}"]["#{district.name}"] = {
+          sites: district_sites,
+          allocated: allocated_ids,
+          assigned: assigned_ids
+        }
+
+      end
+    end
+    return @stats
+  end
+
   private
 
   DEFAULT_PAGE_SIZE = 10
