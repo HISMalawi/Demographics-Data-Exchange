@@ -7,15 +7,19 @@ module NpidService
 
   # Assign Npids to a Site/Location.
   # Takes the number of requested IDs and requesting user.
-  def self.assign(number_of_ids, current_user)
+  def self.assign(number_of_ids, current_user, location = "")
     # Gets available unassigned npids from master npid table.
     available_ids = Npid.where(assigned: false).limit(number_of_ids)
 
     # Assign the available npids to a site /location.
     (available_ids || []).each do |n|
       ActiveRecord::Base.transaction do
+        if location.blank?
+          location = current_user.couchdb_location_id
+        end
+
         couch_location_npid = CouchdbLocationNpid.create(npid: n.npid, 
-          location_id: current_user.couchdb_location_id)
+          location_id: location)
         n.update_attributes(assigned: true)
         
         mysql_location = Location.find_by_couchdb_location_id(couch_location_npid.location_id)
