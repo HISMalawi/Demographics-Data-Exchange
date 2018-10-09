@@ -24,6 +24,10 @@ module LocationService
   end
 
   def self.find_location(location_id)
+    check_replication_status = RestClient.get("pach:pachccc123@localhost:5984/_active_tasks")
+    rep_status = JSON.parse(check_replication_status)
+    status = 'OFFLINE'
+  
     query = Location.where(couchdb_location_id: location_id)
     if query.blank?
       return {}
@@ -34,7 +38,18 @@ module LocationService
                           l.couchdb_location_id).joins("INNER JOIN location_tag_maps m
         ON m.location_tag_id = location_tags.location_tag_id
         INNER JOIN locations l ON l.location_id = m.location_id").select("location_tags.*")
-      parent = Location.find(l.parent_location).name rescue "Unknown"
+      ds = DistrictSite.where(site_id: l.location_id).first #rescue "Unknown"
+      district = Location.find(ds.district_id).name rescue "Unknown"
+      
+      rd = RegionDistrict.where(district_id: ds.district_id).first
+      region = Region.find(rd.region_id).name rescue "Unknown"
+    
+      ## Check replication status for this site.
+      ( rep_status || [] ).each do |s|
+        next unless s['source'].match(/#{l.ip_address}/)
+        status = 'ONLINE' unless l.ip_address.blank?
+      end
+
       location << {
         name: l.name,
         doc_id: l.couchdb_location_id,
@@ -42,9 +57,13 @@ module LocationService
         longitude: l.longitude,
         code: l.code,
         location_tags: location_tags.map(&:name),
-       parent_location: parent,
+        district: district,
+        region: region,
+        host: l.ip_address,
+        sync_status: status
       }
     end
+    return location
   end
 
   def self.get_locations(params)
