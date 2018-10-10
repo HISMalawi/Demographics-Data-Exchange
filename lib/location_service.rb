@@ -9,7 +9,12 @@ module LocationService
                                         l.couchdb_location_id).joins("INNER JOIN location_tag_maps m
         ON m.location_tag_id = location_tags.location_tag_id
         INNER JOIN locations l ON l.location_id = m.location_id").select("location_tags.*")
-
+      
+      status = "OFFLINE"
+      unless location.ip_address.blank?
+        status = self.location_sync_status(location.ip_address)
+      end
+      
       locations << {
         name: location.name,
         doc_id: location.couchdb_location_id,
@@ -17,6 +22,8 @@ module LocationService
         longitude: location.longitude,
         code: location.code,
         location_tags: location_tags.map(&:name),
+        host: location.ip_address,
+        sync_status: status,
       }
     end
 
@@ -24,8 +31,6 @@ module LocationService
   end
 
   def self.find_location(location_id)
-    check_replication_status = RestClient.get("pach:pachccc123@localhost:5984/_active_tasks")
-    rep_status = JSON.parse(check_replication_status)
     status = 'OFFLINE'
   
     query = Location.where(couchdb_location_id: location_id)
@@ -44,10 +49,8 @@ module LocationService
       rd = RegionDistrict.where(district_id: ds.district_id).first
       region = Region.find(rd.region_id).name rescue "Unknown"
     
-      ## Check replication status for this site.
-      ( rep_status || [] ).each do |s|
-        next unless s['source'].match(/#{l.ip_address}/)
-        status = 'ONLINE' unless l.ip_address.blank?
+      unless l.ip_address.blank?
+        status = self.location_sync_status(l.ip_address)
       end
 
       location << {
@@ -88,10 +91,19 @@ module LocationService
     locations = []
 
     (query || []).each do |l|
+      status = "OFFLINE"
+      
       location_tags = LocationTag.where("l.couchdb_location_id = ?",
                                         l.couchdb_location_id).joins("INNER JOIN location_tag_maps m
         ON m.location_tag_id = location_tags.location_tag_id
         INNER JOIN locations l ON l.location_id = m.location_id").select("location_tags.*")
+      
+      npids     = LocationNpid.where(location_id: l.location_id)
+      assigned  = LocationNpid.where(["location_id = ? and assigned = 1", l.location_id])
+
+      unless l.ip_address.blank?
+        status = self.location_sync_status(l.ip_address)
+      end
 
       locations << {
         name: l.name,
@@ -100,10 +112,26 @@ module LocationService
         longitude: l.longitude,
         code: l.code,
         location_tags: location_tags.map(&:name),
+        host: l.ip_address,
+        sync_status: status,
+        allocated: npids.count,
+        assigned: assigned.count,
       }
     end
 
     return locations
+  end
+
+  def self.location_sync_status(ip_address)
+    check_replication_status = RestClient.get("pach:pachccc123@localhost:5984/_active_tasks")
+    rep_status = JSON.parse(check_replication_status)
+    
+    ## Check replication status for this site.
+    ( rep_status || [] ).each do |s|
+      next unless s['source'].match(/#{ip_address}/)
+      return 'ONLINE' unless ip_address.blank?
+    end
+    return "OFFLINE"
   end
   
   def self.get_regions
