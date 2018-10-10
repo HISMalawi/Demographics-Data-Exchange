@@ -357,6 +357,7 @@ do
     echo "Updated record:  ${DOC_ID}";
   fi
 done
+echo ">>>>>>>>>>>>>>>>>DONE"
 
 LAST_SEQ=`ruby -ryaml -e "puts YAML::load_file('../log/latest_coucdb_docs.txt')['last_seq']"`;
 
