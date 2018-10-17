@@ -88,7 +88,21 @@ It was built by Baobab Health Trust.
   ```
   
   
-######HAVE SOME COFFEE!!! (:
+###Setting up DDE Data Sync cron job.
+
+* Configure DDE Master CouchDB database in config/master_couchdb.yml file.
+  Provide username, password, database name, host and port for DDE Masteer
+  Couchdb.
+
+* In your terminal, type:
+  ```
+    */5 * * * * bash -l -c 'cd _PATH__TO__DDE_/bin && ./dde_database_updater.sh
+    development | ./timestamp.sh >> _PATH__TO__DDE_/log/dde3_cron.log 2>&1'
+  ```
+  This sets your cron job to run every 5 minutes.
+
+* Save the changes and close the cron tab.
+
 
 
 
