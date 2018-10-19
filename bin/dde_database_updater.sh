@@ -1,5 +1,12 @@
 #!/bin/bash
 ENV=$1
+PROCESS_FILE="../log/process.pid"
+
+if [ -f $PROCESS_FILE ] ; then
+  exit
+fi
+
+touch $PROCESS_FILE
 
 MYSQL_USERNAME=`ruby -ryaml -e "puts YAML::load_file('../config/database.yml')['${ENV}']['username']"`
 MYSQL_PASSWORD=`ruby -ryaml -e "puts YAML::load_file('../config/database.yml')['${ENV}']['password']"`
@@ -357,6 +364,10 @@ do
     echo "Updated record:  ${DOC_ID}";
   fi
 done
+
+if [ -f $PROCESS_FILE ] ; then
+  rm $PROCESS_FILE
+fi
 echo ">>>>>>>>>>>>>>>>>DONE"
 
 LAST_SEQ=`ruby -ryaml -e "puts YAML::load_file('../log/latest_coucdb_docs.txt')['last_seq']"`;
