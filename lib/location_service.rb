@@ -10,7 +10,7 @@ module LocationService
         ON m.location_tag_id = location_tags.location_tag_id
         INNER JOIN locations l ON l.location_id = m.location_id").select("location_tags.*")
       
-      status = self.location_sync_status(location.location_id)
+      status, updated_on = location.online?
       
       locations << {
         name: location.name,
@@ -46,7 +46,7 @@ module LocationService
       rd = RegionDistrict.where(district_id: ds.district_id).first
       region = Region.find(rd.region_id).name rescue "Unknown"
     
-      status, last_updated = self.location_sync_status(l.location_id)
+      status, last_updated = l.online?
 
       location << {
         name: l.name,
@@ -95,7 +95,7 @@ module LocationService
       npids     = LocationNpid.where(location_id: l.location_id)
       assigned  = LocationNpid.where(["location_id = ? and assigned = 1", l.location_id])
 
-      status, last_updated = self.location_sync_status(l.location_id)
+      status, last_updated = l.online?
 
       locations << {
         name: l.name,

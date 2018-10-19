@@ -20,5 +20,26 @@ class Location < ApplicationRecord
   def sites
     sites = DistrictSite.where(["district_id in (?)", self.location_id]).map(&:site_id)
   end
+
+  def online?
+    status        = "OFFLINE"
+    last_updates  = ""
+    npids     = LocationNpid.where(location_id: self.id)
+    unless npids.blank?
+      updated_in_people = Person.where(location_created_at: self.id).select(["*, MAX(updated_at)"]).limit(1).first.updated_at
+      unless updated_in_people.blank?
+        last_updates  = updated_in_people.to_date 
+      
+        if (Date.today.to_date == updated_in_people.to_date)
+          status        = "ONLINE"
+        end
+      
+      end
+
+      return status, last_updates
+    end
+    
+    return status, last_updates
+  end
   
 end
