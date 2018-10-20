@@ -1,12 +1,12 @@
 require 'csv'
-=begin
+
 user = User.where(username: 'admin').first
 [['South','Southern Region'],['Centre','Central Region'],['North','Northern Region']].each do |name, desc|
   r = Region.create(name: name, description: desc, creator: user.id)
   puts "Created region: #{r.name} ...."
 
 end
-=end
+
 CSV.foreach("#{Rails.root}/app/assets/data/health_facilities.csv", headers: true, encoding: 'ISO-8859-1') do |row|
   next if row[0].blank? || row[3].blank? || row[4].blank?
 
