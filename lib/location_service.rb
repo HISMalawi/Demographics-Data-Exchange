@@ -10,10 +10,7 @@ module LocationService
         ON m.location_tag_id = location_tags.location_tag_id
         INNER JOIN locations l ON l.location_id = m.location_id").select("location_tags.*")
       
-      status = "OFFLINE"
-      unless location.ip_address.blank?
-        status = self.location_sync_status(location.ip_address)
-      end
+      status, updated_on = location.online?
       
       locations << {
         name: location.name,
@@ -49,9 +46,7 @@ module LocationService
       rd = RegionDistrict.where(district_id: ds.district_id).first
       region = Region.find(rd.region_id).name rescue "Unknown"
     
-      unless l.ip_address.blank?
-        status = self.location_sync_status(l.ip_address)
-      end
+      status, last_updated = l.online?
 
       location << {
         name: l.name,
@@ -63,7 +58,8 @@ module LocationService
         district: district,
         region: region,
         host: l.ip_address,
-        sync_status: status
+        sync_status: status,
+        last_updated: last_updated
       }
     end
     return location
@@ -74,7 +70,7 @@ module LocationService
 
     # Build Location query
     if name.blank?
-      query = Location
+      query = Location.limit(10)
     else
       query = Location.where("name like (?)", "#{name}%")
     end
@@ -91,8 +87,6 @@ module LocationService
     locations = []
 
     (query || []).each do |l|
-      status = "OFFLINE"
-      
       location_tags = LocationTag.where("l.couchdb_location_id = ?",
                                         l.couchdb_location_id).joins("INNER JOIN location_tag_maps m
         ON m.location_tag_id = location_tags.location_tag_id
@@ -101,9 +95,7 @@ module LocationService
       npids     = LocationNpid.where(location_id: l.location_id)
       assigned  = LocationNpid.where(["location_id = ? and assigned = 1", l.location_id])
 
-      unless l.ip_address.blank?
-        status = self.location_sync_status(l.ip_address)
-      end
+      status, last_updated = l.online?
 
       locations << {
         name: l.name,
@@ -114,6 +106,7 @@ module LocationService
         location_tags: location_tags.map(&:name),
         host: l.ip_address,
         sync_status: status,
+        last_updated: last_updated,
         allocated: npids.count,
         assigned: assigned.count,
       }
@@ -122,44 +115,28 @@ module LocationService
     return locations
   end
 
-  def self.location_sync_status(ip_address)
-    check_replication_status = RestClient.get("pach:pachccc123@localhost:5984/_active_tasks")
-    rep_status = JSON.parse(check_replication_status)
-    
-    ## Check replication status for this site.
-    ( rep_status || [] ).each do |s|
-      next unless s['source'].match(/#{ip_address}/)
-      return 'ONLINE' unless ip_address.blank?
+  def self.location_sync_status(id)
+    status        = "OFFLINE"
+    last_updates  = ""
+    npids     = LocationNpid.where(location_id: id)
+    unless npids.blank?
+      #last_updated_in_people = Person.where(location_created_at: id).select("MAX()")
+      status        = "ONLINE"
+      last_updates  = Date.today  
+      return status, last_updates
     end
-    return "OFFLINE"
+    
+    return status, last_updates
   end
   
   def self.get_regions
     regions = []
     ( Region.all || [] ).each do |r|
-      sites = []
-      allocated_ids = 0
-      assigned_ids = 0
-      districts = RegionDistrict.where(region_id: r.id)
-      
-      ( districts || [] ).each do |d|
-        ds = DistrictSite.where(district_id: d.id)
-
-        ( ds || [] ).each do |s|
-          sites << s.site_id
-          total_ids = LocationNpid.where(location_id: s.site_id).count
-          total_assigned = LocationNpid.where(["location_id = ? and assigned = 1", s.site_id]).count 
-          allocated_ids += total_ids.to_i
-          assigned_ids += total_assigned.to_i
-        end
-
-      end
-
       regions << {
         name: r.name,
-        sites: sites,
-        allocated: allocated_ids,
-        assigned: assigned_ids
+        sites: r.sites,
+        allocated: r.total_npids,
+        assigned: r.assigned_npids
       }
     end
     
@@ -172,25 +149,13 @@ module LocationService
     ( Region.all || [] ).each do |r|
       region_name = r.name.downcase
       @stats["#{region_name}"] = {}
-      districts = RegionDistrict.where(region_id: r.id)
       
-      ( districts || [] ).each do |d|
-        district_sites = 0
-        allocated_ids = 0
-        assigned_ids = 0
+      ( r.districts || [] ).each do |d|
+        district_sites = d.sites.count
+        allocated_ids = d.total_npids
+        assigned_ids = d.assigned_npids
         district = Location.where(location_id: d.id).first
         @stats["#{region_name}"]["#{district.name}"] = {}
-        
-        ( DistrictSite.where(district_id: d.id) || [] ).each do |s|
-          site = Location.where(location_id: s.site_id).first
-          #sites << s.site_id
-          total_ids = LocationNpid.where(location_id: s.site_id).count
-          total_assigned = LocationNpid.where(["location_id = ? and assigned = 1", s.site_id]).count 
-          allocated_ids += total_ids.to_i
-          assigned_ids += total_assigned.to_i
-          district_sites += 1
-        end
-
         @stats["#{region_name}"]["#{district.name}"] = {
           sites: district_sites,
           allocated: allocated_ids,
