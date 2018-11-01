@@ -1,0 +1,2 @@
+class DistrictSite < ApplicationRecord
+end

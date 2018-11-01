@@ -9,7 +9,12 @@ module LocationService
                                         l.couchdb_location_id).joins("INNER JOIN location_tag_maps m
         ON m.location_tag_id = location_tags.location_tag_id
         INNER JOIN locations l ON l.location_id = m.location_id").select("location_tags.*")
-
+      
+      status = "OFFLINE"
+      unless location.ip_address.blank?
+        status = self.location_sync_status(location.ip_address)
+      end
+      
       locations << {
         name: location.name,
         doc_id: location.couchdb_location_id,
@@ -17,6 +22,8 @@ module LocationService
         longitude: location.longitude,
         code: location.code,
         location_tags: location_tags.map(&:name),
+        host: location.ip_address,
+        sync_status: status,
       }
     end
 
@@ -24,6 +31,8 @@ module LocationService
   end
 
   def self.find_location(location_id)
+    status = 'OFFLINE'
+  
     query = Location.where(couchdb_location_id: location_id)
     if query.blank?
       return {}
@@ -34,7 +43,16 @@ module LocationService
                           l.couchdb_location_id).joins("INNER JOIN location_tag_maps m
         ON m.location_tag_id = location_tags.location_tag_id
         INNER JOIN locations l ON l.location_id = m.location_id").select("location_tags.*")
-      parent = Location.find(l.parent_location).name rescue "Unknown"
+      ds = DistrictSite.where(site_id: l.location_id).first #rescue "Unknown"
+      district = Location.find(ds.district_id).name rescue "Unknown"
+      
+      rd = RegionDistrict.where(district_id: ds.district_id).first
+      region = Region.find(rd.region_id).name rescue "Unknown"
+    
+      unless l.ip_address.blank?
+        status = self.location_sync_status(l.ip_address)
+      end
+
       location << {
         name: l.name,
         doc_id: l.couchdb_location_id,
@@ -42,9 +60,13 @@ module LocationService
         longitude: l.longitude,
         code: l.code,
         location_tags: location_tags.map(&:name),
-       parent_location: parent,
+        district: district,
+        region: region,
+        host: l.ip_address,
+        sync_status: status
       }
     end
+    return location
   end
 
   def self.get_locations(params)
@@ -69,10 +91,19 @@ module LocationService
     locations = []
 
     (query || []).each do |l|
+      status = "OFFLINE"
+      
       location_tags = LocationTag.where("l.couchdb_location_id = ?",
                                         l.couchdb_location_id).joins("INNER JOIN location_tag_maps m
         ON m.location_tag_id = location_tags.location_tag_id
         INNER JOIN locations l ON l.location_id = m.location_id").select("location_tags.*")
+      
+      npids     = LocationNpid.where(location_id: l.location_id)
+      assigned  = LocationNpid.where(["location_id = ? and assigned = 1", l.location_id])
+
+      unless l.ip_address.blank?
+        status = self.location_sync_status(l.ip_address)
+      end
 
       locations << {
         name: l.name,
@@ -81,10 +112,94 @@ module LocationService
         longitude: l.longitude,
         code: l.code,
         location_tags: location_tags.map(&:name),
+        host: l.ip_address,
+        sync_status: status,
+        allocated: npids.count,
+        assigned: assigned.count,
       }
     end
 
     return locations
+  end
+
+  def self.location_sync_status(ip_address)
+    check_replication_status = RestClient.get("pach:pachccc123@localhost:5984/_active_tasks")
+    rep_status = JSON.parse(check_replication_status)
+    
+    ## Check replication status for this site.
+    ( rep_status || [] ).each do |s|
+      next unless s['source'].match(/#{ip_address}/)
+      return 'ONLINE' unless ip_address.blank?
+    end
+    return "OFFLINE"
+  end
+  
+  def self.get_regions
+    regions = []
+    ( Region.all || [] ).each do |r|
+      sites = []
+      allocated_ids = 0
+      assigned_ids = 0
+      districts = RegionDistrict.where(region_id: r.id)
+      
+      ( districts || [] ).each do |d|
+        ds = DistrictSite.where(district_id: d.id)
+
+        ( ds || [] ).each do |s|
+          sites << s.site_id
+          total_ids = LocationNpid.where(location_id: s.site_id).count
+          total_assigned = LocationNpid.where(["location_id = ? and assigned = 1", s.site_id]).count 
+          allocated_ids += total_ids.to_i
+          assigned_ids += total_assigned.to_i
+        end
+
+      end
+
+      regions << {
+        name: r.name,
+        sites: sites,
+        allocated: allocated_ids,
+        assigned: assigned_ids
+      }
+    end
+    
+    return regions
+
+  end
+
+  def self.fetch_regional_stats
+    @stats = {}
+    ( Region.all || [] ).each do |r|
+      region_name = r.name.downcase
+      @stats["#{region_name}"] = {}
+      districts = RegionDistrict.where(region_id: r.id)
+      
+      ( districts || [] ).each do |d|
+        district_sites = 0
+        allocated_ids = 0
+        assigned_ids = 0
+        district = Location.where(location_id: d.id).first
+        @stats["#{region_name}"]["#{district.name}"] = {}
+        
+        ( DistrictSite.where(district_id: d.id) || [] ).each do |s|
+          site = Location.where(location_id: s.site_id).first
+          #sites << s.site_id
+          total_ids = LocationNpid.where(location_id: s.site_id).count
+          total_assigned = LocationNpid.where(["location_id = ? and assigned = 1", s.site_id]).count 
+          allocated_ids += total_ids.to_i
+          assigned_ids += total_assigned.to_i
+          district_sites += 1
+        end
+
+        @stats["#{region_name}"]["#{district.name}"] = {
+          sites: district_sites,
+          allocated: allocated_ids,
+          assigned: assigned_ids
+        }
+
+      end
+    end
+    return @stats
   end
 
   private
