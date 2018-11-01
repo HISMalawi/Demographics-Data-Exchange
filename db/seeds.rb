@@ -11,7 +11,7 @@ require 'csv'
 puts ""
 puts ""
 puts ""
-puts "Defaault user and user roles ..."
+puts "Default user and user roles ..."
 sleep 3
 
 #Create default user ...
@@ -93,20 +93,31 @@ end
 puts ""
 puts ""
 puts ""
-puts "Creating Districts ..."
+puts "Creating Regions ..."
 sleep 3
 
+[['South','Southern Region'],['Centre','Central Region'],['North','Northern Region']].each do |name, desc|
+  r = Region.create(name: name, description: desc, creator: user.id)
+  puts "Created region: #{r.name} ...."
+
+end
+
+puts ""
+puts ""
+puts ""
+puts "Creating Districts ..."
+sleep 3
 
 districts = []
 
 CSV.foreach("#{Rails.root}/app/assets/data/health_facilities.csv", headers: true, encoding: 'ISO-8859-1') do |row|
   next if row[0].blank?
-  districts << [row[0].squish, row[1]]
+  districts << [row[0].squish, row[1], row[4]]
   districts = districts.uniq
 end
 
 location_tag = LocationTag.where(name: 'District').first
-districts.each do |name, code|
+districts.each do |name, code, zone|
   ActiveRecord::Base.transaction do
     couchdb_country = CouchdbLocation.create(name: name, code: code, creator: couchdb_user.id)
     couchdb_location_tag_map = CouchdbLocationTagMap.create(location_id: couchdb_country.id, 
@@ -116,9 +127,26 @@ districts.each do |name, code|
     LocationTagMap.create(location_id: country.id, 
 			location_tag_id: location_tag.id,
 			couchdb_location_tag_id: couchdb_location_tag_map.id,
-			couchdb_location_id:	couchdb_country.id)
+      couchdb_location_id:	couchdb_country.id)
+      
+    if (zone.downcase.match(/north/))
+      # add to northern region
+      region = Region.where(name: "North").first
+      RegionDistrict.create(region_id: region.id, district_id: country.id)
 
-    puts "########### #{code} ........... #{name}"
+    elsif (zone.downcase.match(/central/))
+      # add to central region
+      region = Region.where(name: "Centre").first
+      RegionDistrict.create(region_id: region.id, district_id: country.id)
+
+    elsif (zone.downcase.match(/south/))
+      # add to southern region
+      region = Region.where(name: "South").first
+      RegionDistrict.create(region_id: region.id, district_id: country.id)
+
+    end
+
+    puts "########### #{code} ........... #{name}................. #{zone}"
   end
 end
 
@@ -162,9 +190,11 @@ CSV.foreach("#{Rails.root}/app/assets/data/health_facilities.csv", headers: true
         couchdb_location_tag_id: c.location_tag_id,
         couchdb_location_id: c.location_id)
     end
+    
+    DistrictSite.create(district_id: district.location_id, site_id: facility.id)
 
 
-    puts "########### #{facility_code} ........... #{name}"
+    puts "########### (#{facility.id}) #{facility_code} ........... #{name}....."
   end
 
 end
