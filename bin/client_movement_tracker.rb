@@ -44,7 +44,7 @@ def start
     puts "Script is already running, wait until it is done ...."
     return
   else
-    File.open("#{Rails.root}/tmp/client-tracker.pid")
+    File.open("#{Rails.root}/tmp/client-tracker.pid","w")
   end
 
   file_exist = File.file?("#{Rails.root}/log/client-tracker.log")
