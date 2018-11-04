@@ -379,5 +379,20 @@ module PersonService
 
     return people_arr
   end
+
+  def self.total_assigned(date)
+    data = Person.where("created_at BETWEEN ? AND ?", 
+      date.strftime("%Y-%m-%d 00:00:00"), date.strftime("%Y-%m-%d 23:59:59"))
+  
+    return data.count
+  end
+
+  def self.cum_total_assigned
+    data = Person.where("npid IS NOT NULL AND (given_name NOT LIKE '%test%' 
+      AND family_name NOT LIKE '%test%') AND voided = 0")
+  
+    return data.count
+  end
+
 end
 

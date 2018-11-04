@@ -75,20 +75,43 @@ It was built by Baobab Health Trust.
 
 ###Setting up DDE Proxy
 
-1. Load dde_metadata.sql into proxy dde mysql database
+1. Copy you config files by Executing:
+
+    cp config/database.yml.example config/database.yml
+    cp config/couchdb.yml.example config/couchdb.yml
+    cp config/master_couchdb.yml.example config/master_couchdb.yml
+    cp config/application.yml.example config/application.yml
+    cp config/secrets.yml.example config/secrets.yml
+
+2. Configure the config file database.yml, couchdb.yml and master_couchdb.yml
+   
+    Provide all the required feilds.
+    Please Note: All hosts in couchdb.yml and master_couchdb.yml should be their public IP addresses which are accessible outside their local network.
+
+3. Load dde_metadata.sql into proxy dde mysql database
    ```
     $mysql -u root -p dde_proxy_database < db/dde_metadata.sql
    ```
    
-2. Replicate DDE Master Couchdb to your local DDE Proxy Couchdb.
+4. Replicate DDE Master Couchdb to your local DDE Proxy Couchdb.
 
-4. Start DDE Proxy Server
-   ```
-    passenger start -p <PORT_NUMBER>
-  ```
+5. Configure Nginx to start the application
   
-  
-######HAVE SOME COFFEE!!! (:
+6. Setup DDE Data Sync cron job.
+
+    * In your terminal, type:
+      ```
+      crontab -e
+
+      */5 * * * * bash -l -c 'cd _PATH__TO__DDE_/bin && ./dde_database_updater.sh DDE_APP_RUNNING_ENVIRONMENT | ./timestamp.sh >> _PATH__TO__DDE_/log/dde3_cron.log 2>&1'
+        ```
+    Replace _PATH__TO__DDE with the path of dde3 application eg "/var/www/dde3"
+    Replace DDE_APP_RUNNING_ENVIRONMENT with the environment of dde3 application eg "development"
+
+    This sets your cron job to run every 5 minutes.
+
+    * Save the changes and close the cron tab.
+
 
 
 
