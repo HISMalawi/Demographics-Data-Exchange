@@ -30,8 +30,22 @@ EOF
 
 end
 
+def check_if_script_already_running
+  file_exist = File.file?("#{Rails.root}/tmp/client-tracker.pid")
+  return (file_exist == true ? true : false)
+end
+
 def start
   buildTables
+
+  script_already_running = check_if_script_already_running	
+
+  if script_already_running	
+    puts "Script is already running, wait until it is done ...."
+    return
+  else
+    File.open("#{Rails.root}/tmp/client-tracker.pid")
+  end
 
   file_exist = File.file?("#{Rails.root}/log/client-tracker.log")
   foot_print_id = 0
@@ -81,6 +95,8 @@ def start
   end
 
   buildStatTable
+  system "rm #{Rails.root}/tmp/client-tracker.pid"
+  file.syswrite("foot_print_id: #{foot_print_id}")
 end
 
 def buildStatTable
