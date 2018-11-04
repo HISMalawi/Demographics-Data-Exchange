@@ -33,7 +33,7 @@ gem 'rack-cors'
 gem 'couchrest_model'
 gem 'jwt'
 gem 'simple_command'
-gem 'sucker_punch'
+#gem 'sucker_punch'
 gem 'passenger'
 
 gem 'whitesimilarity'
