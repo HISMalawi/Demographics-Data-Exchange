@@ -131,9 +131,10 @@ EOF
     (data || []).each do |d|
       foreign_id = table1["foot_print_category_id"]
       couchdb_location_id = d["couchdb_location_id"]
+      foot_print_id = d["foot_print_id"]
       
       tmp_foot_print_categories = ActiveRecord::Base.connection.execute <<EOF
-      INSERT INTO tmp_foot_print_visited_location VALUES(NULL, #{foreign_id}, "#{couchdb_location_id}");
+      INSERT INTO tmp_foot_print_visited_location VALUES(NULL, #{foreign_id}, "#{couchdb_location_id}",#{foot_print_id});
 EOF
 
     end
