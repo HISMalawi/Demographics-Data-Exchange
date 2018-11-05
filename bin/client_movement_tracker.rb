@@ -14,6 +14,7 @@ EOF
       foot_print_visited_location_id INT AUTO_INCREMENT,
       foot_print_category_id INT(11) NOT NULL,
       couchdb_location_id VARCHAR(255) NOT NULL,
+      foot_print_id INT(11) NOT NULL,
       PRIMARY KEY (foot_print_visited_location_id)
   )  ENGINE=INNODB;
 EOF
@@ -81,7 +82,7 @@ def start
      
     data = FootPrint.joins("INNER JOIN users u 
       ON u.couchdb_user_id = foot_prints.couchdb_user_id").where("couchdb_person_id = ?", 
-      couchdb_person_id).group("u.location_id").select("u.username, u.couchdb_location_id")
+      couchdb_person_id).group("u.location_id").select("u.username, u.couchdb_location_id, foot_prints.foot_print_id")
 
     if data.length > 1
       puts "############ #{couchdb_person_id}"
@@ -155,9 +156,10 @@ EOF
     (data || []).each do |d|
       foreign_id = foot_print_category_id
       couchdb_location_id = d["couchdb_location_id"]
+      foot_print_id = d["foot_print_id"]
       
       tmp_foot_print_categories = ActiveRecord::Base.connection.execute <<EOF
-      INSERT INTO tmp_foot_print_visited_location VALUES(NULL, #{foreign_id}, "#{couchdb_location_id}");
+      INSERT INTO tmp_foot_print_visited_location VALUES(NULL, #{foreign_id}, "#{couchdb_location_id}",#{foot_print_id});
 EOF
 
     end

@@ -180,11 +180,14 @@ EOF
    
     sync_status = []
     (data || []).each do |l|
+      days = (Date.today - l["updated_at"].to_date).to_i
+      
       sync_status << {
         site_code: l["code"],
         site_name: l["name"],
         last_sync_datetime: l["updated_at"],
-        last_sync_datetime_formated: l["updated_at"].to_time.strftime("%d/%b/%Y %H:%M:%S")
+        last_sync_datetime_formated: l["updated_at"].to_time.strftime("%d/%b/%Y %H:%M:%S"),
+	days_gone_since_last_sync: days 
       }
     end
 
