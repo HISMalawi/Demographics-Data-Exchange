@@ -169,15 +169,13 @@ module LocationService
 
   def self.sync_info
     data = ActiveRecord::Base.connection.select_all <<EOF
-    SELECT l.code, l.name, p.updated_at FROM locations l
-    INNER JOIN users u ON l.location_id = u.location_id
-    INNER JOIN people p ON p.creator = u.user_id
-    WHERE p.updated_at = (
-      SELECT MAX(p1.updated_at) FROM people p1
-      INNER JOIN users u2 ON u2.user_id = p1.creator
-      WHERE p1.person_id = p.person_id AND u2.user_id = u.user_id
-    ) AND l.name != "Baobab Health Trust"
-    GROUP BY u.location_id;
+    SELECT l.code, l.name, f.updated_at FROM foot_prints f
+    INNER JOIN users u ON u.user_id = f.user_id
+    INNER JOIN locations l ON l.location_id = u.location_id
+    WHERE f.updated_at = (
+     SELECT MAX(updated_at) FROM foot_prints f2 
+     WHERE f2.foot_print_id = f.foot_print_id
+    ) GROUP BY u.location_id;
 EOF
    
     sync_status = []
