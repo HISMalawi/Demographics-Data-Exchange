@@ -167,6 +167,32 @@ module LocationService
     return @stats
   end
 
+  def self.sync_info
+    data = ActiveRecord::Base.connection.select_all <<EOF
+    SELECT l.code, l.name, p.updated_at FROM locations l
+    INNER JOIN users u ON l.location_id = u.location_id
+    INNER JOIN people p ON p.creator = u.user_id
+    WHERE p.updated_at = (
+      SELECT MAX(p1.updated_at) FROM people p1
+      INNER JOIN users u2 ON u2.user_id = p1.creator
+      WHERE p1.person_id = p.person_id AND u2.user_id = u.user_id
+    ) AND l.name != "Baobab Health Trust"
+    GROUP BY u.location_id;
+EOF
+   
+    sync_status = []
+    (data || []).each do |l|
+      sync_status << {
+        site_code: l["code"],
+        site_name: l["name"],
+        last_sync_datetime: l["updated_at"],
+        last_sync_datetime_formated: l["updated_at"].to_time.strftime("%d/%b/%Y %H:%M:%S")
+      }
+    end
+
+    return sync_status
+  end
+
   private
 
   DEFAULT_PAGE_SIZE = 10

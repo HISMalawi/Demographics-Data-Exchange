@@ -175,13 +175,13 @@ UpdatecouchdbPerson () {
     else
       SQL_QUERY="INSERT INTO people (couchdb_person_id, given_name, middle_name, family_name, gender, birthdate,"
       SQL_QUERY="$SQL_QUERY birthdate_estimated, died, deathdate, deathdate_estimated,npid, location_created_at,"
-      SQL_QUERY="$SQL_QUERY created_at, updated_at, voided, void_reason, date_voided) "
+      SQL_QUERY="$SQL_QUERY created_at, updated_at, voided, void_reason, date_voided, creator) "
       SQL_QUERY="$SQL_QUERY VALUES(\"${CURR_DOC_ID}\",\"${CURR_DOC_GIVEN_NAME}\", \"${CURR_DOC_MIDDLE_NAME}\","
       SQL_QUERY="$SQL_QUERY \"${CURR_DOC_FAMILY_NAME}\", \"${CURR_DOC_GENDER}\", ${CURR_DOC_BIRTHDATE}, "
       SQL_QUERY="$SQL_QUERY ${CURR_DOC_BIRTHDATE_EST}, ${CURR_DOC_DIED}, ${CURR_DOC_DEATHDATE},"
       SQL_QUERY="$SQL_QUERY ${CURR_DOC_DEATHDATE_EST},\"${CURR_DOC_NPID}\", \"${LOCATION_ID}\","
       SQL_QUERY="$SQL_QUERY \"${CURR_DOC_CREATED_AT}\", \"${CURR_DOC_UPDATED_AT}\", ${CURR_DOC_VOIDED},"
-      SQL_QUERY="$SQL_QUERY \"${CURR_DOC_VOID_REASON}\", \"${CURR_DOC_DATE_VOIDED}\")";
+      SQL_QUERY="$SQL_QUERY \"${CURR_DOC_VOID_REASON}\", \"${CURR_DOC_DATE_VOIDED}\", \"${USER_ID}\")";
 
       echo "CREATING PERSON: ${CURR_DOC_ID}" 
     fi
