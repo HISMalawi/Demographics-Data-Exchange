@@ -1,6 +1,6 @@
 #!/bin/bash
 ENV=$1
-PROCESS_FILE="../log/process.pid"
+PROCESS_FILE="../tmp/process.pid"
 
 if [ -f $PROCESS_FILE ] ; then
   exit
