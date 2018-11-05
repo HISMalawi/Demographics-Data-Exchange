@@ -4,6 +4,14 @@ module FootPrintService
     footprint = CouchdbFootPrint.create(
        person_id: person.couchdb_person_id,
        user_id: User.current.couchdb_user_id)
+    
+    FootPrint.create(
+      couchdb_foot_print_id: footprint.id,
+      person_id: person.id,
+      couchdb_person_id: footprint.person_id,
+      user_id: User.current.id,
+      couchdb_user_id: footprint.user_id
+    )
        
     return footprint
   end

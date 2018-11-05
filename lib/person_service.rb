@@ -345,6 +345,11 @@ module PersonService
       (people || []).each do |person|
         people_arr << self.get_person_obj(person)
       end
+
+      if people_arr.length == 1
+        FootPrintService.create(people.first)
+      end
+
     end
     
     return people_arr
@@ -354,6 +359,7 @@ module PersonService
     doc_id = params[:doc_id]
     person = Person.where(couchdb_person_id: doc_id)
     return [] if person.blank?
+    FootPrintService.create(person.first)
     return [self.get_person_obj(person.first)]
   end
   
