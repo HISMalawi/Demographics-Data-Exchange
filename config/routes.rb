@@ -56,6 +56,7 @@ Rails.application.routes.draw do
   get   "v1/foot_print_stats", to: "api/v1/people#client_movements"
   get   "v1/system_info", to: "api/v1/system#info"
   get   "v1/cum_total_assigned", to: "api/v1/people#cum_total_assigned"
+  get   "v1/sync_info", to: "api/v1/location#sync_info"
 
   root to: "api/v1/user#index"
 end
