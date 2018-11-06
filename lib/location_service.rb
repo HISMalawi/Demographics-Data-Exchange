@@ -168,25 +168,42 @@ module LocationService
   end
 
   def self.sync_info
-    data = ActiveRecord::Base.connection.select_all <<EOF
-    SELECT l.code, l.name, f.updated_at FROM foot_prints f
-    INNER JOIN users u ON u.user_id = f.user_id
-    INNER JOIN locations l ON l.location_id = u.location_id
-    WHERE f.updated_at = (
-     SELECT MAX(updated_at) FROM foot_prints f2 
-     WHERE f2.foot_print_id = f.foot_print_id
-    ) GROUP BY u.location_id;
+    user_ids = FootPrint.group(:user_id)
+    user_ids_checked = [0]
+    locations = {}
+    
+    (user_ids || []).each do |id|		
+      data = ActiveRecord::Base.connection.select_one <<EOF
+      Select distinct(user_id) user_id, max(created_at) created_at
+      from foot_prints where user_id NOT IN(#{user_ids_checked.join(",")});
 EOF
-   
-    sync_status = []
-    (data || []).each do |l|
-      days = (Date.today - l["updated_at"].to_date).to_i
+
+      location_id = self.get_locaton_id(data["user_id"].to_i) 
+      next if location_id.blank?	
       
+      if locations[location_id].blank?
+	locations[location_id] = data["created_at"].to_time 
+      end
+
+      datetime = data["created_at"].to_time
+
+      if locations[location_id] > datetime
+        locations[location_id] = datetime
+      end
+     
+      user_ids_checked << data["user_id"] .to_i	
+    end
+
+    sync_status = []
+    (locations || []).each do |location_id, datetime|
+      days = (Date.today - datetime.to_date).to_i
+      location = Location.find(location_id)
+
       sync_status << {
-        site_code: l["code"],
-        site_name: l["name"],
-        last_sync_datetime: l["updated_at"],
-        last_sync_datetime_formated: l["updated_at"].to_time.strftime("%d/%b/%Y %H:%M:%S"),
+        site_code: location.code,
+        site_name: location.name,
+        last_sync_datetime: datetime,
+        last_sync_datetime_formated: datetime.strftime("%d/%b/%Y %H:%M:%S"),
 	days_gone_since_last_sync: days 
       }
     end
@@ -195,6 +212,13 @@ EOF
   end
 
   private
+
+  def self.get_locaton_id(user_id)
+    return nil if user_id == 0
+    user = User.find(user_id) 
+    return nil if user.blank?
+    return user.location_id
+  end
 
   DEFAULT_PAGE_SIZE = 10
 end
