@@ -204,10 +204,39 @@ EOF
         site_name: location.name,
         last_sync_datetime: datetime,
         last_sync_datetime_formated: datetime.strftime("%d/%b/%Y %H:%M:%S"),
-	days_gone_since_last_sync: days 
+	days_gone_since_last_sync: days,
+        location_id: location.id 
       }
     end
 
+    data = ActiveRecord::Base.connection.select_all <<EOF
+    SELECT l.location_id, l.name, l.code FROM users u 
+    INNER JOIN locations l ON l.location_id = u.location_id 
+    WHERE user_id NOT IN(
+      SELECT user_id FROM foot_prints GROUP BY user_id
+    ) AND l.name NOT LIKE '%Baobab health%' GROUP BY u.location_id;
+EOF
+
+    (data || []).each do |u|
+      location_id = u["location_id"].to_i
+      available = false
+      (sync_status || []).each do |s|
+        if s[:location_id] == location_id
+           available = true
+        end
+      end
+
+      if !available
+        sync_status << {
+          site_code: u["code"],
+          site_name: u["name"],
+          last_sync_datetime: "N/A",
+          last_sync_datetime_formated: "N/A",
+	  days_gone_since_last_sync: 500,
+          location_id: location_id 
+        }
+      end
+    end	
     return sync_status
   end
 
