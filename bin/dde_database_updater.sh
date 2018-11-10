@@ -1,6 +1,7 @@
 #!/bin/bash
 ENV=$1
-PROCESS_FILE="../tmp/process.pid"
+
+PROCESS_FILE="/tmp/dde3_db_updater_process.pid"
 
 if [ -f $PROCESS_FILE ] ; then
   exit

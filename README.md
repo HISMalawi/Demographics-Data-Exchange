@@ -112,6 +112,12 @@ It was built by Baobab Health Trust.
 
     * Save the changes and close the cron tab.
 
+7. Run the following command:
+    ```
+    sudo sed -i 's/#TMPTIME=0/TMPTIME=0/g' /etc/default/rcS
+
+    ```
+
 
 
 
