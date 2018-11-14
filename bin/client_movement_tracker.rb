@@ -32,7 +32,7 @@ EOF
 end
 
 def check_if_script_already_running
-  file_exist = File.file?("#{Rails.root}/tmp/client-tracker.pid")
+  file_exist = File.file?("/tmp/client-tracker.pid")
   return (file_exist == true ? true : false)
 end
 
@@ -45,7 +45,7 @@ def start
     puts "Script is already running, wait until it is done ...."
     return
   else
-    File.open("#{Rails.root}/tmp/client-tracker.pid","w")
+    File.open("/tmp/client-tracker.pid","w")
   end
 
   file_exist = File.file?("#{Rails.root}/log/client-tracker.log")
@@ -57,6 +57,7 @@ def start
   else
     file = File.open("#{Rails.root}/log/client-tracker.log", "w")
     file.syswrite("foot_print_id: 0")
+    file.close
   end
 
   categories = {}
@@ -96,8 +97,11 @@ def start
   end
 
   buildStatTable
-  system "rm #{Rails.root}/tmp/client-tracker.pid"
+  system "rm /tmp/client-tracker.pid"
+  file = File.open("#{Rails.root}/log/client-tracker.log", "w")
   file.syswrite("foot_print_id: #{foot_print_id}")
+  file.close
+  puts "Finished"
 end
 
 def buildStatTable
