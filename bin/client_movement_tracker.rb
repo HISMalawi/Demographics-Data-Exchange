@@ -67,11 +67,12 @@ def start
 
   (foot_print_data || []).each_with_index do |f, i|
 
-
+    
     couchdb_user_id = f.couchdb_user_id
     couchdb_person_id = f.couchdb_person_id
     couchdb_location_id = 0
-    
+    foot_print_id = f.foot_print_id
+
     next if couchdb_person_id.blank?
 
     begin
