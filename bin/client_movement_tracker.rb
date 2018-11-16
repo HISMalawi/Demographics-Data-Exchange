@@ -107,6 +107,10 @@ end
 
 def buildStatTable
   ActiveRecord::Base.connection.execute <<EOF
+  truncate tmp_foot_print_category_stats;
+EOF
+
+  ActiveRecord::Base.connection.execute <<EOF
   INSERT INTO tmp_foot_print_category_stats 
   SELECT NULL, category, count(category) FROM people p
   INNER JOIN tmp_foot_print_categories c ON c.couchdb_person_id = p.couchdb_person_id

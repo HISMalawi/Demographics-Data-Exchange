@@ -4,6 +4,7 @@ ENV=$1
 PROCESS_FILE="/tmp/dde3_db_updater_process.pid"
 
 if [ -f $PROCESS_FILE ] ; then
+  echo "Script still running"
   exit
 fi
 
