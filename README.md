@@ -15,9 +15,11 @@ It was built by Baobab Health Trust.
 
 * Rails 5.2.0
 
-* MySQL 5.5
+* MySQL 5.5 or higher
 
-* CouchDB 1.6.1
+* CouchDB 1.6.1 or higher
+
+* Elasticsearch 6.3.0 or higher
 
 ##Dependancies
 
@@ -33,62 +35,64 @@ It was built by Baobab Health Trust.
 
 * Clone DDE Application from bitbucket.
   ```
-    git clone git@bitbucket.org:baobabhealthtrust/dde3.git
+    $ git clone https://github.com/baobabhealthtrust/Demographics-Data-Exchange
   ```
   
 * Enter into the root of your application by typing 
   ```
-    cd dde3
+    $ cd Demographic-Data-Exchange
   ```
   
 * Copy all .yml.example files in config folder into .yml files.
   ```
-    cp config/*.yml.example config/*.yml
+    $ cp config/database.yml.example config/database.yml
+    $ cp config/couchdb.yml.example config/couchdb.yml
+    $ cp config/master_couchdb.yml.example config/master_couchdb.yml
   ```
   
 * Configure your MySQL and CouchDB databases in config/database.yml and couchdb.yml files respectively.
   Provide username, password, database name, host and port (if necessary).
 
-* Run
+* Configure couchdb for dde master couchdb in config/master_couchdb.yml
+
+* Install rubygems by running the following command:
   ```
-    bundle install
+    $ bundle install
   ```
 
 ###Setting up DDE Master
 
 1. Initialize database by typing the following in the command line 
    ```
-     rake db:create db:migrate db:seed
+    $ rails db:create db:migrate db:seed
    ```
    
 2. Dump dde mysql database to a file in db folder. Name the sql file dde_metadata.sql
    ```
-     $mysqldump -u root -p dde_database > db/dde_metadata.sql
+    $ mysqldump -u root -p dde_database > db/dde_metadata.sql
    ```
 
 3. Load MySQL national ids dump into DDE MySQL npids table.
 
 4. You can now start DDE master server.
    ```
-    passenger start -p <PORT_NUMBER>
+    $ passenger start -p <PORT_NUMBER>
    ```
 
 ###Setting up DDE Proxy
 
 1. Load dde_metadata.sql into proxy dde mysql database
    ```
-    $mysql -u root -p dde_proxy_database < db/dde_metadata.sql
+    $ mysql -u root -p dde_proxy_database < db/dde_metadata.sql
    ```
    
 2. Replicate DDE Master Couchdb to your local DDE Proxy Couchdb.
 
 4. Start DDE Proxy Server
    ```
-    passenger start -p <PORT_NUMBER>
+    $ passenger start -p <PORT_NUMBER>
   ```
   
-  
-######HAVE SOME COFFEE!!! (:
 
 
 
