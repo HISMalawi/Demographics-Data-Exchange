@@ -13,11 +13,11 @@ JSON_CONTENT_TYPE = "application/json"
 LOGGER = Logger.new STDOUT
 
 MYSQL_HOST = "localhost"
-MYSQL_DATABASE = "dde3_test_master"
-MYSQL_USER = "root"
-MYSQL_PASS = "pach321"
+MYSQL_DATABASE = "dde_development"
+MYSQL_USER = "test"
+MYSQL_PASS = "test"
 
-BATCH_SIZE = 5
+BATCH_SIZE = 200
 
 HOME_DISTRICT_ATTR_ID = 4
 HOME_VILLAGE_ATTR_ID = 6

@@ -18,8 +18,8 @@ module PersonService
 
   def self.assign_npid(params)
     couchdb_person = CouchdbPerson.find(params[:doc_id])
-    return {} if couchdb_person.blank?
-
+	return {} if couchdb_person.blank?
+=begin
     if couchdb_person.npid.blank?
       NpidService.que(couchdb_person)
       
@@ -36,7 +36,8 @@ module PersonService
         count+= 1
       end
     end
-
+=end
+    NpidService.assign_npid(couchdb_person)  if couchdb_person.npid.blank?
     return self.get_person_obj(Person.find_by_couchdb_person_id(couchdb_person.id))
   end
 
