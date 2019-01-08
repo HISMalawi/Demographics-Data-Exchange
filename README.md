@@ -103,9 +103,8 @@ It was built by Baobab Health Trust.
       ```
       crontab -e
 
-      */5 * * * * bash -l -c 'cd _PATH__TO__DDE_/bin && ./dde_database_updater.sh DDE_APP_RUNNING_ENVIRONMENT | ./timestamp.sh >> _PATH__TO__DDE_/log/dde3_cron.log 2>&1'
+      */5 * * * * bash -l -c 'cd _PATH__TO__DDE_/bin && ./dde_database_updater.sh DDE_APP_RUNNING_ENVIRONMENT | ./timestamp.sh 1>> ../log/dde3_cron.log 2>> ../log/dde3_cron_error.log'
         ```
-    Replace _PATH__TO__DDE with the path of dde3 application eg "/var/www/dde3"
     Replace DDE_APP_RUNNING_ENVIRONMENT with the environment of dde3 application eg "development"
 
     This sets your cron job to run every 5 minutes.

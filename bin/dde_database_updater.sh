@@ -75,7 +75,7 @@ Updatecouchdbrole () {
   fi
 
   `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
-  echo "UPDATED: ${CURR_DOC_ID} ...${SQL_QUERY}" 
+  echo "UPDATED: ${CURR_DOC_ID} ...${SQL_QUERY} @ $2"
 }
 
 Updatecouchdbuser () {
@@ -108,7 +108,7 @@ Updatecouchdbuser () {
       SQL_QUERY="${SQL_QUERY} location_id, voided, void_reason,created_at,updated_at) VALUES(\"${CURR_DOC_ID}\","
       SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_USERNAME}\",\"${CURR_DOC_EMAIL}\",\"${CURR_DOC_PASSWORD}\","
       SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_LOCATION_ID}\",\"${LOCATION_ID}\", ${CURR_DOC_VOIDED},"
-      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_VOID_REASON}\",\"${CURR_DOC_CREATED_AT}\",\"${CURR_DOC_UPDATED_AT}\");"
+      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_VOID_REASON}\",substr(\"${CURR_DOC_CREATED_AT}\",1,19),substr(\"${CURR_DOC_UPDATED_AT}\",1,19));"
 
       echo "CREATING USER: ${CURR_DOC_ID}" 
     fi
@@ -139,7 +139,7 @@ UpdatecouchdbPerson () {
   CURR_DOC_UPDATED_AT=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['updated_at']"`;
 
   if [[ -z "${CURR_DOC_BIRTHDATE}" ]] ; then
-    CURR_DOC_BIRTHDATE="NULL"
+    CURR_DOC_BIRTHDATE="\"1900-01-01\""
   else
     CURR_DOC_BIRTHDATE="\"${CURR_DOC_BIRTHDATE}\""
   fi
@@ -156,6 +156,20 @@ UpdatecouchdbPerson () {
     CURR_DOC_DEATHDATE="NULL"
   fi
 
+  if [[ -z "${CURR_DOC_DIED}" ]] ; then
+    CURR_DOC_DIED=0
+  fi
+
+  if [[ -z "${CURR_DOC_DEATHDATE_EST}" ]] ; then
+    CURR_DOC_DEATHDATE_EST=0
+  fi
+
+  if [[ -z "${CURR_DOC_NPID}" ]] ; then
+    CURR_DOC_NPID="NULL"
+  else
+    CURR_DOC_NPID="\"${CURR_DOC_NPID}\""
+  fi
+
   get_mysql_location_from_couchdb "${CURR_DOC_LOCATION_CREATED}";
   get_mysql_user_id_from_couchdb "${CURR_DOC_CREATOR}"
 
@@ -169,11 +183,12 @@ UpdatecouchdbPerson () {
       SQL_QUERY="$SQL_QUERY birthdate=${CURR_DOC_BIRTHDATE}, birthdate_estimated=${CURR_DOC_BIRTHDATE_EST},"
       SQL_QUERY="$SQL_QUERY died=${CURR_DOC_DIED}, deathdate=${CURR_DOC_DEATHDATE}, deathdate_estimated=${CURR_DOC_DEATHDATE_EST},"
       SQL_QUERY="$SQL_QUERY voided=${CURR_DOC_VOIDED}, date_voided=${CURR_DOC_DATE_VOIDED}, void_reason=\"${CURR_DOC_VOID_REASON}\","
-      SQL_QUERY="$SQL_QUERY npid=\"${CURR_DOC_NPID}\", location_created_at=\"${LOCATION_ID}\","
-      SQL_QUERY="$SQL_QUERY creator=\"${USER_ID}\", created_at=\"${CURR_DOC_CREATED_AT}\", updated_at=\"${CURR_DOC_UPDATED_AT}\""
+      SQL_QUERY="$SQL_QUERY npid=${CURR_DOC_NPID}, location_created_at=\"${LOCATION_ID}\","
+      SQL_QUERY="$SQL_QUERY creator=\"${USER_ID}\", created_at=substr(\"${CURR_DOC_CREATED_AT}\",1,19), updated_at=substr(\"${CURR_DOC_UPDATED_AT}\",1,19)"
       SQL_QUERY="$SQL_QUERY WHERE couchdb_person_id = \"${CURR_DOC_ID}\";"
     
-      echo "UPDATING PERSON: ${CURR_DOC_ID}" 
+      echo "UPDATING PERSON: ${CURR_DOC_ID}"
+
     else
       SQL_QUERY="INSERT INTO people (couchdb_person_id, given_name, middle_name, family_name, gender, birthdate,"
       SQL_QUERY="$SQL_QUERY birthdate_estimated, died, deathdate, deathdate_estimated,npid, location_created_at,"
@@ -181,13 +196,14 @@ UpdatecouchdbPerson () {
       SQL_QUERY="$SQL_QUERY VALUES(\"${CURR_DOC_ID}\",\"${CURR_DOC_GIVEN_NAME}\", \"${CURR_DOC_MIDDLE_NAME}\","
       SQL_QUERY="$SQL_QUERY \"${CURR_DOC_FAMILY_NAME}\", \"${CURR_DOC_GENDER}\", ${CURR_DOC_BIRTHDATE}, "
       SQL_QUERY="$SQL_QUERY ${CURR_DOC_BIRTHDATE_EST}, ${CURR_DOC_DIED}, ${CURR_DOC_DEATHDATE},"
-      SQL_QUERY="$SQL_QUERY ${CURR_DOC_DEATHDATE_EST},\"${CURR_DOC_NPID}\", \"${LOCATION_ID}\","
-      SQL_QUERY="$SQL_QUERY \"${CURR_DOC_CREATED_AT}\", \"${CURR_DOC_UPDATED_AT}\", ${CURR_DOC_VOIDED},"
-      SQL_QUERY="$SQL_QUERY \"${CURR_DOC_VOID_REASON}\", \"${CURR_DOC_DATE_VOIDED}\", \"${USER_ID}\")";
+      SQL_QUERY="$SQL_QUERY ${CURR_DOC_DEATHDATE_EST},${CURR_DOC_NPID}, \"${LOCATION_ID}\","
+      SQL_QUERY="$SQL_QUERY substr(\"${CURR_DOC_CREATED_AT}\",1,19), substr(\"${CURR_DOC_UPDATED_AT}\",1,19), ${CURR_DOC_VOIDED},"
+      SQL_QUERY="$SQL_QUERY \"${CURR_DOC_VOID_REASON}\", ${CURR_DOC_DATE_VOIDED}, \"${USER_ID}\")";
 
-      echo "CREATING PERSON: ${CURR_DOC_ID}" 
+      echo "CREATING PERSON: ${CURR_DOC_ID}"
     fi
     `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
+
   fi
   
 }
@@ -212,8 +228,8 @@ UpdatecouchdbPersonAttribute () {
   if [[ ! -z "${PERSON_ID}" ]] ; then
     if [[ ! -z "${RESULT}" ]] ; then
       SQL_QUERY="UPDATE person_attributes SET value=\"${CURR_DOC_VALUE}\", voided=${CURR_DOC_VOIDED},"
-      SQL_QUERY="${SQL_QUERY} void_reason=\"${CURR_VOID_REASON}\", created_at=\"${CURR_DOC_CREATED_AT}\","
-      SQL_QUERY="${SQL_QUERY} updated_at=\"${CURR_DOC_UPDATED_AT}\" WHERE person_id = \"${PERSON_ID}\""
+      SQL_QUERY="${SQL_QUERY} void_reason=\"${CURR_VOID_REASON}\", created_at=substr(\"${CURR_DOC_CREATED_AT}\",1,19),"
+      SQL_QUERY="${SQL_QUERY} updated_at=substr(\"${CURR_DOC_UPDATED_AT}\",1,19) WHERE person_id = \"${PERSON_ID}\""
       SQL_QUERY="${SQL_QUERY} and person_attribute_type_id = \"${PERSON_ATTRIBUTE_TYPE_ID}\";"
       
       echo "UPDATING PERSON ATTRIBUTE: ${CURR_DOC_ID}" 
@@ -223,10 +239,11 @@ UpdatecouchdbPersonAttribute () {
       SQL_QUERY="${SQL_QUERY} created_at, updated_at) VALUES(\"${PERSON_ID}\", \"${CURR_DOC_PERSON}\","
       SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_PERSON_ATTR_TYPE}\",\"${CURR_DOC_ID}\", \"${CURR_DOC_VOIDED}\","
       SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_VOID_REASON}\",\"${PERSON_ATTRIBUTE_TYPE_ID}\",\"${CURR_DOC_VALUE}\","
-      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_CREATED_AT}\", \"${CURR_DOC_UPDATED_AT}\");"
+      SQL_QUERY="${SQL_QUERY} substr(\"${CURR_DOC_CREATED_AT}\",1,19), substr(\"${CURR_DOC_UPDATED_AT}\",1,19));"
       
       echo "INSERTING PERSON ATTRIBUTE: ${CURR_DOC_ID}" 
     fi
+
     `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
   fi  
 }
@@ -249,15 +266,15 @@ UpdatecouchdbLocationNpid () {
     if [[ ! -z "${RESULT}" ]] ; then
       SQL_QUERY="UPDATE location_npids SET npid=\"${CURR_DOC_NPID}\", couchdb_location_id=\"${CURR_DOC_LOCATION}\","
       SQL_QUERY="${SQL_QUERY} location_id=\"${LOCATION_ID}\", assigned=${CURR_DOC_ASSIGNED},"
-      SQL_QUERY="${SQL_QUERY} created_at=\"${CURR_DOC_CREATED_AT}\", updated_at=\"${CURR_DOC_UPDATED_AT}\""
+      SQL_QUERY="${SQL_QUERY} created_at=substr(\"${CURR_DOC_CREATED_AT}\",1,19), updated_at=substr(\"${CURR_DOC_UPDATED_AT}\",1,19)"
       SQL_QUERY="${SQL_QUERY} WHERE couchdb_location_npid_id = \"${CURR_DOC_ID}\";"
-      
-      echo "UPDATING LOCATION NPID: ${CURR_DOC_ID}" 
+
+      echo "UPDATING LOCATION NPID: ${CURR_DOC_ID}"
     else
-      SQL_QUERY="INSERT INTO location_npids (npid, couchdb_location_id, location_id, assigned"
+      SQL_QUERY="INSERT INTO location_npids (npid, couchdb_location_id, location_id, assigned,"
       SQL_QUERY="${SQL_QUERY} couchdb_location_npid_id, created_at, updated_at) VALUES(\"${CURR_DOC_NPID}\","
       SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_LOCATION}\", \"${LOCATION_ID}\", ${CURR_DOC_ASSIGNED},"
-      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_ID}\", \"${CURR_DOC_CREATED_AT}\", \"${CURR_DOC_UPDATED_AT}\");"
+      SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_ID}\", substr(\"${CURR_DOC_CREATED_AT}\",1,19), substr(\"${CURR_DOC_UPDATED_AT}\",1,19));"
 
       echo "CREATING LOCATION NPID: ${CURR_DOC_ID}" 
     fi
@@ -277,11 +294,21 @@ UpdatecouchdbFootPrint () {
   get_mysql_person_id_from_couch_db "${CURR_DOC_PERSON}"
   get_mysql_user_id_from_couchdb "${CURR_DOC_USER}"
 
-  SQL_QUERY="INSERT INTO foot_prints (couchdb_foot_print_id, user_id, couchdb_user_id, person_id,"
-  SQL_QUERY="${SQL_QUERY} couchdb_person_id, created_at, updated_at)"
-  SQL_QUERY="${SQL_QUERY} VALUE(\"${CURR_DOC_ID}\", \"${USER_ID}\", \"${CURR_DOC_USER}\","
-  SQL_QUERY="${SQL_QUERY} \"${PERSON_ID}\", \"${CURR_DOC_PERSON}\",\"${CURR_DOC_CREATED_AT}\","
-  SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_UPDATED_AT}\");"
+  SQL_QUERY="SELECT * FROM foot_prints WHERE couchdb_foot_print_id = '${CURR_DOC_ID}';";
+  RESULT=`mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
+
+  if [[ ! -z "${RESULT}" ]] ; then
+      SQL_QUERY="UPDATE foot_prints SET user_id=\"${USER_ID}\", couchdb_user_id=\"${CURR_DOC_USER}\","
+      SQL_QUERY="${SQL_QUERY} person_id=\"${PERSON_ID}\", couchdb_person_id=\"${CURR_DOC_PERSON}\","
+      SQL_QUERY="${SQL_QUERY} created_at=substr(\"${CURR_DOC_CREATED_AT}\",1,19), updated_at=substr(\"${CURR_DOC_UPDATED_AT}\",1,19)"
+      SQL_QUERY="${SQL_QUERY} WHERE couchdb_foot_print_id = \"${CURR_DOC_ID}\";"
+  else
+      SQL_QUERY="INSERT INTO foot_prints (couchdb_foot_print_id, user_id, couchdb_user_id, person_id,"
+      SQL_QUERY="${SQL_QUERY} couchdb_person_id, created_at, updated_at)"
+      SQL_QUERY="${SQL_QUERY} VALUE(\"${CURR_DOC_ID}\", \"${USER_ID}\", \"${CURR_DOC_USER}\","
+      SQL_QUERY="${SQL_QUERY} \"${PERSON_ID}\", \"${CURR_DOC_PERSON}\",substr(\"${CURR_DOC_CREATED_AT}\",1,19),"
+      SQL_QUERY="${SQL_QUERY} substr(\"${CURR_DOC_UPDATED_AT}\",1,19));"
+  fi
     
   `mysql --host=$MYSQL_HOST --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD $MYSQL_DATABASE -e "$SQL_QUERY"`;
 
@@ -326,12 +353,19 @@ LAST_SEQ=`echo "${LAST_SEQ//\}}"`;
 
 LAST_SEQ_NUM=`echo $LAST_SEQ | tr -dc '0-9'`;
 
+
 echo "$RESULTS" > ../log/latest_coucdb_docs.txt
+
 RECORDS=`ruby -ryaml -e "puts YAML::load_file('../log/latest_coucdb_docs.txt')['results']"`;
 
-
 for i in $RECORDS
+
 do
+  if [[ $i = *"seq"* ]] ; then
+    RUNNING_SEQ=${i#*=>}
+    RUNNING_SEQ=${RUNNING_SEQ%,*}
+  fi
+
   if [[ $i = *"id"* ]] ; then
     DOC_ID=`echo $i | awk '{split($0,a,"=>"); print a[2]}'`;
     DOC_ID=`echo "${DOC_ID//,}"`;
@@ -340,31 +374,33 @@ do
     echo "$DOC" > ../log/current_doc.txt
     TYPE=`ruby -ryaml -e "puts YAML::load_file('../log/current_doc.txt')['type']"`;
 
-    if [[ $TYPE = "CouchdbRole" ]] ; then
-      Updatecouchdbrole "$DOC"
-    fi
-    
     if [[ $TYPE = "CouchdbUser" ]] ; then
       Updatecouchdbuser "$DOC"
     fi
-    
+
+    if [[ $TYPE = "CouchdbRole" ]] ; then
+      Updatecouchdbrole "$DOC"
+    fi
+
     if [[ $TYPE = "CouchdbPerson" ]] ; then
       UpdatecouchdbPerson "$DOC"
     fi
-    
+
     if [[ $TYPE = "CouchdbPersonAttribute" ]] ; then
       UpdatecouchdbPersonAttribute "$DOC"
     fi
-    
+
     if [[ $TYPE = "CouchdbLocationNpid" ]] ; then
       UpdatecouchdbLocationNpid "$DOC"
     fi
-    
+
     if [[ $TYPE = "CouchdbFootPrint" ]] ; then
       UpdatecouchdbFootPrint "$DOC"
     fi
-    echo "Updated record:  ${DOC_ID}";
+    echo "Updated record:  ${DOC_ID} @ ${RUNNING_SEQ}";
+
   fi
+
 done
 
 if [ -f $PROCESS_FILE ] ; then
@@ -393,3 +429,4 @@ SYNC_TO_MASTER=`eval curl -s -k -H \"Content-Type: application/json\" -X POST -d
 
 exit;
 
+"

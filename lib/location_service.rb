@@ -95,7 +95,7 @@ module LocationService
       npids     = LocationNpid.where(location_id: l.location_id)
       assigned  = LocationNpid.where(["location_id = ? and assigned = 1", l.location_id])
 
-      status, last_updated = l.online?
+      #status, last_updated = l.online?
 
       locations << {
         name: l.name,
@@ -105,8 +105,8 @@ module LocationService
         code: l.code,
         location_tags: location_tags.map(&:name),
         host: l.ip_address,
-        sync_status: status,
-        last_updated: last_updated,
+        #sync_status: status,
+        #last_updated: last_updated,
         allocated: npids.count,
         assigned: assigned.count,
       }
