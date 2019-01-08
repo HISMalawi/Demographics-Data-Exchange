@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -ex
 ENV=$1
 
 PROCESS_FILE="/tmp/dde3_db_updater_process.pid"
@@ -254,7 +254,7 @@ UpdatecouchdbLocationNpid () {
       
       echo "UPDATING LOCATION NPID: ${CURR_DOC_ID}" 
     else
-      SQL_QUERY="INSERT INTO location_npids (npid, couchdb_location_id, location_id, assigned"
+      SQL_QUERY="INSERT INTO location_npids (npid, couchdb_location_id, location_id, assigned,"
       SQL_QUERY="${SQL_QUERY} couchdb_location_npid_id, created_at, updated_at) VALUES(\"${CURR_DOC_NPID}\","
       SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_LOCATION}\", \"${LOCATION_ID}\", ${CURR_DOC_ASSIGNED},"
       SQL_QUERY="${SQL_QUERY} \"${CURR_DOC_ID}\", \"${CURR_DOC_CREATED_AT}\", \"${CURR_DOC_UPDATED_AT}\");"
