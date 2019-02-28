@@ -9,6 +9,14 @@ module PersonService
     return {} if couchdb_person.blank?
     person = Person.find_by_couchdb_person_id(couchdb_person.id)
 
+    person_attributes = PersonAttribute.where(person_id: person.id,person_attribute_type_id: 14)
+    (person_attributes || []).each do |person_att|
+        couchdb_attr_id = person_att.couchdb_person_attribute_id
+        couchdb_attr = CouchdbPersonAttribute.find(couchdb_attr_id)
+        couchdb_attr.update_attributes(voided: true)
+        person_att.update_attributes(voided: true,void_reason: "Reassigned",voided_by: User.current.id)
+    end
+
     couchdb_person.update_attributes(npid: nil)
     person.update_attributes(npid: nil)
 
