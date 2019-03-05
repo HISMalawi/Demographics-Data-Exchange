@@ -426,6 +426,8 @@ REP_ID=`ruby -ryaml -e "puts YAML::load_file('../log/replication_results.txt')['
 SYNC_TO_MASTER=`eval curl -s -k -H \"Content-Type: application/json\" -X POST -d \'{\"source\": \"${TARGET_URL}\", \"target\": \"${SOURCE_URL}\", \"continuous\": true }\' \"${AUTH_SOURCE_URL}/_replicate\"`
 #else
 #fi
+cd ..
+rails r bin/es_load_names.rb
 
 exit;
 
