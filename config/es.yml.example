@@ -1,0 +1,13 @@
+development:
+  protocol: http
+  host:     localhost
+  port:     9200
+  username: 
+  password:  
+  
+production:
+  protocol: http
+  host:     localhost
+  port:     9200
+  username: 
+  password: 
