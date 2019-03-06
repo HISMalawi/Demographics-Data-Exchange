@@ -24,7 +24,7 @@ ES_PORT = es_config['development']['port']
 ES_HOST = es_config['development']['host']
 ES_PROTOCOL = es_config['development']['protocol']
 
-BATCH_SIZE = 200_000
+BATCH_SIZE = 10_000
 
 HOME_DISTRICT_ATTR_ID = 4
 HOME_VILLAGE_ATTR_ID = 6

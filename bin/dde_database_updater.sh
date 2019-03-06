@@ -403,32 +403,26 @@ do
 
 done
 
-if [ -f $PROCESS_FILE ] ; then
-  rm $PROCESS_FILE
-fi
-echo ">>>>>>>>>>>>>>>>>DONE"
-
 LAST_SEQ=`ruby -ryaml -e "puts YAML::load_file('../log/latest_coucdb_docs.txt')['last_seq']"`;
 
 if [[ ! -z "${LAST_SEQ}" ]] ; then
   echo "last_seq: ${LAST_SEQ}" > ../log/last_sequence.txt
 fi
 
-#REP_STATUS=`curl "${COUCH_PROTOCOL}://${COUCH_USERNAME}:${COUCH_PASSWORD}@${COUCH_HOST}:${COUCH_PORT}/_active_tasks"`
-#echo ${REP_STATUS} > ../log/replication_status.txt
-#REP_SIZE=`ruby -ryaml -e "puts YAML::load_file('../log/replication_status.txt')['size']"`;
-
-#if $REP_SIZE == 0 ; then
 SYNC_FROM_MASTER=`eval curl -s -k -H \"Content-Type: application/json\" -X POST -d \'{\"source\": \"${SOURCE_URL}\", \"target\": \"${TARGET_URL}\", \"continuous\": true }\' \"${AUTH_TARGET_URL}/_replicate\"`
 echo $SYNC_FROM_MASTER > ../log/replication_results.txt
 REP_ID=`ruby -ryaml -e "puts YAML::load_file('../log/replication_results.txt')['_local_id']"`;
 
 SYNC_TO_MASTER=`eval curl -s -k -H \"Content-Type: application/json\" -X POST -d \'{\"source\": \"${TARGET_URL}\", \"target\": \"${SOURCE_URL}\", \"continuous\": true }\' \"${AUTH_SOURCE_URL}/_replicate\"`
-#else
-#fi
+
 cd ..
 rails r bin/es_load_names.rb
 
-exit;
+if [ -f $PROCESS_FILE ] ; then
+  rm $PROCESS_FILE
+fi
 
-"
+echo ">>>>>>>>>>>>>>>>>DONE"
+
+
+exit;
