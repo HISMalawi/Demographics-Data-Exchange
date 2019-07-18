@@ -2,6 +2,10 @@ require "logger"
 require "json"
 require "rest-client"
 
+es_config = YAML::load(File.open("#{Rails.root}/config/es.yml"))
+ES_PORT = es_config['development']['port']
+ES_HOST = es_config['development']['host']
+ES_PROTOCOL = es_config['development']['protocol']
 # A basic client for accessing Elasticsearch.
 #
 # Client basically abstracts away json serialization and deserialization.
@@ -13,7 +17,7 @@ class ElasticsearchClient
   #
   # @param host Name of host Elasticsearch is running on (default: localhost)
   # @param port Port Elasticsearch is running on (default: 9200)
-  def initialize(host: "localhost", port: 9200, rest_client: nil)
+  def initialize(host: "#{ES_HOST}", port: ES_PORT.to_i, rest_client: nil)
     @base_url = "http://#{host}:#{port}"
     @rest_client = (rest_client or RestClient)
   end

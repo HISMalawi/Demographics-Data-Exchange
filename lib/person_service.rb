@@ -9,6 +9,14 @@ module PersonService
     return {} if couchdb_person.blank?
     person = Person.find_by_couchdb_person_id(couchdb_person.id)
 
+    person_attributes = PersonAttribute.where(person_id: person.id,person_attribute_type_id: 14)
+    (person_attributes || []).each do |person_att|
+        couchdb_attr_id = person_att.couchdb_person_attribute_id
+        couchdb_attr = CouchdbPersonAttribute.find(couchdb_attr_id)
+        couchdb_attr.update_attributes(voided: true)
+        person_att.update_attributes(voided: true,void_reason: "Reassigned",voided_by: User.current.id)
+    end
+
     couchdb_person.update_attributes(npid: nil)
     person.update_attributes(npid: nil)
 
@@ -18,8 +26,8 @@ module PersonService
 
   def self.assign_npid(params)
     couchdb_person = CouchdbPerson.find(params[:doc_id])
-    return {} if couchdb_person.blank?
-
+	return {} if couchdb_person.blank?
+=begin
     if couchdb_person.npid.blank?
       NpidService.que(couchdb_person)
       
@@ -36,7 +44,8 @@ module PersonService
         count+= 1
       end
     end
-
+=end
+    NpidService.assign_npid(couchdb_person)  if couchdb_person.npid.blank?
     return self.get_person_obj(Person.find_by_couchdb_person_id(couchdb_person.id))
   end
 
@@ -345,6 +354,11 @@ module PersonService
       (people || []).each do |person|
         people_arr << self.get_person_obj(person)
       end
+
+      if people_arr.length == 1
+        FootPrintService.create(people.first)
+      end
+
     end
     
     return people_arr
@@ -354,6 +368,7 @@ module PersonService
     doc_id = params[:doc_id]
     person = Person.where(couchdb_person_id: doc_id)
     return [] if person.blank?
+    FootPrintService.create(person.first)
     return [self.get_person_obj(person.first)]
   end
   
@@ -379,5 +394,20 @@ module PersonService
 
     return people_arr
   end
+
+  def self.total_assigned(date)
+    data = Person.where("created_at BETWEEN ? AND ?", 
+      date.strftime("%Y-%m-%d 00:00:00"), date.strftime("%Y-%m-%d 23:59:59"))
+  
+    return data.count
+  end
+
+  def self.cum_total_assigned
+    data = Person.where("npid IS NOT NULL AND (given_name NOT LIKE '%test%' 
+      AND family_name NOT LIKE '%test%') AND voided = 0")
+  
+    return data.count
+  end
+
 end
 

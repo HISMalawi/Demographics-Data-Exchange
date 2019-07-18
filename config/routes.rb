@@ -47,6 +47,17 @@ Rails.application.routes.draw do
   post "v1/reassign_npid", to: "api/v1/people#reassign_npid"
 
   post "v1/search/people", to: "api/v1/people_match#get"
+  get   "v1/get_regions", to: "api/v1/location#get_regions"
+  get   "v1/get_regional_stats", to: "api/v1/location#regional_stats"
+  post  "/v1/update_location_field", to: "api/v1/location#update_location_field"
+
+  #dashboard links
+  get   "v1/new_ids_assigned", to: "api/v1/people#total_assigned"
+  get   "v1/foot_print_stats", to: "api/v1/people#client_movements"
+  get   "v1/system_info", to: "api/v1/system#info"
+  get   "v1/cum_total_assigned", to: "api/v1/people#cum_total_assigned"
+  get   "v1/sync_info", to: "api/v1/location#sync_info"
+  get   "v1/footprints", to: "api/v1/footprint#by_category"
 
   root to: "api/v1/user#index"
 end

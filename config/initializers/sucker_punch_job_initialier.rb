@@ -1,2 +1,2 @@
 #User.current = User.first
-NpidRegistrationJob.perform_in(5)
+#NpidRegistrationJob.perform_in(5)
