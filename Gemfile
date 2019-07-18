@@ -33,7 +33,6 @@ gem 'bootsnap', '>= 1.1.0', require: false
 gem 'couchrest_model'
 gem 'jwt'
 gem 'simple_command'
-gem 'sucker_punch'
 gem 'passenger'
 
 gem 'whitesimilarity'
