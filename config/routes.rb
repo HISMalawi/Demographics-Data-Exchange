@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  mount Rswag::Ui::Engine => '/api-docs'
+  mount Rswag::Api::Engine => '/api-docs'
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 
   namespace :api do
@@ -17,7 +19,7 @@ Rails.application.routes.draw do
   post "v1/verify_token/", to: "api/v1/user#verify_token"
 
   #people controller routes
-  post "v1/add_person", to: "api/v1/people#create"
+  post "v1/add_person", to: "api/v1/people_details#create"
   post "v1/search_by_name_and_gender", to: "api/v1/people#search_by_name_and_gender"
   post "v1/search_by_npid", to: "api/v1/people#search_by_npid"
   post "v1/search_by_doc_id", to: "api/v1/people#search_by_doc_id"
@@ -58,6 +60,9 @@ Rails.application.routes.draw do
   get   "v1/cum_total_assigned", to: "api/v1/people#cum_total_assigned"
   get   "v1/sync_info", to: "api/v1/location#sync_info"
   get   "v1/footprints", to: "api/v1/footprint#by_category"
+
+  #sync links
+  get   'v1/person_changes', to: 'api/v1/sync#pull_updates'
 
   root to: "api/v1/user#index"
 end

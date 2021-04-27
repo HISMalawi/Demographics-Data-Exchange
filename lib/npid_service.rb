@@ -1,6 +1,6 @@
 
 module NpidService
-  
+
   def self.que(couchdb_person)
     NpidRegistrationQue.create(couchdb_person_id: couchdb_person.id, creator: User.current.id)
   end
@@ -18,10 +18,10 @@ module NpidService
           location = current_user.couchdb_location_id
         end
 
-        couch_location_npid = CouchdbLocationNpid.create(npid: n.npid, 
+        couch_location_npid = CouchdbLocationNpid.create(npid: n.npid,
           location_id: location)
         n.update_attributes(assigned: true)
-        
+
         mysql_location = Location.find_by_couchdb_location_id(couch_location_npid.location_id)
         LocationNpid.create(
           couchdb_location_npid_id: couch_location_npid.id,
@@ -36,24 +36,19 @@ module NpidService
   end
 
   #assigning individual npid to clients
-  def self.assign_npid(couchdb_person)
-    available_npid = LocationNpid.where(assigned: 0, 
-      location_id: User.current.location_id).limit(100).map{|i| i.npid}.sample rescue nil
+  def self.assign_npid(person)
+    # available_npid = LocationNpid.where(assigned: 0,
+    #   location_id: User.current.location_id).limit(1).map{|i| i.npid}.sample rescue nil
 
-    unless available_npid.blank?
-      ActiveRecord::Base.transaction do 
-        location_npid = LocationNpid.find_by_npid(available_npid)
-        location_npid.update_attributes(assigned: 1)
-        couchdb_location_npid = CouchdbLocationNpid.find(location_npid.couchdb_location_npid_id)
-        couchdb_location_npid.update_attributes(assigned: 1)
-
-        couchdb_person.update_attributes(npid: available_npid)
-        Person.find_by_couchdb_person_id(couchdb_person.id).update_attributes(npid: available_npid)
-        return true
+    # unless available_npid.blank?
+      ActiveRecord::Base.transaction do
+        if LocationNpid.where(assigned: 0,location_id: User.current.location_id).limit(1).update(assigned: 1)
+          return true
+        else
+          return 'No free npids available for location'
+        end
       end
-    end
-
-    return false
+    # end
   end
 
   #   Assign npid to a patient.
@@ -65,7 +60,7 @@ module NpidService
       # Get all unassigned npids for this site/location.
       npid = LocationNpid.where(["assigned = FALSE AND
         couchdb_location_id =?",location_id]).limit(1)
-      
+
       # Assign npid to a person if unassigned npids exists.
       unless npid.blank?
         npid  = npid.first
@@ -85,8 +80,8 @@ module NpidService
 
         ############# Void National patient identifier if it exists
         attribute_type = PersonAttributeType.find_by_name('National patient identifier')
-        attributes = PersonAttribute.where("couchdb_person_id = ? 
-          AND person_attribute_type_id = ?", person.id, attribute_type.id) 
+        attributes = PersonAttribute.where("couchdb_person_id = ?
+          AND person_attribute_type_id = ?", person.id, attribute_type.id)
 
         (attributes || []).each do |a|
           couchdb_person_attribute = CouchdbPersonAttribute.find(a.couchdb_person_attribute_id)
@@ -100,24 +95,24 @@ module NpidService
 
     return person
   end
-  
+
   def self.npids_assigned(params)
-    
+
     location_doc_id = params[:location_doc_id]
     location_npids  = LocationNpid.where("couchdb_location_id = ? and
       assigned = true", location_doc_id)
-      
+
     return {assigned_npid: location_npids.length}
   end
-  
+
   def self.total_allocated_npids(params)
-    
+
     location_doc_id = params[:location_doc_id]
     location_npids  = LocationNpid.where("couchdb_location_id = ?",
      location_doc_id)
-      
+
     return {allocated_npids: location_npids.length}
-    
+
   end
 
 end
