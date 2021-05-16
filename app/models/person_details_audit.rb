@@ -1,3 +1,3 @@
 class PersonDetailsAudit < ApplicationRecord
-  belongs_to :person_details, foreign_key: :person_uuid, primary_key: :person_uuid
+  belongs_to :person_detail, foreign_key: :person_uuid, primary_key: :person_uuid
 end

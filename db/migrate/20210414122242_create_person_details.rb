@@ -6,7 +6,7 @@ class CreatePersonDetails < ActiveRecord::Migration[5.2]
       t.string :middle_name
       t.date :birthdate
       t.boolean :birthdate_estimated, null: false, default: 0
-      t.boolean :gender, null: false
+      t.string :gender, null: false, limit: 1
       t.integer :ancestry_district
       t.integer :ancestry_ta
       t.integer :ancestry_village

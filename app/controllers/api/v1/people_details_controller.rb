@@ -15,7 +15,7 @@ class Api::V1::PeopleDetailsController < ApplicationController
 
   # POST /api/v1/people_details
   def create
-    debugger
+
     errors = ValidateParams.add_person(params)
     if errors.blank?
       person = PersonService.create(params, current_user)
@@ -23,27 +23,28 @@ class Api::V1::PeopleDetailsController < ApplicationController
     else
       render json: errors
     end
-    # @api_v1_people_detail = Api::V1::PeopleDetail.new(api_v1_people_detail_params)
-
-    # if @api_v1_people_detail.save
-    #   render json: @api_v1_people_detail, status: :created, location: @api_v1_people_detail
-    # else
-    #   render json: @api_v1_people_detail.errors, status: :unprocessable_entity
-    # end
   end
 
   # PATCH/PUT /api/v1/people_details/1
-  def update
-    if @api_v1_people_detail.update(api_v1_people_detail_params)
-      render json: @api_v1_people_detail
+  def update_person
+    errors = ValidateParams.update_person(params)
+    if errors.blank?
+      person = PersonService.update_person(params, current_user)
+      render json: person
     else
-      render json: @api_v1_people_detail.errors, status: :unprocessable_entity
+      render json: errors
     end
   end
 
-  # DELETE /api/v1/people_details/1
-  def destroy
-    @api_v1_people_detail.destroy
+ #Search by name and gender
+ def search_by_name_and_gender
+    errors = ValidateParams.search_by_name_and_gender(params)
+    if errors.blank?
+      search_results = PersonService.search_by_name_and_gender(params)
+      render json: search_results
+    else
+      render json: errors
+    end
   end
 
   private

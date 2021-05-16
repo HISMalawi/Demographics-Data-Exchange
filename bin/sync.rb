@@ -37,45 +37,74 @@ def pull_records
     record.delete('created_at')
     record.delete('updated_at')
     ActiveRecord::Base.transaction do
-    	if person.blank? 
+    	if person.blank?
         PersonDetail.create!(record)
     	else
           PersonDetail.create!(record)
           audit_record = JSON.parse(person.to_json)
-          audit_record.delete('id') 
+          audit_record.delete('id')
           audit_record.delete('created_at')
-          audit_record.delete('updated_at')  
+          audit_record.delete('updated_at')
           PersonDetailsAudit.create!(audit_record)
           person.destroy!
     	end
   	  Config.where(config: 'pull_seq').update(config_value: pull_seq)
-    end 
+    end
   end
 end
 
 
 def push_records
-  update_url = "http://#{@host}:#{@port}/api/v1/person_details"
-  create_url = "http://#{@host}:#{@port}/api/v1/person_details"
+  url = "http://#{@host}:#{@port}/v1/push_changes"
 
 	push_seq = Config.find_by_config('push_seq')['config_value'].to_i
 
-	update_records = PersonDetail.where('person_details.id > ? AND person_details.location_updated_at = ?', push_seq,@location ).joins(:person_details_audit)
+  records_to_push = PersonDetail.where('person_details.id > ? AND person_details.location_updated_at = ?', push_seq,@location).order(:id)
 
-  new_records = PersonDetail.where('person_uuid not IN (?) AND person_details.id > ? AND person_details.location_updated_at = ?', (PersonDetail.where('person_details.id > ? AND person_details.location_updated_at = ?', push_seq,@location ).joins(:person_details_audit).select('person_details.person_uuid')), push_seq, @location)
-  
   #PUSH UPDATES
-  update_records.each do | record |
-    debugger
-    response = JSON.parse(RestClient.put(update_url,record.to_json,{content_type: :json, accept: :json}, headers={Authorization: authenticate }))
-
+  records_to_push.each do | record |
+    begin
+      response = JSON.parse(RestClient.post(url,format_payload(record), headers={Authorization: authenticate }))
+      Config.find_by_config('push_seq').update(config_value: record.id.to_i) if response['status'] == 200
+    rescue => e
+        File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
+        exit
+    end
   end
 
+end
+
+def format_payload(person)
+  payload =  {
+              "id": person.id,
+              "last_name": person.last_name,
+              "first_name": person.first_name,
+              "middle_name": person.middle_name,
+              "gender": person.gender,
+              "occupation": '',
+              "cellphone_number": '',
+              "home_village": person.home_village,
+              "home_ta": person.home_ta,
+              "home_district": person.home_district,
+              "ancestry_village": person.ancestry_village,
+              "ancestry_ta": person.ancestry_ta,
+              "ancestry_district": person.ancestry_district,
+              "birthdate": person.birthdate,
+              "birthdate_estimated": person.birthdate_estimated,
+              "person_uuid": person.person_uuid,
+              "npid": person.npid,
+              "date_registered": person.date_registered,
+              "last_edited": person.last_edited,
+              "location_created_at": person.location_created_at,
+              "location_updated_at": person.location_updated_at,
+              "creator": person.creator
+            }
 end
 
 
 def main
 	pull_records
+  push_records
 end
 
 main

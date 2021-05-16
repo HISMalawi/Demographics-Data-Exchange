@@ -20,7 +20,7 @@ Rails.application.routes.draw do
 
   #people controller routes
   post "v1/add_person", to: "api/v1/people_details#create"
-  post "v1/search_by_name_and_gender", to: "api/v1/people#search_by_name_and_gender"
+  post "v1/search_by_name_and_gender", to: "api/v1/people_details#search_by_name_and_gender"
   post "v1/search_by_npid", to: "api/v1/people#search_by_npid"
   post "v1/search_by_doc_id", to: "api/v1/people#search_by_doc_id"
   post "v1/search_by_attributes", to: "api/v1/people#search_by_attributes"
@@ -28,7 +28,7 @@ Rails.application.routes.draw do
   post "v1/merge_people", to: "api/v1/people#merge_people"
   post "v1/assign_npid", to: "api/v1/people#assign_npid"
 
-  post "v1/update_person/", to: "api/v1/people#update_person"
+  post "v1/update_person/", to: "api/v1/people_details#update_person"
 
   #npid controller routes
   post "v1/assign_npids", to: "api/v1/npid#assign_npids"
@@ -63,6 +63,7 @@ Rails.application.routes.draw do
 
   #sync links
   get   'v1/person_changes', to: 'api/v1/sync#pull_updates'
+  post   'v1/push_changes', to: 'api/v1/sync#pushed_updates'
 
   root to: "api/v1/user#index"
 end

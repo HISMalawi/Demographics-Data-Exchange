@@ -35,7 +35,7 @@ module PersonService
   def self.create(params, current_user)
     location_npids = LocationNpid.where(["location_id = ?
       AND assigned = FALSE",current_user.location_id])
-    debugger
+
     return {'error': 'No NPIDs to assign'} if location_npids.blank?
 
     given_name              = params[:given_name]
@@ -64,22 +64,24 @@ module PersonService
     htn_number              = params[:identifiers][:htn_number] rescue nil
 
 
-
     person = nil
 
     ActiveRecord::Base.transaction do
+        npid = params[:uuid] || LocationNpid.where(location_id: current_user.location_id, assigned: false).limit(1)
+        uuid = params[:person_uuid] || ActiveRecord::Base.connection.execute('SELECT uuid() as uuid').first[0]
 
-        person = PersonDetail.create!(given_name: given_name, family_name: family_name,
+        person = PersonDetail.create!(first_name: given_name, last_name: family_name,
         middle_name: middle_name, gender: gender, birthdate: birthdate,
         birthdate_estimated: birthdate_estimated, location_created_at: current_user.location_id,
         ancestry_district: ancestry_district, creator: current_user.id, ancestry_ta: ancestry_ta,
         ancestry_village: ancestry_village, home_district: current_district, home_ta: current_ta,
-        home_village: current_village)
+        home_village: current_village,location_updated_at: current_user.location_id,
+        date_registered: Time.now,last_edited: Time.now, npid: npid.first.npid, person_uuid: uuid)
 
       #####################
-      NpidService.assign_npid(person)
-      #####################
-
+      # NpidService.assign_npid(person)
+      # #####################
+      npid.update(assigned: true)
     end
 
     return self.after_create_get_person_obj(person, params[:attributes])
@@ -88,8 +90,8 @@ module PersonService
   def self.after_create_get_person_obj(person, params)
 
     person = {
-      given_name:   person.given_name,
-      family_name:  person.family_name,
+      given_name:   person.first_name,
+      family_name:  person.last_name,
       middle_name:  person.middle_name,
       gender: person.gender,
       birthdate:  person.birthdate,
@@ -110,7 +112,7 @@ module PersonService
 
       },
       npid: (person.npid rescue nil),
-      doc_id: person.id
+      doc_id: person.person_uuid
     }
 
     # es_host, es_port = Rails.application.config.elasticsearch
@@ -121,62 +123,49 @@ module PersonService
     person
   end
 
-  def self.update_person(params)
+  def self.update_person(params, current_user)
     doc_id = params[:doc_id]
-    couchdb_person = CouchdbPerson.find(doc_id)
-    return {} if couchdb_person.blank?
 
-    given_name              = params[:given_name]
-    family_name             = params[:family_name]
-    middle_name             = params[:middle_name]
-    gender                  = params[:gender]
-    birthdate               = params[:birthdate]
-    birthdate_estimated     = params[:birthdate_estimated]
+    person = PersonDetail.find_by_person_uuid(doc_id)
 
-    occupation              = params[:attributes][:occupation] rescue nil
-    cellphone_number        = params[:attributes][:cellphone_number] rescue nil
-    current_district        = params[:attributes][:current_district] rescue nil
-    current_ta              = params[:attributes][:current_traditional_authority] rescue nil
-    current_village         = params[:attributes][:current_village] rescue nil
+    updated_person = {
+                      first_name:            params[:given_name],
+                      last_name:             params[:family_name],
+                      middle_name:           params[:middle_name],
+                      gender:                params[:gender],
+                      birthdate:             params[:birthdate],
+                      birthdate_estimated:   params[:birthdate_estimated],
+                      person_uuid:           doc_id,
+                      npid:                  person.npid,
 
-    home_district           = params[:attributes][:home_district] rescue nil
-    home_ta                 = params[:attributes][:home_traditional_authority] rescue nil
-    home_village            = params[:attributes][:home_village] rescue nil
+                      #occupation:            (params[:attributes][:occupation] rescue nil),
+                      #cellphone_number:      (params[:attributes][:cellphone_number] rescue nil),
+                      home_district:      (params[:attributes][:current_district] rescue nil),
+                      home_ta:            (params[:attributes][:current_traditional_authority] rescue nil),
+                      home_village:       (params[:attributes][:current_village] rescue nil),
 
-    art_number              = params[:identifiers][:art_number] rescue nil
-    htn_number              = params[:identifiers][:htn_number] rescue nil
+                      ancestry_district:         (params[:attributes][:home_district] rescue nil),
+                      ancestry_ta:               (params[:attributes][:home_traditional_authority] rescue nil),
+                      ancestry_village:          (params[:attributes][:home_village] rescue nil),
+                      creator:             person.creator,
+                      location_created_at:  person.location_created_at,
+                      location_updated_at:  current_user.location_id,
+                      date_registered:      person.date_registered,
+                      last_edited:          person.updated_at,
+                      created_at:           person.created_at
 
+                      #art_number:            (params[:identifiers][:art_number] rescue nil),
+                      #htn_number:            (params[:identifiers][:htn_number] rescue nil)
+                    }
 
-    if !given_name.blank?
-      couchdb_person.given_name = given_name
+    ActiveRecord::Base.transaction do
+      person.destroy!
+      person = JSON.parse(person.to_json)
+      person.delete('id')
+      person.delete('updated_at')
+      PersonDetail.create!(updated_person)
+      PersonDetailsAudit.create!(person)
     end
-
-    if !family_name.blank?
-      couchdb_person.family_name = family_name
-    end
-
-    if !middle_name.blank?
-      couchdb_person.middle_name = middle_name
-    end
-
-    if !gender.blank?
-      couchdb_person.gender = gender.first.upcase
-    end
-
-    if !birthdate.blank?
-      couchdb_person.birthdate = birthdate
-    end
-
-    if !birthdate_estimated.blank?
-      couchdb_person.birthdate_estimated = birthdate_estimated
-    end
-
-    if couchdb_person.save
-      couchdb_person_attr = PersonAttributeService.update(params[:attributes], doc_id) if params[:attributes]
-    end
-
-    return {person: couchdb_person, person_attributes: couchdb_person_attr}
-
   end
 
   def self.potential_duplicates(params)
@@ -212,28 +201,27 @@ module PersonService
 
   def self.get_person_obj(person, person_attributes = [])
     #This is an active record object
-
     if person_attributes.blank?
       return {
-        given_name:   person.given_name,
-        family_name:  person.family_name,
+        given_name:   person.first_name,
+        family_name:  person.last_name,
         middle_name:  person.middle_name,
         gender: person.gender,
         birthdate:  person.birthdate,
         birthdate_estimated: person.birthdate_estimated,
         attributes: {
-          occupation: self.get_attribute(person, "Occupation"),
-          cellphone_number: self.get_attribute(person, "Cell phone number"),
-          current_district: self.get_attribute(person, "Current district"),
-          current_traditional_authority: self.get_attribute(person, "Current traditional authority"),
-          current_village: self.get_attribute(person, "Current village"),
-          home_district: self.get_attribute(person, "Home district"),
-          home_traditional_authority: self.get_attribute(person, "Home traditional authority"),
-          home_village: self.get_attribute(person, "Home village")
+          #occupation: self.get_attribute(person, "Occupation"),
+          #cellphone_number: self.get_attribute(person, "Cell phone number"),
+          current_district: person.home_district,
+          current_traditional_authority: person.home_ta,
+          current_village: person.home_village,
+          home_district: person.ancestry_district,
+          home_traditional_authority: person.ancestry_ta,
+          home_village: person.ancestry_village
         },
-          identifiers: self.get_identifiers(person),
-          npid: (CouchdbPerson.find(person.couchdb_person_id).npid rescue nil),
-          doc_id: person.couchdb_person_id
+          # identifiers: self.get_identifiers(person),
+          npid: person.npid,
+          doc_id: person.person_uuid
         }
     else
       attributes = {}
@@ -288,13 +276,13 @@ module PersonService
   end
 
   def self.search_by_name_and_gender(params)
-    given_name  = params[:given_name]
-    family_name = params[:family_name]
+    first_name  = params[:given_name]
+    last_name = params[:family_name]
     gender      = params[:gender]
 
-    people = Person.where(["given_name = ?
-      AND family_name = ? AND gender = ?",
-      given_name, family_name, gender]).limit(10)
+    people = PersonDetail.where(["first_name = ?
+      AND last_name = ? AND gender = ?",
+      first_name, last_name, gender]).limit(10)
 
     people_arr = []
 
