@@ -3,7 +3,7 @@ require "syncing_service/sync_service"
 class Api::V1::SyncController < ApplicationController
 
   def pull_updates
-  	records_changed = SyncService.person_changes(update_params[:site_id], update_params[:pull_seq])
+  	records_changed = SyncService.person_changes(update_params)
 
   	render json: records_changed
   end
@@ -17,11 +17,20 @@ class Api::V1::SyncController < ApplicationController
     end
   end
 
+  def pull_npids
+    npids = SyncService.pull_npids(npid_params)
+    render json: npids
+  end
+
 
   private
 
   def update_params
-    params.permit(:site_id,:pull_seq)
+    params.require([:site_id,:pull_seq])
+  end
+
+  def npid_params
+    params.require([:site_id,:npid_seq])
   end
 
   def push_params

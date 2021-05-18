@@ -1,6 +1,8 @@
 module SyncService
 
-  def self.person_changes(site_id, pull_seq)
+  def self.person_changes(pull_params)
+    site_id = pull_params[0]
+    pull_seq = pull_params[1]
   	updates = PersonDetail.where('location_updated_at != ? AND id > ?', site_id, pull_seq).order(:id)
 
   	return updates
@@ -36,5 +38,9 @@ module SyncService
         push_seq.update(push_seq: current_seq)
         return {status: 200, push_seq: current_seq}
       end
+  end
+
+  def self.pull_npids(npid_params)
+    npids = LocationNpid.where('location_id =? AND id > ? AND assigned = 0', npid_params[0],npid_params[1]).order(:id)
   end
 end

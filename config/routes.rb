@@ -64,6 +64,7 @@ Rails.application.routes.draw do
   #sync links
   get   'v1/person_changes', to: 'api/v1/sync#pull_updates'
   post   'v1/push_changes', to: 'api/v1/sync#pushed_updates'
+  get   'v1/pull_npids', to: 'api/v1/sync#pull_npids'
 
   root to: "api/v1/user#index"
 end
