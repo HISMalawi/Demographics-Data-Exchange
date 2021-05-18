@@ -2,7 +2,7 @@ module FootPrintService
 
   def self.create(person)
 
-    FootPrint.create(
+   footprint = FootPrint.create(
       person_uuid: person.person_uuid,
       user_id: User.current.id
     )
