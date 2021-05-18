@@ -298,7 +298,7 @@ module PersonService
     doc_id = params[:doc_id]
 
     unless doc_id.blank?
-      person = Person.find_by_couchdb_person_id(doc_id)
+      person = PersonDetail.find_by_person_uuid(doc_id)
       unless person.blank?
         person_obj = self.get_person_obj(person)
         FootPrintService.create(person)
@@ -314,11 +314,11 @@ module PersonService
         #npid, npid).joins("RIGHT JOIN person_attributes p
       #ON p.couchdb_person_id = people.couchdb_person_id").select("people.*")
       people = []
-      person = Person.where(["npid =?", npid])
+      person = PersonDetail.where(["npid =?", npid])
 
-      PersonAttribute.where(["value =?", npid]).each do |person_attribute|
-        people << Person.find(person_attribute.person_id)
-      end
+      # PersonAttribute.where(["value =?", npid]).each do |person_attribute|
+      #   people << Person.find(person_attribute.person_id)
+      # end
 
       people = (person + people).uniq
       (people || []).each do |person|

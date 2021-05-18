@@ -21,7 +21,7 @@ Rails.application.routes.draw do
   #people controller routes
   post "v1/add_person", to: "api/v1/people_details#create"
   post "v1/search_by_name_and_gender", to: "api/v1/people_details#search_by_name_and_gender"
-  post "v1/search_by_npid", to: "api/v1/people#search_by_npid"
+  post "v1/search_by_npid", to: "api/v1/people_details#search_by_npid"
   post "v1/search_by_doc_id", to: "api/v1/people#search_by_doc_id"
   post "v1/search_by_attributes", to: "api/v1/people#search_by_attributes"
   post "v1/potential_duplicates", to: "api/v1/people#potential_duplicates"

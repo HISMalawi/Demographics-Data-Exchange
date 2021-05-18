@@ -47,6 +47,16 @@ class Api::V1::PeopleDetailsController < ApplicationController
     end
   end
 
+  def search_by_npid
+   errors = ValidateParams.search_by_npid(params)
+   if errors.blank?
+     search_results = PersonService.search_by_npid(params)
+     render json: search_results
+   else
+     render json: errors
+   end
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_api_v1_people_detail
