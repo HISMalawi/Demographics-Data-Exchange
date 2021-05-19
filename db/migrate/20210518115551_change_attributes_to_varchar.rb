@@ -1,4 +1,4 @@
-[class ChangeAttributesToVarchar < ActiveRecord::Migration[5.2]
+class ChangeAttributesToVarchar < ActiveRecord::Migration[5.2]
   def change
     change_column :person_details, :ancestry_district, :string
     change_column :person_details, :ancestry_ta, :string

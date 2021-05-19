@@ -147,7 +147,7 @@ module PersonService
                       ancestry_district:         (params[:attributes][:home_district] rescue nil),
                       ancestry_ta:               (params[:attributes][:home_traditional_authority] rescue nil),
                       ancestry_village:          (params[:attributes][:home_village] rescue nil),
-                      creator:             person.creator,
+                      creator:              current_user.id,
                       location_created_at:  person.location_created_at,
                       location_updated_at:  current_user.location_id,
                       date_registered:      person.date_registered,

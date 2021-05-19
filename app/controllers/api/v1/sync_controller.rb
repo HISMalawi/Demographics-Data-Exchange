@@ -52,7 +52,11 @@ class Api::V1::SyncController < ApplicationController
                               :last_edited,
                               :location_created_at,
                               :location_updated_at,
-                              :creator
+                              :creator,
+                              :home_ta,
+                              :ancestry_village,
+                              :ancestry_ta,
+                              :ancestry_district
                               )
   end
 end
