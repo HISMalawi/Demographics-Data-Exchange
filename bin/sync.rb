@@ -55,18 +55,18 @@ end
 
 def pull_npids
   npid_seq = Config.find_by_config('npid_seq')['config_value'].to_i
-  url = "http://#{@host}:#{@port}/v1/pull_npids?site_id=#{@location}&pull_seq=#{pull_seq}"
+  url = "http://#{@host}:#{@port}/v1/pull_npids?site_id=#{@location}&npid_seq=#{npid_seq}"
 
   npids = JSON.parse(RestClient.get(url,headers={Authorization: authenticate }))
 
   unless npids.blank?
     npids.each do |npid|
-      next if LocationNpid.find_by_npid(npid.npid)
+      next if LocationNpid.find_by_npid(npid['npid'])
       ActiveRecord::Base.transaction do
-        LocationNpid.create!(location_id: npid.location_id,
-                             npid: npid.npid,
-                             assigned: npid.assigned)
-        Config.where(config: 'npid_seq').update(config_value: npid.id)
+        LocationNpid.create!(location_id: npid['location_id'],
+                             npid: npid['npid'],
+                             assigned: npid['assigned'])
+        Config.where(config: 'npid_seq').update(config_value: npid['id'])
       end
     end
   end
