@@ -281,3 +281,15 @@ Config.create!(config: 'npid_seq',
                config_value: 0,
                description: 'NPID pull vector clock',
                uuid: 'ebc28cab-b7d8-11eb-8cf6-dc41a91e235e') unless Config.find_by_config('npid_seq')
+
+#Load proxy Meta data
+connection = ActiveRecord::Base.connection
+sql = File.read('db/meta_data/dde4_metadata.sql')
+  statements = sql.split(/;$/)
+  statements.pop
+
+  ActiveRecord::Base.transaction do
+    statements.each do |statement|
+      connection.execute(statement)
+    end
+  end
