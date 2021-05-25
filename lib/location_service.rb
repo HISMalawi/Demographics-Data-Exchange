@@ -28,7 +28,7 @@ module LocationService
   end
 
   def self.find_location(location_id)
-    status = 'OFFLINE'
+    #status = 'OFFLINE'
   
     query = Location.where(couchdb_location_id: location_id)
     if query.blank?
@@ -40,13 +40,13 @@ module LocationService
                           l.couchdb_location_id).joins("INNER JOIN location_tag_maps m
         ON m.location_tag_id = location_tags.location_tag_id
         INNER JOIN locations l ON l.location_id = m.location_id").select("location_tags.*")
-      ds = DistrictSite.where(site_id: l.location_id).first #rescue "Unknown"
-      district = Location.find(ds.district_id).name rescue "Unknown"
+      #ds = DistrictSite.where(site_id: l.location_id).first #rescue "Unknown"
+      #district = Location.find(ds.district_id).name rescue "Unknown"
       
-      rd = RegionDistrict.where(district_id: ds.district_id).first
-      region = Region.find(rd.region_id).name rescue "Unknown"
+      #rd = RegionDistrict.where(district_id: ds.district_id).first
+      #region = Region.find(rd.region_id).name rescue "Unknown"
     
-      status, last_updated = l.online?
+      #status, last_updated = l.online?
 
       location << {
         name: l.name,
@@ -55,11 +55,11 @@ module LocationService
         longitude: l.longitude,
         code: l.code,
         location_tags: location_tags.map(&:name),
-        district: district,
-        region: region,
+       #district: district,
+       #region: region,
         host: l.ip_address,
-        sync_status: status,
-        last_updated: last_updated
+       #sync_status: status,
+       #last_updated: last_updated
       }
     end
     return location
@@ -95,7 +95,7 @@ module LocationService
       npids     = LocationNpid.where(location_id: l.location_id)
       assigned  = LocationNpid.where(["location_id = ? and assigned = 1", l.location_id])
 
-      status, last_updated = l.online?
+      #status, last_updated = l.online?
 
       locations << {
         name: l.name,
@@ -105,8 +105,8 @@ module LocationService
         code: l.code,
         location_tags: location_tags.map(&:name),
         host: l.ip_address,
-        sync_status: status,
-        last_updated: last_updated,
+        #sync_status: status,
+        #last_updated: last_updated,
         allocated: npids.count,
         assigned: assigned.count,
       }
@@ -167,7 +167,87 @@ module LocationService
     return @stats
   end
 
+  def self.sync_info
+    user_ids = FootPrint.group(:user_id)
+    user_ids_checked = [0]
+    locations = {}
+    
+    (user_ids || []).each do |id|		
+      data = ActiveRecord::Base.connection.select_one <<EOF
+      Select distinct(user_id) user_id, max(created_at) created_at
+      from foot_prints where user_id NOT IN(#{user_ids_checked.join(",")});
+EOF
+
+      location_id = self.get_locaton_id(data["user_id"].to_i) 
+      next if location_id.blank?	
+      
+      if locations[location_id].blank?
+	locations[location_id] = data["created_at"].to_time 
+      end
+
+      datetime = data["created_at"].to_time
+
+      if locations[location_id] > datetime
+        locations[location_id] = datetime
+      end
+     
+      user_ids_checked << data["user_id"] .to_i	
+    end
+
+    sync_status = []
+    (locations || []).each do |location_id, datetime|
+      days = (Date.today - datetime.to_date).to_i
+      location = Location.find(location_id)
+
+      sync_status << {
+        site_code: location.code,
+        site_name: location.name,
+        last_sync_datetime: datetime,
+        last_sync_datetime_formated: datetime.strftime("%d/%b/%Y %H:%M:%S"),
+	days_gone_since_last_sync: days,
+        location_id: location.id 
+      }
+    end
+
+    data = ActiveRecord::Base.connection.select_all <<EOF
+    SELECT l.location_id, l.name, l.code FROM users u 
+    INNER JOIN locations l ON l.location_id = u.location_id 
+    WHERE user_id NOT IN(
+      SELECT user_id FROM foot_prints GROUP BY user_id
+    ) AND l.name NOT LIKE '%Baobab health%' GROUP BY u.location_id;
+EOF
+
+    (data || []).each do |u|
+      location_id = u["location_id"].to_i
+      available = false
+      (sync_status || []).each do |s|
+        if s[:location_id] == location_id
+           available = true
+        end
+      end
+
+      if !available
+        sync_status << {
+          site_code: u["code"],
+          site_name: u["name"],
+          last_sync_datetime: "N/A",
+          last_sync_datetime_formated: "N/A",
+	  days_gone_since_last_sync: 500,
+          location_id: location_id 
+        }
+      end
+    end	
+    return sync_status
+  end
+
   private
+
+  def self.get_locaton_id(user_id)
+    return nil if user_id == 0
+    user = User.find(user_id) 
+    return nil if user.blank?
+    return user.location_id
+  end
 
   DEFAULT_PAGE_SIZE = 10
 end

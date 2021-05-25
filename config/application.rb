@@ -39,5 +39,8 @@ module DemographicsDataExchange
     config.autoload_paths << Rails.root.join("lib")
 
     config.elasticsearch = ["localhost", "9200"]
+
+    config.time_zone = 'Harare'
+    config.active_record.default_timezone = :local
   end
 end
