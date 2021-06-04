@@ -32,7 +32,7 @@ RSpec.describe "/api/v1/people_details", type: :request do
     {}
   }
 
-  describe "GET /index" do
+  describe "api/v1/people" do
     it "renders a successful response" do
       Api::V1::PeopleDetail.create! valid_attributes
       get api_v1_people_details_url, headers: valid_headers, as: :json
@@ -53,13 +53,13 @@ RSpec.describe "/api/v1/people_details", type: :request do
       it "creates a new Api::V1::PeopleDetail" do
         expect {
           post api_v1_people_details_url,
-               params: { api/v1_people_detail: valid_attributes }, headers: valid_headers, as: :json
+               params: { api/v1_people_detail => valid_attributes }, headers: valid_headers, as: :json
         }.to change(Api::V1::PeopleDetail, :count).by(1)
       end
 
       it "renders a JSON response with the new api/v1_people_detail" do
         post api_v1_people_details_url,
-             params: { api/v1_people_detail: valid_attributes }, headers: valid_headers, as: :json
+             params: { api/v1_people_detail => valid_attributes }, headers: valid_headers, as: :json
         expect(response).to have_http_status(:created)
         expect(response.content_type).to match(a_string_including("application/json"))
       end
@@ -69,13 +69,13 @@ RSpec.describe "/api/v1/people_details", type: :request do
       it "does not create a new Api::V1::PeopleDetail" do
         expect {
           post api_v1_people_details_url,
-               params: { api/v1_people_detail: invalid_attributes }, as: :json
+               params: { api/v1_people_detail => invalid_attributes }, as: :json
         }.to change(Api::V1::PeopleDetail, :count).by(0)
       end
 
       it "renders a JSON response with errors for the new api/v1_people_detail" do
         post api_v1_people_details_url,
-             params: { api/v1_people_detail: invalid_attributes }, headers: valid_headers, as: :json
+             params: { api/v1_people_detail => invalid_attributes }, headers: valid_headers, as: :json
         expect(response).to have_http_status(:unprocessable_entity)
         expect(response.content_type).to eq("application/json")
       end

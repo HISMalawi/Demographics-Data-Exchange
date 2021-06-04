@@ -8,4 +8,4 @@ servers:
 - url: https://{defaultHost}
   variables:
     defaultHost:
-      default: localhost
+      default: www.example.com

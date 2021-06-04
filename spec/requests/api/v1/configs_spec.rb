@@ -53,7 +53,7 @@ RSpec.describe "/api/v1/configs", type: :request do
       it "creates a new Api::V1::Config" do
         expect {
           post api_v1_configs_url,
-               params: { api/v1_config: valid_attributes }, headers: valid_headers, as: :json
+               params: { api/v1_config => valid_attributes }, headers: valid_headers, as: :json
         }.to change(Api::V1::Config, :count).by(1)
       end
 

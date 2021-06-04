@@ -8,6 +8,11 @@ gem 'parallel'
 gem 'rswag'
 gem 'bundler'
 gem 'rails', '~> 5.2.0'
+
+gem 'rswag-api'
+gem 'rswag-ui'
+
+
 # Use mysql as the database for Active Record
 gem 'mysql2', '>= 0.4.4', '< 0.6.0'
 # Use Puma as the app server
@@ -51,6 +56,11 @@ group :development do
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
   gem 'rspec-rails'
+end
+
+group :development, :test do
+  gem 'rspec-rails'
+  gem 'rswag-specs'
 end
 
 
