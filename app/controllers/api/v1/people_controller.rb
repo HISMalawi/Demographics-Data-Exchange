@@ -88,4 +88,20 @@ class Api::V1::PeopleController < ApplicationController
     person = PersonService.reassign_npid(params)
     render json: person
   end
+
+  def total_assigned
+    count = PersonService.total_assigned(params[:date].to_date)
+    render json: {count: count}
+  end
+
+  def client_movements
+    person = FootPrintService.client_movements
+    render json: person
+  end
+
+  def cum_total_assigned
+    count = PersonService.cum_total_assigned
+    render json: {count: count}
+  end
+
 end
