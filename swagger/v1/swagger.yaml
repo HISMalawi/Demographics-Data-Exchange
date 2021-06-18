@@ -4,7 +4,7 @@ info:
   title: API V1
   version: v1
 paths:
-  "/api/v1/people_details":
+  "/v1/add_person":
     post:
       summary: Creates person details
       tags:
@@ -66,7 +66,7 @@ paths:
               - location_created_at
               - location_updated_at
 servers:
-- url: https://{defaultHost}
+- url: http://{defaultHost}
   variables:
     defaultHost:
-      default: www.example.com
+      default: localhost:3000
