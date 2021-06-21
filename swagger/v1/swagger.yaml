@@ -1,10 +1,44 @@
 ---
 openapi: 3.0.1
 info:
-  title: API V1
+  title: Demographics Data Exchange (DDE) Documentation
   version: v1
 paths:
-  "/v1/add_person":
+  "/api/v1/configs":
+    post:
+      summary: Creates configs
+      tags:
+      - Configs
+      parameters: []
+      responses:
+        '201':
+          description: configs created
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                config_name:
+                  type: string
+                config_value:
+                  type: string
+                description:
+                  type: string
+                uuid:
+                  type: binary
+                created_at:
+                  type: datetime
+                updated_at:
+                  type: datetime
+              required:
+              - config
+              - config_value
+              - description
+              - uuid
+              - created_at
+              - updated_at
+  "/api/v1/people_details":
     post:
       summary: Creates person details
       tags:
@@ -30,19 +64,19 @@ paths:
                 birthdate_estimated:
                   type: boolean
                 gender:
-                  type: boolean
+                  type: string
                 ancestry_district:
-                  type: integer
+                  type: string
                 ancestry_ta:
-                  type: integer
+                  type: string
                 ancestry_village:
-                  type: integer
+                  type: string
                 home_district:
-                  type: integer
+                  type: string
                 home_ta:
-                  type: integer
+                  type: string
                 home_village:
-                  type: integer
+                  type: string
                 npid:
                   type: string
                 person_uuid:
@@ -65,8 +99,104 @@ paths:
               - last_edited
               - location_created_at
               - location_updated_at
+  v1/search_by_name_and_gender:
+    post:
+      summary: Search by name and gender
+      tags:
+      - People
+      parameters: []
+      responses:
+        '200':
+          description: success
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                given_name:
+                  type: string
+                family_name:
+                  type: string
+                gender:
+                  type: string
+              required:
+              - given_name
+              - family_name
+              - gender
+  v1/register:
+    post:
+      summary: Registers User
+      tags:
+      - User
+      parameters: []
+      responses:
+        '201':
+          description: User created successfully
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                location:
+                  type: integer
+                email:
+                  type: string
+              required:
+              - username
+              - password
+              - location
+              - email
+  v1/login:
+    post:
+      summary: User Login
+      tags:
+      - User
+      parameters: []
+      responses:
+        '200':
+          description: success
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+              - username
+              - password
+              - location
+              - email
+  v1/verify_token/:
+    post:
+      summary: verify token
+      tags:
+      - User
+      parameters: []
+      responses:
+        '200':
+          description: success
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+              required:
+              - token
 servers:
-- url: http://{defaultHost}
+- url: https://{defaultHost}
   variables:
     defaultHost:
-      default: localhost:3000
+      default: www.example.com

@@ -15,13 +15,13 @@ describe 'Person Details API' do
 			middle_name: 			{type: :string},
 			birthdate: 				{type: :date},
 			birthdate_estimated: 	{type: :boolean},
-			gender:                 {type: :boolean},
-			ancestry_district:      {type: :integer},
-			ancestry_ta:  			{type: :integer},
-			ancestry_village:       {type: :integer},
-			home_district:          {type: :integer},
-			home_ta:                {type: :integer},
-			home_village:           {type: :integer},
+			gender:                 {type: :string},
+			ancestry_district:      {type: :string},
+			ancestry_ta:  			{type: :string},
+			ancestry_village:       {type: :string},
+			home_district:          {type: :string},
+			home_ta:                {type: :string},
+			home_village:           {type: :string},
 			npid:                   {type: :string},
 			person_uuid:            {type: :binary},
 			date_registered:        {type: :datetime},
@@ -50,6 +50,46 @@ describe 'Person Details API' do
 				}
 				run_test!
 			end
+
 		end
   	end 
+end
+
+describe 'Person Details API' do
+  
+	path 'v1/search_by_name_and_gender' do
+
+	  post 'Search by name and gender' do
+		  tags 'People'
+		  consumes 'application/json'
+		  parameter name: :person, in: :body, schema: {
+		  type: :object,
+		  properties: {
+		  given_name: 			{type: :string},
+		  family_name: 			{type: :string},
+		  gender:                 {type: :string},
+		  },
+		  required: ['given_name','family_name','gender']
+		  }
+  
+		  response '200', 'success' do
+			  let(:person) {
+			  {
+				  given_name:  	       'test_person',
+				  family_name:         'test_family_name',
+				  middle_name:         '',
+				  gender:              'Male',
+				  birthdate:	       '0000-00-00',
+				  birthdate_estimated: false,
+				  current_village:     'village',
+				  home_district:       'my home disrict',
+				  home_village:        'my-village',
+				  identifier:          '{"HTN number":"HTN 000"}],"npid":"000000","doc_id":"000000000000000000000000000000"}',
+			  }
+			  }
+			  run_test!
+		  end
+
+	  end
+	end 
 end

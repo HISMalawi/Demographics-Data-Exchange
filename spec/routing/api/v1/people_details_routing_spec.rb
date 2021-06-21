@@ -12,7 +12,7 @@ RSpec.describe Api::V1::PeopleDetailsController, type: :routing do
 
 
     it "routes to #create" do
-      expect(post: "/api/v1/people_details").to route_to("api/v1/people_details#create")
+      expect(post: "v1/add_person").to route_to("api/v1/people_details#create")
     end
 
     it "routes to #update via PUT" do
