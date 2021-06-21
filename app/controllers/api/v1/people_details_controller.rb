@@ -57,6 +57,21 @@ class Api::V1::PeopleDetailsController < ApplicationController
    end
   end
 
+  def merge_people
+    errors = ValidateParams.merge_people(params)
+    if errors.blank?
+      merge_results = MergeService.merge(params[:primary_person_doc_id], params[:secondary_person_doc_id])
+      render json: merge_results
+    else
+      render json: errors
+    end
+  end
+
+  def reassign_npid
+    person = PersonService.reassign_npid(params, current_user)
+    render json: person
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_api_v1_people_detail

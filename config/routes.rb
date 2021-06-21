@@ -46,7 +46,7 @@ Rails.application.routes.draw do
 
   #merging
   post "v1/merge_people", to: "api/v1/merge#merge"
-  post "v1/reassign_npid", to: "api/v1/people#reassign_npid"
+  post "v1/reassign_npid", to: "api/v1/people_details#reassign_npid"
 
   post "v1/search/people", to: "api/v1/people_match#get"
   get   "v1/get_regions", to: "api/v1/location#get_regions"
@@ -63,7 +63,7 @@ Rails.application.routes.draw do
 
   #sync links
   get   'v1/person_changes', to: 'api/v1/sync#pull_updates'
-  post   'v1/push_changes', to: 'api/v1/sync#pushed_updates'
+  post  'v1/push_changes', to: 'api/v1/sync#pushed_updates'
   get   'v1/pull_npids', to: 'api/v1/sync#pull_npids'
 
   root to: "api/v1/user#index"

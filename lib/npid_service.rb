@@ -35,7 +35,7 @@ module NpidService
 
     # unless available_npid.blank?
       ActiveRecord::Base.transaction do
-        if LocationNpid.where(assigned: 0,location_id: User.current.location_id).limit(1).update(assigned: 1)
+        if LocationNpid.where(assigned: 0,location_id: User.current.location_id).limit(100).sample.update(assigned: 1)
           return true
         else
           return 'No free npids available for location'
@@ -52,14 +52,14 @@ module NpidService
 
       # Get all unassigned npids for this site/location.
       npid = LocationNpid.where(["assigned = FALSE AND
-        location_id =?",location_id]).limit(1)
+        location_id =?",location_id]).limit(100).sample
 
       # Assign npid to a person if unassigned npids exists.
       unless npid.blank?
         npid  = npid.first
 
         # Assign npid to a mysql person.
-        mysql_person = Person.find_by_person_id(person.id)
+        mysql_person = PersonDetail.find_by_person_id(person.id)
         mysql_person.update_attributes(npid: person.npid)
 
         # Update npid in the location npids table to assigned.

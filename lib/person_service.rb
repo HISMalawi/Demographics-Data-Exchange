@@ -4,24 +4,25 @@ require "people_matching_service/dde_person_transformer"
 
 module PersonService
 
-  def self.reassign_npid(params)
-    couchdb_person = CouchdbPerson.find(params[:doc_id])
-    return {} if couchdb_person.blank?
-    person = Person.find_by_couchdb_person_id(couchdb_person.id)
+  def self.reassign_npid(params, current_user)
+    person = PersonDetail.find_by_person_uuid(params[:doc_id])
+    #create if person.blank? #need to think about this one
+    #Assign new NPID
+    npid = LocationNpid.where(location_id: current_user.location_id, assigned: false).limit(100).sample
 
-    person_attributes = PersonAttribute.where(person_id: person.id,person_attribute_type_id: 14)
-    (person_attributes || []).each do |person_att|
-        couchdb_attr_id = person_att.couchdb_person_attribute_id
-        couchdb_attr = CouchdbPersonAttribute.find(couchdb_attr_id)
-        couchdb_attr.update_attributes(voided: true)
-        person_att.update_attributes(voided: true,void_reason: "Reassigned",voided_by: User.current.id)
+    updated_person = person.dup
+    updated_person[:npid] = npid.npid
+
+    ActiveRecord::Base.transaction do
+      person.destroy!
+      person = JSON.parse(person.to_json)
+      person.delete('id')
+      person.delete('updated_at')
+      PersonDetail.create!(JSON.parse(updated_person.to_json))
+      PersonDetailsAudit.create!(person)
+      npid.update(assigned: true)
     end
-
-    couchdb_person.update_attributes(npid: nil)
-    person.update_attributes(npid: nil)
-
-    NpidService.assign_npid(couchdb_person)
-    return self.get_person_obj(person)
+    return self.get_person_obj(OpenStruct.new(person)) #OpenStruct to allow don notation
   end
 
   def self.assign_npid(params)
@@ -34,7 +35,7 @@ module PersonService
 
   def self.create(params, current_user)
     location_npids = LocationNpid.where(["location_id = ?
-      AND assigned = FALSE",current_user.location_id])
+      AND assigned = FALSE",current_user.location_id]).limit(100)
 
     return {'error': 'No NPIDs to assign'} if location_npids.blank?
 
@@ -67,8 +68,8 @@ module PersonService
     person = nil
 
     ActiveRecord::Base.transaction do
-        npid = params[:uuid] || LocationNpid.where(location_id: current_user.location_id, assigned: false).limit(1)
-        uuid = params[:person_uuid] || ActiveRecord::Base.connection.execute('SELECT uuid() as uuid').first[0]
+        npid = params[:npid] || location_npids.sample
+        uuid = params[:doc_id] || ActiveRecord::Base.connection.execute('SELECT uuid() as uuid').first[0]
 
         person = PersonDetail.create!(first_name: given_name, last_name: family_name,
         middle_name: middle_name, gender: gender, birthdate: birthdate,
@@ -76,7 +77,7 @@ module PersonService
         ancestry_district: ancestry_district, creator: current_user.id, ancestry_ta: ancestry_ta,
         ancestry_village: ancestry_village, home_district: current_district, home_ta: current_ta,
         home_village: current_village,location_updated_at: current_user.location_id,
-        date_registered: Time.now,last_edited: Time.now, npid: npid.first.npid, person_uuid: uuid)
+        date_registered: Time.now,last_edited: Time.now, npid: npid.npid, person_uuid: uuid)
 
       #####################
       # NpidService.assign_npid(person)
