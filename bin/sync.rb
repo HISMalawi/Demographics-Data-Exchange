@@ -129,14 +129,14 @@ def main
   else
     FileUtils.touch "/tmp/dde_sync.lock"
   end
-
-	pull_records
-  push_records
-  pull_npids
-
+  begin
+	 pull_records
+   push_records
+   pull_npids
   ensure
-  if File.exists?("/tmp/dde_sync.lock")
-    FileUtils.rm "/tmp/dde_sync.lock"
+    if File.exists?("/tmp/dde_sync.lock")
+      FileUtils.rm "/tmp/dde_sync.lock"
+    end
   end
 end
 
