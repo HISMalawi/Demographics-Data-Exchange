@@ -134,6 +134,7 @@ def main
   push_records
   pull_npids
 
+  ensure
   if File.exists?("/tmp/dde_sync.lock")
     FileUtils.rm "/tmp/dde_sync.lock"
   end
