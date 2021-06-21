@@ -123,9 +123,20 @@ end
 
 
 def main
+  if File.exists?("/tmp/dde_sync.lock")
+    puts 'Another process running!'
+    exit
+  else
+    FileUtils.touch "/tmp/dde_sync.lock"
+  end
+
 	pull_records
   push_records
   pull_npids
+
+  if File.exists?("/tmp/dde_sync.lock")
+    FileUtils.rm "/tmp/dde_sync.lock"
+  end
 end
 
 main
