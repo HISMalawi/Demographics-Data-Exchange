@@ -7,6 +7,8 @@ describe 'Person Details API' do
 		post 'Creates person details' do
 			tags 'People'
 			consumes 'application/json'
+			security [Bearer: {}]
+			parameter name: :access_token, in: :header, type: :string
 			parameter name: :person, in: :body, schema: {
 			type: :object,
 			properties: {
@@ -29,8 +31,6 @@ describe 'Person Details API' do
 			location_created_at:    {type: :integer},
 			location_updated_at:    {type: :integer},
 			},
-
-			
 
 			required: ['first_name','last_name','gender',
 					'npid','person_uuid','date_registered',
@@ -65,6 +65,8 @@ describe 'Person Details API' do
 	  post 'Search by name and gender' do
 		  tags 'People'
 		  consumes 'application/json'
+		  security [Bearer: {}]
+		  parameter name: :access_token, in: :header, type: :string
 		  parameter name: :person, in: :body, schema: {
 		  type: :object,
 		  properties: {
@@ -121,6 +123,8 @@ describe 'Person Details API' do
 	  post 'Search by name and gender' do
 		  tags 'People'
 		  consumes 'application/json'
+		  security [Bearer: {}]
+		  parameter name: :access_token, in: :header, type: :string
 		  parameter name: :person, in: :body, schema: {
 		  type: :object,
 		  properties: {
@@ -178,6 +182,8 @@ describe 'Person Details API' do
 	  post 'Search by name npid' do
 		  tags 'People'
 		  consumes 'application/json'
+		  security [Bearer: {}]
+		  parameter name: :access_token, in: :header, type: :string
 		  parameter name: :person, in: :body, schema: {
 		  type: :object,
 		  properties: {

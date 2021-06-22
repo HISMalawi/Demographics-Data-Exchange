@@ -43,7 +43,13 @@ paths:
       summary: Creates person details
       tags:
       - People
-      parameters: []
+      security:
+      - Bearer: {}
+      parameters:
+      - name: access_token
+        in: header
+        schema:
+          type: string
       responses:
         '201':
           description: person details created
@@ -104,7 +110,13 @@ paths:
       summary: Search by name and gender
       tags:
       - People
-      parameters: []
+      security:
+      - Bearer: {}
+      parameters:
+      - name: access_token
+        in: header
+        schema:
+          type: string
       responses:
         '200':
           description: success
@@ -133,7 +145,13 @@ paths:
       summary: Search by name npid
       tags:
       - People
-      parameters: []
+      security:
+      - Bearer: {}
+      parameters:
+      - name: access_token
+        in: header
+        schema:
+          type: string
       responses:
         '200':
           description: success
