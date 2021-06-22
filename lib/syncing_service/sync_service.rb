@@ -31,9 +31,9 @@ module SyncService
             audit_record.delete('id')
             audit_record.delete('created_at')
             audit_record.delete('updated_at')
+            PersonDetailsAudit.create!(audit_record)
             person.destroy!
             PersonDetail.create!(data)
-            PersonDetailsAudit.create!(audit_record)
         end
         push_seq.update(push_seq: current_seq)
         return {status: 200, push_seq: current_seq}
