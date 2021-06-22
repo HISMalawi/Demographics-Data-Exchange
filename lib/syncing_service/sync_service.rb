@@ -3,7 +3,7 @@ module SyncService
   def self.person_changes(pull_params)
     site_id = pull_params[0]
     pull_seq = pull_params[1]
-  	updates = PersonDetail.where('location_updated_at != ? AND id > ?', site_id, pull_seq).order(:id)
+  	updates = PersonDetail.unscoped.where('location_updated_at != ? AND id > ?', site_id, pull_seq).order(:id).limit(100)
 
   	return updates
   end

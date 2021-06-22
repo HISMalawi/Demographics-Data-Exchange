@@ -79,7 +79,7 @@ def push_records
 
 	push_seq = Config.find_by_config('push_seq')['config_value'].to_i
 
-  records_to_push = PersonDetail.where('person_details.id > ? AND person_details.location_updated_at = ?', push_seq,@location).order(:id)
+  records_to_push = PersonDetail.unscoped.where('person_details.id > ? AND person_details.location_updated_at = ?', push_seq,@location).order(:id).limit(100)
 
   #PUSH UPDATES
   records_to_push.each do | record |
@@ -117,7 +117,11 @@ def format_payload(person)
               "last_edited": person.last_edited,
               "location_created_at": person.location_created_at,
               "location_updated_at": person.location_updated_at,
-              "creator": person.creator
+              "creator": person.creator,
+              "voided": person.voided,
+              "voided_by": person.voided_by,
+              "date_voided": person.date_voided,
+              "void_reason": person.void_reason
             }
 end
 
