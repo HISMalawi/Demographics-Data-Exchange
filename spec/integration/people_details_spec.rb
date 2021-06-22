@@ -2,7 +2,7 @@ require 'swagger_helper'
 
 describe 'Person Details API' do
   
-  	path '/api/v1/people_details' do
+  	path '/v1/add_person' do
 
 		post 'Creates person details' do
 			tags 'People'
@@ -29,6 +29,9 @@ describe 'Person Details API' do
 			location_created_at:    {type: :integer},
 			location_updated_at:    {type: :integer},
 			},
+
+			
+
 			required: ['first_name','last_name','gender',
 					'npid','person_uuid','date_registered',
 					'last_edited','location_created_at','location_updated_at']
@@ -57,7 +60,7 @@ end
 
 describe 'Person Details API' do
   
-	path 'v1/search_by_name_and_gender' do
+	path '/v1/search_by_name_and_gender' do
 
 	  post 'Search by name and gender' do
 		  tags 'People'
@@ -90,13 +93,30 @@ describe 'Person Details API' do
 			  run_test!
 		  end
 
+		  response '401', 'Failed to create person' do
+			let(:person) {
+				 { 
+					 
+				 } }
+			run_test!
+		  end
+
+		  response '500', 'No token for authorization' do
+			let(:person) {
+				 { 
+					 
+				 } }
+			run_test!
+		  end
+		  
+
 	  end
 	end 
 end
 
 describe 'Person Details API' do
   
-	path 'v1/search_by_name_and_gender' do
+	path '/v1/search_by_name_and_gender' do
 
 	  post 'Search by name and gender' do
 		  tags 'People'
@@ -129,13 +149,31 @@ describe 'Person Details API' do
 			  run_test!
 		  end
 
+		  response '401', 'invalid request' do
+			let(:person) {
+				 { 
+					 
+				 } }
+			run_test!
+		  end
+
+		  response '500', 'No token for authorization' do
+			let(:person) {
+				 { 
+					 
+				 } }
+			run_test!
+		  end
+		  
+
+
 	  end
 	end 
 end
 
 describe 'Person Details API' do
   
-	path 'v1/search_by_npid' do
+	path '/v1/search_by_npid' do
 
 	  post 'Search by name npid' do
 		  tags 'People'
@@ -166,6 +204,24 @@ describe 'Person Details API' do
 			  }
 			  run_test!
 		  end
+
+		  response '401', 'invalid request' do
+			let(:person) {
+				 { 
+					 
+				 } }
+			run_test!
+		  end
+
+		  response '500', 'No token for authorization' do
+			let(:person) {
+				 { 
+					 
+				 } }
+			run_test!
+		  end
+		  
+
 
 	  end
 	end 

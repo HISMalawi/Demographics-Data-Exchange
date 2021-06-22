@@ -1,7 +1,7 @@
 ---
 openapi: 3.0.1
 info:
-  title: DDE Documentation
+  title: API V1
   version: v1
 paths:
   "/api/v1/configs":
@@ -99,7 +99,7 @@ paths:
               - last_edited
               - location_created_at
               - location_updated_at
-  /v1/search_by_name_and_gender:
+  "/v1/search_by_name_and_gender":
     post:
       summary: Search by name and gender
       tags:
@@ -108,6 +108,10 @@ paths:
       responses:
         '200':
           description: success
+        '401':
+          description: invalid request
+        '500':
+          description: No token for authorization
       requestBody:
         content:
           application/json:
@@ -124,7 +128,7 @@ paths:
               - given_name
               - family_name
               - gender
-  /v1/search_by_npid:
+  "/v1/search_by_npid":
     post:
       summary: Search by name npid
       tags:
@@ -133,6 +137,10 @@ paths:
       responses:
         '200':
           description: success
+        '401':
+          description: invalid request
+        '500':
+          description: No token for authorization
       requestBody:
         content:
           application/json:
@@ -146,7 +154,7 @@ paths:
               required:
               - npid
               - doc_id
-  /v1/person_changes:
+  "/v1/person_changes":
     get:
       summary: Pull Updates
       tags:
@@ -164,11 +172,11 @@ paths:
                 site_id:
                   type: string
                 pull_seq:
-                  type: string
+                  type: integer
               required:
               - site_id
               - pull_seq
-  /v1/push_changes:
+  "/v1/push_changes":
     post:
       summary: Push Updates
       tags:
@@ -236,7 +244,7 @@ paths:
               - last_edited
               - location_created_at
               - location_updated_at
-  /v1/pull_npids:
+  "/v1/pull_npids":
     get:
       summary: Pull npids
       tags:
@@ -251,11 +259,11 @@ paths:
             schema:
               type: object
               properties:
-                npids:
-                  type: string
+                npids_seq:
+                  type: integer
               required:
               - npids
-  /v1/register:
+  v1/register:
     post:
       summary: Registers User
       tags:
@@ -283,7 +291,7 @@ paths:
               - password
               - location
               - email
-  /v1/login:
+  v1/login:
     post:
       summary: User Login
       tags:
@@ -307,7 +315,7 @@ paths:
               - password
               - location
               - email
-  /v1/verify_token/:
+  v1/verify_token/:
     post:
       summary: verify token
       tags:

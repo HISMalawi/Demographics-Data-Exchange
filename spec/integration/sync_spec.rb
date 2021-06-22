@@ -2,7 +2,7 @@ require 'swagger_helper'
 
 describe 'Sync API' do
   
-  	path 'v1/person_changes' do
+  	path '/v1/person_changes' do
 
 		get 'Pull Updates' do
 			tags 'Sync'
@@ -11,7 +11,7 @@ describe 'Sync API' do
 			type: :object,
 			properties: {
 			site_id: 			{type: :string},
-			pull_seq:   	    {type: :string},
+			pull_seq:   	    {type: :integer},
 			},
 			required: ['site_id','pull_seq']
 			}
@@ -31,7 +31,7 @@ end
 
 describe 'Sync API' do
   
-    path 'v1/push_changes' do
+    path '/v1/push_changes' do
 
       post 'Push Updates' do
           tags 'Sync'
@@ -81,7 +81,7 @@ end
 
 describe 'Sync API' do
   
-    path 'v1/pull_npids' do
+    path '/v1/pull_npids' do
 
       get 'Pull npids' do
           tags 'Sync'
@@ -89,7 +89,7 @@ describe 'Sync API' do
           parameter name: :user, in: :body, schema: {
           type: :object,
           properties: {
-          npids: 			{type: :string},
+          npids_seq: 			{type: :integer},
           },
           required: ['npids']
           }
