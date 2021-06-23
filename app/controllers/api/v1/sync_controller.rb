@@ -61,7 +61,9 @@ class Api::V1::SyncController < ApplicationController
                   :voided,
                   :voided_by,
                   :date_voided,
-                  :void_reason
+                  :void_reason,
+                  :first_name_soundex,
+                  :last_name_soundex
                   )
   end
 end

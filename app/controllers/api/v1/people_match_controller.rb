@@ -1,6 +1,4 @@
-require "people_matching_service/elasticsearch_client"
-require "people_matching_service/elasticsearch_person_dao"
-require "people_matching_service/people_matching_service"
+require "people_matching_service/bantu_soundex"
 
 class Api::V1::PeopleMatchController < ApplicationController
   def get
@@ -12,16 +10,43 @@ class Api::V1::PeopleMatchController < ApplicationController
       }
       return render json: message, status: 400
     end
+    same_soundex_pple = get_potential_duplicates(search_params['given_name'].soundex,
+                                                 search_params['family_name'].soundex)
 
-    es_host, es_port = Rails.application.config.elasticsearch
+    #Remove special characters from search_params
+    search_params['given_name'].match? /\A[a-zA-Z']*\z/
+    search_params['family_name'].match? /\A[a-zA-Z']*\z/
+    subject = ''
 
-    es_client = ElasticsearchClient.new host: es_host, port: es_port
-    es_person_dao = ElasticsearchPersonDAO.new es_client
-    matching_service = PeopleMatchingService.new es_person_dao
+    search_params.each { |key, value| subject << value }
+    subject.gsub(/\s+/, "")
 
-    matches = matching_service.find_duplicates search_params, use_soundex: true
-    render json: matches
+    matches = Parallel.map(same_soundex_pple) do | person |
+      #Remove special characters from names
+      person['first_name'].match? /\A[a-zA-Z']*\z/
+      person['last_name'].match? /\A[a-zA-Z']*\z/
+
+      potential_duplicate = ''
+      potential_duplicate << person.first_name
+      potential_duplicate << person.last_name
+      potential_duplicate << person.gender
+      potential_duplicate << person.home_village
+      potential_duplicate << person.home_ta
+      potential_duplicate << person.home_district
+
+
+      score = calculate_similarity_score(subject.gsub(/\s+/, "").downcase,potential_duplicate.gsub(/\s+/, "").downcase)
+
+      if score >= 85
+        json_person = convert_to_json(person)
+        json_person.merge!(score: score)
+      else
+        nil
+      end
+    end
+    render json: matches.compact
   end
+
 
   private
 
@@ -58,4 +83,47 @@ class Api::V1::PeopleMatchController < ApplicationController
     print "Permitted: #{permitted}\n"
     permitted
   end
+
+  def calculate_similarity_score(string_A,string_B)
+    #Calulating % Similarity using the formula %RSD = (SD/max_ed)%
+    #Where SD = Max(length(A),Length(B)) - Edit Distance
+    #SD = Similartiy Distance
+    #ed = edit Distance
+    #max_ed = maximum edit distance
+    #RSD
+
+    ed = DamerauLevenshtein.distance(string_A,string_B)
+
+    if string_A.size >= string_B.size
+      max_ed = string_A.size
+    else
+      max_ed = string_B.size
+    end
+
+    sd = max_ed - ed
+
+    score = (sd/max_ed.to_f) * 100
+  end
+
+  def get_potential_duplicates(first_name_soundex, last_name_soundex)
+    same_soundex_pple = PersonDetail.where(first_name_soundex: first_name_soundex,
+                                             last_name_soundex: last_name_soundex).select(:person_uuid, :first_name,
+                                             :last_name,:gender,:birthdate,:home_district, :home_ta, :home_village)
+  end
+
+  def convert_to_json(person)
+     {
+      person:{
+      id: person.person_uuid,
+      gender: person.gender,
+      birth_date: person.birthdate,
+      given_name: person.first_name,
+      family_name: person.last_name,
+      home_village: person.home_village,
+      home_traditional_authority: person.home_ta,
+      home_district: person.home_district
+      },
+    }
+  end
+
 end

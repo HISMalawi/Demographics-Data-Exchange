@@ -1,6 +1,6 @@
-require "people_matching_service/elasticsearch_client"
-require "people_matching_service/elasticsearch_person_dao"
-require "people_matching_service/dde_person_transformer"
+require "people_matching_service/bantu_soundex"
+# require "people_matching_service/elasticsearch_person_dao"
+# require "people_matching_service/dde_person_transformer"
 
 module PersonService
 
@@ -77,7 +77,8 @@ module PersonService
         ancestry_district: ancestry_district, creator: current_user.id, ancestry_ta: ancestry_ta,
         ancestry_village: ancestry_village, home_district: current_district, home_ta: current_ta,
         home_village: current_village,location_updated_at: current_user.location_id,
-        date_registered: Time.now,last_edited: Time.now, npid: npid.npid, person_uuid: uuid)
+        date_registered: Time.now,last_edited: Time.now, npid: npid.npid, person_uuid: uuid,
+        first_name_soundex: given_name.soundex, last_name_soundex: family_name.soundex )
 
       #####################
       # NpidService.assign_npid(person)
@@ -133,6 +134,8 @@ module PersonService
                       first_name:            params[:given_name],
                       last_name:             params[:family_name],
                       middle_name:           params[:middle_name],
+                      first_name_soundex:    params[:given_name].soundex,
+                      last_name_soundex:     params[:family_name].soundex,
                       gender:                params[:gender],
                       birthdate:             params[:birthdate],
                       birthdate_estimated:   params[:birthdate_estimated],

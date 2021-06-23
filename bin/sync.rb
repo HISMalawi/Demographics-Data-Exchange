@@ -121,7 +121,9 @@ def format_payload(person)
               "voided": person.voided,
               "voided_by": person.voided_by,
               "date_voided": person.date_voided,
-              "void_reason": person.void_reason
+              "void_reason": person.void_reason,
+              "first_name_soundex": person.first_name_soundex,
+              "last_name_soundex": person.last_name_soundex
             }
 end
 
