@@ -44,7 +44,7 @@ class Api::V1::PeopleMatchController < ApplicationController
         nil
       end
     end
-    render json: matches.compact
+    render json: matches.compact.sort_by { |score| score[:score].to_i }
   end
 
 
