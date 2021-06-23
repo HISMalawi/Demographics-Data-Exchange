@@ -11,13 +11,11 @@ It was built by Baobab Health Trust.
 
 ##Requirements
 
-* Ruby 2.5.0
+* Ruby 2.5.3
 
 * Rails 5.2.0
 
-* MySQL 5.5
-
-* CouchDB 1.6.1
+* MySQL 5.7
 
 ##Dependancies
 

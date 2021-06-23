@@ -18,7 +18,13 @@ class Api::V1::PeopleMatchController < ApplicationController
     search_params['family_name'].match? /\A[a-zA-Z']*\z/
     subject = ''
 
-    search_params.each { |key, value| subject << value }
+    subject << search_params['given_name']
+    subject << search_params['family_name']
+    subject << search_params['gender']
+    subject << search_params['home_village']
+    subject << search_params['home_traditional_authority']
+    subject << search_params['home_district']
+
     subject.gsub(/\s+/, "")
 
     matches = Parallel.map(same_soundex_pple) do | person |
@@ -36,15 +42,15 @@ class Api::V1::PeopleMatchController < ApplicationController
 
 
       score = calculate_similarity_score(subject.gsub(/\s+/, "").downcase,potential_duplicate.gsub(/\s+/, "").downcase)
-
-      if score >= 85
+      puts score
+      if score >= 0.8
         json_person = convert_to_json(person)
         json_person.merge!(score: score)
       else
         nil
       end
     end
-    render json: matches.compact.sort_by { |score| score[:score].to_i }
+    render json: matches.compact.sort_by { |score| score[:score].to_i }.reverse
   end
 
 
@@ -102,7 +108,7 @@ class Api::V1::PeopleMatchController < ApplicationController
 
     sd = max_ed - ed
 
-    score = (sd/max_ed.to_f) * 100
+    score = (sd/max_ed.to_f).round(2)
   end
 
   def get_potential_duplicates(first_name_soundex, last_name_soundex)
@@ -116,7 +122,7 @@ class Api::V1::PeopleMatchController < ApplicationController
       person:{
       id: person.person_uuid,
       gender: person.gender,
-      birth_date: person.birthdate,
+      birthdate: person.birthdate,
       given_name: person.first_name,
       family_name: person.last_name,
       home_village: person.home_village,
