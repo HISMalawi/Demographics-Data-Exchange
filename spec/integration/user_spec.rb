@@ -2,7 +2,7 @@ require 'swagger_helper'
 
 describe 'User API' do
   
-  	path 'v1/register' do
+  	path '/v1/register' do
 
 		post 'Registers User' do
 			tags 'User'
@@ -38,7 +38,7 @@ end
 
 describe 'User API' do
   
-    path 'v1/login' do
+    path '/v1/login' do
         post 'User Login' do
             tags 'User'
 			consumes 'application/json'
@@ -54,8 +54,16 @@ describe 'User API' do
 			response '200', 'success' do
 				let(:user) {
 				{
-					message:  	     'Login succesfull',
-					access_token:    'yJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE1Mjk3Njc0MjV9.EDR8G6J94Qko5CDeblXkKidzNye2IE706z9T4p_bwTo',
+					message:  	     'successful',
+				}
+				}
+				run_test!
+			end
+
+			response '401', 'failed' do
+				let(:error) {
+				{
+					user_authentication: 'Invalid credentials',
 				}
 				}
 				run_test!
@@ -66,7 +74,7 @@ end
 
 describe 'User API' do
   
-    path 'v1/verify_token/' do
+    path '/v1/verify_token/' do
         post 'verify token' do
             tags 'User'
 			consumes 'application/json'
@@ -78,11 +86,19 @@ describe 'User API' do
 			required: ['token']
 			}
 	
-			response '200', 'success' do
+			response '201', 'success' do
 				let(:user) {
 				{
-                    status:         '200',
 					message:  	     'successful',
+				}
+				}
+				run_test!
+			end
+
+			response '401', 'success' do
+				let(:user) {
+				{
+					message:  	    'Failed',
 				}
 				}
 				run_test!

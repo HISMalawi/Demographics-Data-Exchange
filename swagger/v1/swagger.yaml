@@ -4,7 +4,7 @@ info:
   title: API V1
   version: v1
 paths:
-  "/api/v1/configs":
+  "/v1/create_config":
     post:
       summary: Creates configs
       tags:
@@ -43,13 +43,7 @@ paths:
       summary: Creates person details
       tags:
       - People
-      security:
-      - Bearer: {}
-      parameters:
-      - name: access_token
-        in: header
-        schema:
-          type: string
+      parameters: []
       responses:
         '201':
           description: person details created
@@ -110,13 +104,7 @@ paths:
       summary: Search by name and gender
       tags:
       - People
-      security:
-      - Bearer: {}
-      parameters:
-      - name: access_token
-        in: header
-        schema:
-          type: string
+      parameters: []
       responses:
         '200':
           description: success
@@ -145,13 +133,7 @@ paths:
       summary: Search by name npid
       tags:
       - People
-      security:
-      - Bearer: {}
-      parameters:
-      - name: access_token
-        in: header
-        schema:
-          type: string
+      parameters: []
       responses:
         '200':
           description: success
@@ -281,7 +263,7 @@ paths:
                   type: integer
               required:
               - npids
-  v1/register:
+  "/v1/register":
     post:
       summary: Registers User
       tags:
@@ -309,7 +291,7 @@ paths:
               - password
               - location
               - email
-  v1/login:
+  "/v1/login":
     post:
       summary: User Login
       tags:
@@ -318,6 +300,8 @@ paths:
       responses:
         '200':
           description: success
+        '401':
+          description: failed
       requestBody:
         content:
           application/json:
@@ -333,14 +317,16 @@ paths:
               - password
               - location
               - email
-  v1/verify_token/:
+  "/v1/verify_token/":
     post:
       summary: verify token
       tags:
       - User
       parameters: []
       responses:
-        '200':
+        '201':
+          description: success
+        '401':
           description: success
       requestBody:
         content:
@@ -353,7 +339,7 @@ paths:
               required:
               - token
 servers:
-- url: http://{defaultHost}
+- url: https://{defaultHost}
   variables:
     defaultHost:
-      default: localhost:3000
+      default: www.example.com

@@ -13,10 +13,10 @@ Rails.application.routes.draw do
     end
   end
 
-  post "v1/register", to: "api/v1/user#register"
-  post "v1/login", to: "api/v1/user#login"
-  post "v1/add_user", to: "api/v1/user#add_user"
-  post "v1/verify_token/", to: "api/v1/user#verify_token"
+  post "/v1/register", to: "api/v1/user#register"
+  post "/v1/login", to: "api/v1/user#login"
+  post "/v1/add_user", to: "api/v1/user#add_user"
+  post "/v1/verify_token/", to: "api/v1/user#verify_token"
 
   #people controller routes
   post "v1/add_person", to: "api/v1/people_details#create"
@@ -65,6 +65,15 @@ Rails.application.routes.draw do
   get   'v1/person_changes', to: 'api/v1/sync#pull_updates'
   post   'v1/push_changes', to: 'api/v1/sync#pushed_updates'
   get   'v1/pull_npids', to: 'api/v1/sync#pull_npids'
+
+  #configs links 
+  get   "/v1/show_index", to: "api/v1/configs#index"
+  get   "/v1/show_config", to: "api/v1/configs#show"
+  post  "/v1/create_config", to: "api/v1/configs#create"
+  patch "/v1/update_config", to: "api/v1/configs#update"
+  put "v1/update_via_put_config", to: "api/v1/configs#update"
+  delete "/v1/delete_config", to: "api/v1/configs#destroy"
+
 
   root to: "api/v1/user#index"
 end

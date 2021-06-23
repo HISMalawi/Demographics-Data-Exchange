@@ -1,7 +1,7 @@
 require 'swagger_helper'
 
 describe 'Configs API' do
-    path '/api/v1/configs' do
+    path '/v1/create_config' do
         post 'Creates configs' do
             tags 'Configs'
             consumes 'application/json'
