@@ -19,9 +19,6 @@ It was built by Baobab Health Trust.
 
 ##Dependancies
 
-* DDE-Jobs Application: Used to sync data between Couchdb database and MySQL database.
-                        The application can be cloned from git@bitbucket.org:baobabhealthtrust/dde-jobs.git
-                        to authorized users.
 
 ##Setting Up
 
@@ -31,12 +28,12 @@ It was built by Baobab Health Trust.
 
 * Clone DDE Application from bitbucket.
   ```
-    git clone git@bitbucket.org:baobabhealthtrust/dde3.git
+    https://github.com/HISMalawi/Demographics-Data-Exchange.git dde4
   ```
   
 * Enter into the root of your application by typing 
   ```
-    cd dde3
+    cd dde4
   ```
   
 * Copy all .yml.example files in config folder into .yml files.
@@ -44,12 +41,17 @@ It was built by Baobab Health Trust.
     cp config/*.yml.example config/*.yml
   ```
   
-* Configure your MySQL and CouchDB databases in config/database.yml and couchdb.yml files respectively.
+* Configure your MySQL database in config/database.yml file respectively.
   Provide username, password, database name, host and port (if necessary).
 
 * Run
   ```
     bundle install
+  ```
+
+  * Run
+  ```
+    rails db:migrate db:seed
   ```
 
 ###Setting up DDE Master
@@ -76,39 +78,20 @@ It was built by Baobab Health Trust.
 1. Copy you config files by Executing:
 
     cp config/database.yml.example config/database.yml
-    cp config/couchdb.yml.example config/couchdb.yml
-    cp config/master_couchdb.yml.example config/master_couchdb.yml
-    cp config/application.yml.example config/application.yml
     cp config/secrets.yml.example config/secrets.yml
 
-2. Configure the config file database.yml, couchdb.yml and master_couchdb.yml
+2. Configure the config file database.yml
    
     Provide all the required feilds.
-    Please Note: All hosts in couchdb.yml and master_couchdb.yml should be their public IP addresses which are accessible outside their local network.
+    Please Note: All hosts in should be their public IP addresses which are accessible outside their local network.
 
 3. Load dde_metadata.sql into proxy dde mysql database
    ```
     $mysql -u root -p dde_proxy_database < db/dde_metadata.sql
    ```
    
-4. Replicate DDE Master Couchdb to your local DDE Proxy Couchdb.
-
 5. Configure Nginx to start the application
   
-6. Setup DDE Data Sync cron job.
-
-    * In your terminal, type:
-      ```
-      crontab -e
-
-      */5 * * * * bash -l -c 'cd _PATH__TO__DDE_/bin && ./dde_database_updater.sh DDE_APP_RUNNING_ENVIRONMENT | ./timestamp.sh 1>> ../log/dde3_cron.log 2>> ../log/dde3_cron_error.log'
-        ```
-    Replace DDE_APP_RUNNING_ENVIRONMENT with the environment of dde3 application eg "development"
-
-    This sets your cron job to run every 5 minutes.
-
-    * Save the changes and close the cron tab.
-
 7. Run the following command:
     ```
     sudo sed -i 's/#TMPTIME=0/TMPTIME=0/g' /etc/default/rcS
