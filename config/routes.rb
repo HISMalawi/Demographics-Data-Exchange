@@ -66,5 +66,8 @@ Rails.application.routes.draw do
   post  'v1/push_changes', to: 'api/v1/sync#pushed_updates'
   get   'v1/pull_npids', to: 'api/v1/sync#pull_npids'
 
+  #config routes
+  put 'v1/configs', to: 'api/v1/configs#update'
+
   root to: "api/v1/user#index"
 end

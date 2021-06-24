@@ -26,7 +26,7 @@ It was built by Baobab Health Trust.
 
 * Open your terminal
 
-* Clone DDE Application from bitbucket.
+* Clone DDE Application from github.
   ```
     https://github.com/HISMalawi/Demographics-Data-Exchange.git dde4
   ```
