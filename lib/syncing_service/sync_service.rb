@@ -52,10 +52,10 @@ module SyncService
 
    def self.update_records_new(data)
 
-    push_seq = PushTracker.find_by(site_id: data[:location_updated_at].to_i, push_type: 'update')
+    push_seq = PushTracker.find_by(site_id: data[:location_updated_at].to_i, push_type: 'new')
 
     if push_seq.blank?
-      push_seq = PushTracker.create!(site_id: data[:location_updated_at].to_i,push_seq: 0, push_type: 'update')
+      push_seq = PushTracker.create!(site_id: data[:location_updated_at].to_i,push_seq: 0, push_type: 'new')
     end
 
     return {status: 200} if push_seq.push_seq > data[:id].to_i # Skip data if has already been tracked
@@ -65,6 +65,7 @@ module SyncService
       data.delete('id')
       data.delete('created_at')
       data.delete('updated_at')
+      data.delete('update_seq')
       ActiveRecord::Base.transaction do
         if person.blank?
           PersonDetail.create!(data)
@@ -74,6 +75,7 @@ module SyncService
             audit_record.delete('id')
             audit_record.delete('created_at')
             audit_record.delete('updated_at')
+            audit_record.delete('update_seq')
             PersonDetailsAudit.create!(audit_record)
         end
         push_seq.update(push_seq: current_seq)

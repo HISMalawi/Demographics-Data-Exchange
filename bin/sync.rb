@@ -106,18 +106,19 @@ def push_records_new
   url = "http://#{@host}:#{@port}/v1/push_changes_new"
 
 	push_seq = Config.find_by_config('push_seq_new')['config_value'].to_i
+  debugger
 
   records_to_push = PersonDetail.unscoped.where('person_details.id > ? AND person_details.location_updated_at = ?', push_seq,@location).order(:id).limit(100)
 
   #PUSH UPDATES
   records_to_push.each do | record |
-    begin
+    #begin
       response = JSON.parse(RestClient.post(url,format_payload(record), headers={Authorization: authenticate }))
       Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response['status'] == 200
-    rescue => e
+    #rescue => e
         File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
         exit
-    end
+    #end
   end
 end
 
@@ -171,7 +172,7 @@ def format_payload(person)
               "void_reason": person.void_reason,
               "first_name_soundex": person.first_name_soundex,
               "last_name_soundex": person.last_name_soundex,
-              "update_seq": person.update_seq
+              "update_seq": (person.update_seq rescue nil)
             }
 end
 
