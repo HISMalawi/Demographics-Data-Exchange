@@ -106,7 +106,6 @@ def push_records_new
   url = "http://#{@host}:#{@port}/v1/push_changes_new"
 
 	push_seq = Config.find_by_config('push_seq_new')['config_value'].to_i
-  debugger
 
   records_to_push = PersonDetail.unscoped.where('person_details.id > ? AND person_details.location_updated_at = ?', push_seq,@location).order(:id).limit(100)
 
