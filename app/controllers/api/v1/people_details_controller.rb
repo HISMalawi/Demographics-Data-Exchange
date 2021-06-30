@@ -57,6 +57,16 @@ class Api::V1::PeopleDetailsController < ApplicationController
    end
   end
 
+   def search_by_doc_id
+    errors = ValidateParams.search_by_doc_id(params)
+    if errors.blank?
+      search_results = PersonService.search_by_doc_id(params)
+      render json: search_results
+    else
+      render json: errors
+    end
+  end
+
   def merge_people
     errors = ValidateParams.merge_people(params)
     if errors.blank?

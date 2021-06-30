@@ -151,7 +151,6 @@ module PersonService
                       ancestry_district:         (params[:attributes][:home_district] rescue nil),
                       ancestry_ta:               (params[:attributes][:home_traditional_authority] rescue nil),
                       ancestry_village:          (params[:attributes][:home_village] rescue nil),
-                      creator:              current_user.id,
                       location_created_at:  person.location_created_at,
                       location_updated_at:  current_user.location_id,
                       date_registered:      person.date_registered,
@@ -163,11 +162,10 @@ module PersonService
                     }
 
     ActiveRecord::Base.transaction do
-      person.destroy!
+      person.update(updated_person)
       person = JSON.parse(person.to_json)
       person.delete('id')
       person.delete('updated_at')
-      PersonDetail.create!(updated_person)
       PersonDetailsAudit.create!(person)
     end
   end
@@ -340,7 +338,7 @@ module PersonService
 
   def self.search_by_doc_id(params)
     doc_id = params[:doc_id]
-    person = Person.where(couchdb_person_id: doc_id)
+    person = PersonDetail.where(person_uuid: doc_id)
     return [] if person.blank?
     FootPrintService.create(person.first)
     return [self.get_person_obj(person.first)]

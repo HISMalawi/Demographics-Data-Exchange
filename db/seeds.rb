@@ -18,15 +18,25 @@ Config.create!(config: 'peer_port',
                uuid: 'a0f576e9-9dca-11eb-a899-dc41a91e235e') unless Config.find_by_config('peer_port')
 
 
-Config.create!(config: 'push_seq',
+Config.create!(config: 'push_seq_update',
                config_value: 0,
-               description: 'push vector clock',
-               uuid: 'ba45bb9c-9dca-11eb-a899-dc41a91e235e') unless Config.find_by_config('push_seq')
+               description: 'push vector clock updates',
+               uuid: 'ba45bb9c-9dca-11eb-a899-dc41a91e235e') unless Config.find_by_config('push_seq_update')
 
-Config.create!(config: 'pull_seq',
+Config.create!(config: 'push_seq_new',
                config_value: 0,
-               description: 'pull vector clock',
-               uuid: 'c22d75c6-9dca-11eb-a899-dc41a91e235e') unless Config.find_by_config('pull_seq')
+               description: 'push vector clock new records',
+               uuid: '6dcfeb1f-d980-11eb-9643-00ffc8ad464b') unless Config.find_by_config('push_seq_new')
+
+Config.create!(config: 'pull_seq_update',
+               config_value: 0,
+               description: 'pull vector clock updates',
+               uuid: 'c22d75c6-9dca-11eb-a899-dc41a91e235e') unless Config.find_by_config('pull_seq_update')
+
+Config.create!(config: 'pull_seq_new',
+               config_value: 0,
+               description: 'pull vector clock new',
+               uuid: '5ba698fe-d980-11eb-9643-00ffc8ad464b') unless Config.find_by_config('pull_seq_new')
 
 Config.create!(config: 'sync_pwd',
                config_value: 'dde_sync_password',

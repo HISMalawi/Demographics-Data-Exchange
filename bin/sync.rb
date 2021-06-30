@@ -24,15 +24,15 @@ def token_valid(token)
   end
 end
 
-def pull_records
-  pull_seq = Config.find_by_config('pull_seq')['config_value'].to_i
-  url = "http://#{@host}:#{@port}/v1/person_changes?site_id=#{@location}&pull_seq=#{pull_seq}"
+def pull_new_records
+  pull_seq = Config.find_by_config('pull_seq_new')['config_value'].to_i
+  url = "http://#{@host}:#{@port}/v1/person_changes_new?site_id=#{@location}&pull_seq=#{pull_seq}"
 
   updates = JSON.parse(RestClient.get(url,headers={Authorization: authenticate }))
 
   updates.each do |record|
-  	person = PersonDetail.find_by(npid: record['npid'],person_uuid: record['person_uuid'])
-    pull_seq = record['id']
+  	person = PersonDetail.unscoped.find_by(npid: record['npid'],person_uuid: record['person_uuid'])
+    pull_seq = record['id'].to_i
     record.delete('id')
     record.delete('created_at')
     record.delete('updated_at')
@@ -40,15 +40,44 @@ def pull_records
     	if person.blank?
         PersonDetail.create!(record)
     	else
-          PersonDetail.create!(record)
+          person.update(record)
           audit_record = JSON.parse(person.to_json)
           audit_record.delete('id')
           audit_record.delete('created_at')
           audit_record.delete('updated_at')
           PersonDetailsAudit.create!(audit_record)
-          person.destroy!
     	end
-  	  Config.where(config: 'pull_seq').update(config_value: pull_seq)
+  	  Config.where(config: 'pull_seq_new').update(config_value: pull_seq)
+    end
+  end
+end
+
+def pull_updated_records
+  pull_seq = Config.find_by_config('pull_seq_update')['config_value'].to_i
+  url = "http://#{@host}:#{@port}/v1/person_changes_updates?site_id=#{@location}&pull_seq=#{pull_seq}"
+
+  updates = JSON.parse(RestClient.get(url,headers={Authorization: authenticate }))
+
+  updates.each do |record|
+    person = PersonDetail.unscoped.find_by(npid: record['npid'],person_uuid: record['person_uuid'])
+    pull_seq = record['update_seq'].to_i
+    record.delete('id')
+    record.delete('created_at')
+    record.delete('updated_at')
+    record.delete('update_seq')
+    ActiveRecord::Base.transaction do
+      if person.blank?
+        PersonDetail.create!(record)
+      else
+          person.update(record)
+          audit_record = JSON.parse(person.to_json)
+          audit_record.delete('id')
+          audit_record.delete('created_at')
+          audit_record.delete('updated_at')
+          audit_record.delete('update_seq')
+          PersonDetailsAudit.create!(audit_record)
+      end
+      Config.where(config: 'pull_seq_update').update(config_value: pull_seq)
     end
   end
 end
@@ -70,14 +99,13 @@ def pull_npids
       end
     end
   end
-
 end
 
 
-def push_records
-  url = "http://#{@host}:#{@port}/v1/push_changes"
+def push_records_new
+  url = "http://#{@host}:#{@port}/v1/push_changes_new"
 
-	push_seq = Config.find_by_config('push_seq')['config_value'].to_i
+	push_seq = Config.find_by_config('push_seq_new')['config_value'].to_i
 
   records_to_push = PersonDetail.unscoped.where('person_details.id > ? AND person_details.location_updated_at = ?', push_seq,@location).order(:id).limit(100)
 
@@ -85,13 +113,32 @@ def push_records
   records_to_push.each do | record |
     begin
       response = JSON.parse(RestClient.post(url,format_payload(record), headers={Authorization: authenticate }))
-      Config.find_by_config('push_seq').update(config_value: record.id.to_i) if response['status'] == 200
+      Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response['status'] == 200
     rescue => e
         File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
         exit
     end
   end
+end
 
+def push_records_updates
+  url = "http://#{@host}:#{@port}/v1/push_changes_updates"
+
+  push_seq = Config.find_by_config('push_seq_update')['config_value'].to_i
+
+  records_to_push = PersonDetail.unscoped.joins(:person_details_audit).where('person_details.location_updated_at = ?
+      AND person_details_audits.id > ?',@location, push_seq).order('person_details_audits.id').limit(100).select('person_details.*,person_details_audits.id as update_seq')
+
+  #PUSH UPDATES
+  records_to_push.each do | record |
+    begin
+      response = JSON.parse(RestClient.post(url,format_payload(record), headers={Authorization: authenticate }))
+      Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i) if response['status'] == 200
+    rescue => e
+        File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
+        exit
+    end
+  end
 end
 
 def format_payload(person)
@@ -123,7 +170,8 @@ def format_payload(person)
               "date_voided": person.date_voided,
               "void_reason": person.void_reason,
               "first_name_soundex": person.first_name_soundex,
-              "last_name_soundex": person.last_name_soundex
+              "last_name_soundex": person.last_name_soundex,
+              "update_seq": person.update_seq
             }
 end
 
@@ -136,8 +184,10 @@ def main
     FileUtils.touch "/tmp/dde_sync.lock"
   end
   begin
-	 pull_records
-   push_records
+	 pull_new_records
+   pull_updated_records
+   push_records_new
+   push_records_updates
    pull_npids
   ensure
     if File.exists?("/tmp/dde_sync.lock")

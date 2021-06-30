@@ -22,7 +22,7 @@ Rails.application.routes.draw do
   post "v1/add_person", to: "api/v1/people_details#create"
   post "v1/search_by_name_and_gender", to: "api/v1/people_details#search_by_name_and_gender"
   post "v1/search_by_npid", to: "api/v1/people_details#search_by_npid"
-  post "v1/search_by_doc_id", to: "api/v1/people#search_by_doc_id"
+  post "v1/search_by_doc_id", to: "api/v1/people_details#search_by_doc_id"
   post "v1/search_by_attributes", to: "api/v1/people#search_by_attributes"
   post "v1/potential_duplicates", to: "api/v1/people#potential_duplicates"
   post "v1/merge_people", to: "api/v1/people_details#merge_people"
@@ -62,8 +62,10 @@ Rails.application.routes.draw do
   get   "v1/footprints", to: "api/v1/footprint#by_category"
 
   #sync links
-  get   'v1/person_changes', to: 'api/v1/sync#pull_updates'
-  post  'v1/push_changes', to: 'api/v1/sync#pushed_updates'
+  get   'v1/person_changes_new', to: 'api/v1/sync#pull_updates_new'
+  get   'v1/person_changes_updates', to: 'api/v1/sync#pull_updates'
+  post  'v1/push_changes_new', to: 'api/v1/sync#pushed_updates_new'
+  post  'v1/push_changes_updates', to: 'api/v1/sync#pushed_updates'
   get   'v1/pull_npids', to: 'api/v1/sync#pull_npids'
 
   #config routes

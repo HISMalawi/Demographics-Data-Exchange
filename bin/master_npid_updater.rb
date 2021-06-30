@@ -1,10 +1,11 @@
 require 'zlib'
+require "people_matching_service/bantu_soundex"
 
 config   = Rails.configuration.database_configuration
 @username = config[Rails.env]["username"]
 @password = config[Rails.env]["password"]
 @database_main = config[Rails.env]["database"]
-@batch_size = 1_000
+@batch_size = 10_000
 
 
 def init_insert
@@ -44,25 +45,139 @@ def load_dumps
   end
 end
 
+def save_person(person,db)
+   person = format_person(person, db)
+   begin
+     PersonDetail.create!(person)
+    rescue => e
+      File.write("#{Rails.root}/log/error.log", e, mode: 'a')
+    end
+end
+
+def format_person(person,db)
+  #attributes = get_address(person['person_id'],db)
+  person = {
+    id:                     'NULL',
+    first_name:             "\"#{person['given_name']}\"",
+    last_name:              "\"#{person['family_name']}\"",
+    middle_name:            "\"#{person['middle_name']}\"",
+    birthdate:              ("\"#{person['birthdate'].to_date.strftime('%Y-%m-%d')}\"" rescue 'NULL'),
+    birthdate_estimated:    person['birthdate_estimated'],
+    gender:                 "\"#{person['gender']}\"",
+    ancestry_district:      "\"#{person['ancestry_district']}\"",
+    ancestry_ta:            "\"#{person['ancestry_ta']}\"",
+    ancestry_village:       "\"#{person['ancestry_village']}\"",
+    home_district:          "\"#{person['home_district']}\"",
+    home_ta:                "\"#{person['home_ta']}\"",
+    home_village:           "\"#{person['home_village']}\"",
+    npid:                   "\"#{person['npid']}\"",
+    person_uuid:            "\"#{person['couchdb_person_id']}\"",
+    date_registered:        "\"#{person['created_at'].to_datetime.strftime('%Y-%m-%d %H:%M:%S')}\"",
+    last_edited:            "\"#{person['updated_at'].to_datetime.strftime('%Y-%m-%d %H:%M:%S')}\"",
+    location_created_at:    person['location_created_at'],
+    location_updated_at:    person['location_created_at'],
+    created_at:             'now()',
+    updated_at:             'now()',
+    creator:                person['creator'],
+    voided:                 person['voided'],
+    voided_by:              (person['voided_by'] || 'NULL'),
+    date_voided:            ("\"#{person['date_voided'].to_datetime.strftime('%Y-%m-%d %H:%M:%S')}\"" rescue 'NULL'),
+    void_reason:            "\"#{person['void_reason']}\"",
+    first_name_soundex:     "\"#{person['given_name'].soundex}\"",
+    last_name_soundex:      "\"#{person['family_name'].soundex}\""
+  }
+end
+
+def batch_process(query)
+  offset = 0
+  begin
+    batch = ActiveRecord::Base.connection.select_all <<-SQL
+      #{query}
+      LIMIT #{@batch_size}
+      OFFSET #{offset}
+    SQL
+    batch.each do |row|
+      yield row
+    end
+    offset += @batch_size
+  end until batch.empty?
+end
+
 def import_non_duplicate_records(database)
-  select_people = "SELECT * FROM #{database.}.people WHERE npid is not null"
+  loaded_people = []
+  PersonDetail.all.select(:person_uuid).each { |uuid| loaded_people << uuid['person_uuid']}
 
-  people = ActiveRecord::Base.connection.execute(select_people)
-
-  people.each do | person |
-
+  select_people = %Q(SELECT * FROM #{database}.people pple LEFT JOIN
+                    (
+                    SELECT anc.person_id, anc.ancestry_district, anc_ta.ancestry_ta, anc_village.ancestry_village,
+                    hme_district.home_district,
+                    home_ta.home_ta,
+                    hme_vllg.home_village
+                    FROM
+                    (SELECT pa.person_id, pa.value ancestry_district FROM #{database}.person_attributes pa
+                    WHERE pa.person_attribute_type_id = 4 and pa.voided = 0) anc
+                    JOIN
+                    (SELECT pa.person_id, pa.value ancestry_ta FROM #{database}.person_attributes pa
+                    WHERE pa.person_attribute_type_id = 5 and pa.voided = 0) anc_ta
+                    ON anc.person_id = anc_ta.person_id
+                    JOIN
+                    (SELECT pa.person_id, pa.value ancestry_village FROM #{database}.person_attributes pa
+                    WHERE pa.person_attribute_type_id = 6 and pa.voided = 0) anc_village
+                    ON anc.person_id = anc_village.person_id
+                    JOIN
+                    (SELECT pa.person_id, pa.value home_district FROM #{database}.person_attributes pa
+                    WHERE pa.person_attribute_type_id = 1 and pa.voided = 0) hme_district
+                    ON anc.person_id = hme_district.person_id
+                    JOIN
+                    (SELECT pa.person_id, pa.value home_ta FROM #{database}.person_attributes pa
+                    WHERE pa.person_attribute_type_id = 2 and pa.voided = 0) home_ta
+                    ON anc.person_id = home_ta.person_id
+                    JOIN
+                    (SELECT pa.person_id, pa.value home_village FROM #{database}.person_attributes pa
+                    WHERE pa.person_attribute_type_id = 3 and pa.voided = 0) hme_vllg
+                    ON anc.person_id = hme_vllg.person_id) attr
+                    ON pple.person_id = attr.person_id
+                    WHERE length(npid) > 0
+                    AND given_name is not null
+                    AND family_name is not null
+                    )
+  records = []
+  batch_process(select_people) do | person|
+     next if loaded_people.include?(person['person_uuid'])
+     records << format_person(person,database)
+     if (records.size % @batch_size == 0)
+        import_record(records)
+        records = []
+     end
   end
+  import_record(records)
+  records = []
+end
+
+def import_record(people)
+  sql = build_sql_from_(people)
+  ActiveRecord::Base.connection.execute(sql)
+end
+
+def build_sql_from_(people)
+  sql = "INSERT INTO person_details VALUES"
+  sql_values = []
+  people.each do |person|
+    sql_values << "(#{person.values.join(", ")})"
+  end
+  sql += sql_values.join(", ")
 end
 
 
 def main
-  load_dumps
+  #load_dumps
 
     site_databases = ActiveRecord::Base.connection.execute <<~SQL
       SHOW DATABASES LIKE 'npid_update%';
     SQL
 
     site_databases.each do | database |
+      #database = ['npid_update19']
       update_npids = "UPDATE #{@database_main}.npids SET assigned = 1 WHERE npid IN (SELECT npid FROM #{database[0]}.location_npids);"
 
       ActiveRecord::Base.connection.execute(update_npids)
@@ -95,7 +210,7 @@ def main
 
       ActiveRecord::Base.connection.execute(update_location_npid_state)
 
-      import_non_duplicate_records(database)
+      import_non_duplicate_records(database[0])
 
       # sql = "DROP database #{database[0]};"
       # puts "Cleaning #{database[0]}"
