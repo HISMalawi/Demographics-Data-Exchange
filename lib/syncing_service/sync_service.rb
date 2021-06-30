@@ -22,7 +22,7 @@ module SyncService
     push_seq = PushTracker.find_by(site_id: data[:location_updated_at].to_i, push_type: 'update')
 
     if push_seq.blank?
-      push_seq = PushTracker.create!(site_id: data[:location_updated_at].to_i,push_seq: 0, push_type: 'update')
+      push_seq = PushTracker.create!(site_id: data[:location_updated_at].to_i,push_seq_update: 0, push_type: 'update')
     end
 
     return {status: 200} if push_seq.push_seq > data[:id].to_i # Skip data if has already been tracked
@@ -55,7 +55,7 @@ module SyncService
     push_seq = PushTracker.find_by(site_id: data[:location_updated_at].to_i, push_type: 'new')
 
     if push_seq.blank?
-      push_seq = PushTracker.create!(site_id: data[:location_updated_at].to_i,push_seq: 0, push_type: 'new')
+      push_seq = PushTracker.create!(site_id: data[:location_updated_at].to_i,push_seq_new: 0, push_type: 'new')
     end
 
     return {status: 200} if push_seq.push_seq > data[:id].to_i # Skip data if has already been tracked
