@@ -45,7 +45,7 @@ module SyncService
             audit_record.delete('update_seq')
             PersonDetailsAudit.create!(audit_record)
         end
-        push_seq.update(push_seq: current_seq)
+        push_seq.update(push_seq_update: current_seq)
         return {status: 200, push_seq: current_seq}
       end
   end
@@ -78,7 +78,7 @@ module SyncService
             audit_record.delete('update_seq')
             PersonDetailsAudit.create!(audit_record)
         end
-        push_seq.update(push_seq: current_seq)
+        push_seq.update(push_seq_new: current_seq)
         return {status: 200, push_seq: current_seq}
       end
   end
