@@ -15,8 +15,6 @@ module MergeService
 
     ActiveRecord::Base.transaction do
       person = JSON.parse(audit_record.to_json)
-      secondary_person.id = ''
-      secondary_person.updated_at = ''
       secondary_person.voided = 1
       secondary_person.voided_by = current_user.id
       secondary_person.date_voided = Time.now
@@ -24,8 +22,7 @@ module MergeService
       secondary_person.last_edited = Time.now
       secondary_person.void_reason = "merged with: #{primary_person.person_uuid}"
       PersonDetailsAudit.create!(person)
-      secondary_person.destroy!
-      PersonDetail.create!(JSON.parse(secondary_person.to_json))
+      secondary_person.update(JSON.parse(secondary_person.to_json))
     end
     return PersonService.get_person_obj(primary_person)
   end

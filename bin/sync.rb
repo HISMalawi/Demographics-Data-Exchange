@@ -111,13 +111,13 @@ def push_records_new
 
   #PUSH UPDATES
   records_to_push.each do | record |
-    #begin
+    begin
       response = JSON.parse(RestClient.post(url,format_payload(record), headers={Authorization: authenticate }))
       Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response['status'] == 200
-    #rescue => e
+    rescue => e
         File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
         exit
-    #end
+    end
   end
 end
 

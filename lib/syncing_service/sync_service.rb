@@ -25,7 +25,7 @@ module SyncService
       push_seq = PushTracker.create!(site_id: data[:location_updated_at].to_i,push_seq: 0, push_type: 'update')
     end
 
-    return {status: 200} if push_seq.push_seq > data[:id].to_i # Skip data if has already been tracked
+    return {status: 200} if push_seq.push_seq > data[:update_seq].to_i # Skip data if has already been tracked
 
       person = PersonDetail.unscoped.find_by_person_uuid(data[:person_uuid])
       current_seq = data[:update_seq].to_i
@@ -37,8 +37,8 @@ module SyncService
         if person.blank?
           PersonDetail.create!(data)
         else
+            audit_record = JSON.parse(person.dup.to_json)
             person.update(data)
-            audit_record = JSON.parse(person.to_json)
             audit_record.delete('id')
             audit_record.delete('created_at')
             audit_record.delete('updated_at')
