@@ -162,11 +162,12 @@ module PersonService
                     }
 
     ActiveRecord::Base.transaction do
+      audit_record = person.dup
       person.update(updated_person)
-      person = JSON.parse(person.to_json)
-      person.delete('id')
-      person.delete('updated_at')
-      PersonDetailsAudit.create!(person)
+      audit_person = JSON.parse(audit_record.to_json)
+      audit_person.delete('id')
+      audit_person.delete('updated_at')
+      PersonDetailsAudit.create!(audit_person)
     end
   end
 
