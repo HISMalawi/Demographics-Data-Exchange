@@ -20,7 +20,7 @@ module MergeService
       secondary_person.date_voided = Time.now
       secondary_person.location_updated_at = current_user.location_id
       secondary_person.last_edited = Time.now
-      secondary_person.void_reason = "merged with: #{primary_person.person_uuid}"
+      secondary_person.void_reason = "dde merged with: #{primary_person.person_uuid}"
       PersonDetailsAudit.create!(person)
       secondary_person.update(JSON.parse(secondary_person.to_json))
     end
