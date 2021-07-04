@@ -177,7 +177,7 @@ end
 
 
 def main
-  #load_dumps
+    load_dumps
 
     site_databases = ActiveRecord::Base.connection.execute <<~SQL
       SHOW DATABASES LIKE 'npid_update%';
