@@ -5,7 +5,7 @@ config   = Rails.configuration.database_configuration
 @username = config[Rails.env]["username"]
 @password = config[Rails.env]["password"]
 @database_main = config[Rails.env]["database"]
-@batch_size = 5
+@batch_size = 25_000
 
 
 def init_insert
