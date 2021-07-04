@@ -215,16 +215,19 @@ def main
       update_location_npid_state = "UPDATE #{@database_main}.location_npids SET assigned = 1 WHERE npid IN (SELECT npid FROM #{database[0]}.location_npids WHERE assigned = 1);"
 
       ActiveRecord::Base.connection.execute(update_location_npid_state)
+    end
+
+    #Migrate data
+    site_databases.each do |database|
       begin
         import_non_duplicate_records(database[0])
       rescue => e
-        File.write("#{Rails.root}/log/error.log",e,mode: 'a' )
+        File.write("#{Rails.root}/log/migration_errors.log",e,mode: 'a' )
       end
-
+    end
       # sql = "DROP database #{database[0]};"
       # puts "Cleaning #{database[0]}"
       # ActiveRecord::Base.connection.execute(sql)
-    end
 end
 
 main
