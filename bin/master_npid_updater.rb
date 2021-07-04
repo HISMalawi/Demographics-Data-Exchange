@@ -5,11 +5,11 @@ config   = Rails.configuration.database_configuration
 @username = config[Rails.env]["username"]
 @password = config[Rails.env]["password"]
 @database_main = config[Rails.env]["database"]
-@batch_size = 10_000
+@batch_size = 5
 
 
 def init_insert
-	sql = "INSERT INTO `location_npids` (`couchdb_location_npid_id`, `couchdb_location_id`, `location_id`, `npid`, `assigned`,`created_at`, `updated_at`) VALUES "
+	sql = "INSERT INTO `location_npids` (`location_id`, `npid`, `assigned`, `created_at`, `updated_at`) VALUES "
 end
 
 def load_file(db, file)  
@@ -105,7 +105,11 @@ end
 
 def import_non_duplicate_records(database)
   loaded_people = []
-  PersonDetail.all.select(:person_uuid).each { |uuid| loaded_people << uuid['person_uuid']}
+  loaded_npids  = []
+  PersonDetail.unscoped.all.select(:person_uuid,:npid).each do |uuid|
+    loaded_people << uuid['person_uuid']
+    loaded_npids << uuid['npid']
+  end
 
   select_people = %Q(SELECT * FROM #{database}.people pple LEFT JOIN
                     (
@@ -143,8 +147,11 @@ def import_non_duplicate_records(database)
                     )
   records = []
   batch_process(select_people) do | person|
-     next if loaded_people.include?(person['person_uuid'])
+     next if loaded_people.include?(person['couchdb_person_id']) || loaded_npids.include?(person['npid'])
      records << format_person(person,database)
+     loaded_people << person['couchdb_person_id']
+     loaded_npids << person['npid']
+     #puts records.count
      if (records.size % @batch_size == 0)
         import_record(records)
         records = []
@@ -177,7 +184,6 @@ def main
     SQL
 
     site_databases.each do | database |
-      #database = ['npid_update19']
       update_npids = "UPDATE #{@database_main}.npids SET assigned = 1 WHERE npid IN (SELECT npid FROM #{database[0]}.location_npids);"
 
       ActiveRecord::Base.connection.execute(update_npids)
@@ -209,8 +215,11 @@ def main
       update_location_npid_state = "UPDATE #{@database_main}.location_npids SET assigned = 1 WHERE npid IN (SELECT npid FROM #{database[0]}.location_npids WHERE assigned = 1);"
 
       ActiveRecord::Base.connection.execute(update_location_npid_state)
-
-      import_non_duplicate_records(database[0])
+      begin
+        import_non_duplicate_records(database[0])
+      rescue => e
+        File.write("#{Rails.root}/log/error.log",e,mode: 'a' )
+      end
 
       # sql = "DROP database #{database[0]};"
       # puts "Cleaning #{database[0]}"
