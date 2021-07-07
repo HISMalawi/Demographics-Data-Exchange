@@ -64,7 +64,7 @@ def format_person(person,db)
     middle_name:            "\"#{person['middle_name']}\"",
     birthdate:              ("\"#{person['birthdate'].to_date.strftime('%Y-%m-%d')}\"" rescue 'NULL'),
     birthdate_estimated:    person['birthdate_estimated'],
-    gender:                 "\"#{person['gender']}\"",
+    gender:                 "\"#{person['gender'][0].upcase}\"",
     ancestry_district:      "\"#{person['ancestry_district']}\"",
     ancestry_ta:            "\"#{person['ancestry_ta']}\"",
     ancestry_village:       "\"#{person['ancestry_village']}\"",
