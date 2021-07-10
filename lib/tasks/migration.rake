@@ -208,11 +208,13 @@ namespace :migration do
           #Migrate data
           site_databases.each_with_index do |database, i|
             puts "Migrating database #{i} of #{site_databases.count}"
-            #begin
+            begin
               Benchmark.measure { import_non_duplicate_records(database[0]) }
-            # rescue => e
-            #    File.write("#{Rails.root}/log/migration_errors.log",e,mode: 'a' )
-            # end
+            rescue => e
+              File.write("#{Rails.root}/log/migration_errors.log",e,mode: 'a' )
+              @batch_size -= 10_000
+              retry
+            end
           end
             # sql = "DROP database #{database[0]};"
             # puts "Cleaning #{database[0]}"
