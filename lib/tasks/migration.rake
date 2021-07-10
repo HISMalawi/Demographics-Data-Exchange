@@ -150,19 +150,18 @@ namespace :migration do
            max += @batch_size.dup
         end
 
-        Parallel.map(select_people) do |query|
+        select_people.each do |query|
           batch = ActiveRecord::Base.connection.select_all <<-SQL
              #{query}
            SQL
-          records = []
-          batch.each do | person|
-             records << format_person(person,database)
+          #records = []
+          records = Parallel.map(batch) do | person|
+             format_person(person,database)
           end
           ActiveRecord::Base.transaction do
             PersonDetail.import(records, validate: false, on_duplicate_key_ignore: true)
           end
           puts records.size
-          records = []
         end
       end
 
