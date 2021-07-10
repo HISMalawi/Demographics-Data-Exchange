@@ -154,14 +154,15 @@ namespace :migration do
           batch = ActiveRecord::Base.connection.select_all <<-SQL
              #{query}
            SQL
-          #records = []
-          records = Parallel.map(batch) do | person|
-             format_person(person,database)
+          records = []
+          batch.each do | person|
+             records << format_person(person,database)
           end
           ActiveRecord::Base.transaction do
             PersonDetail.import(records, validate: false, on_duplicate_key_ignore: true)
           end
           puts records.size
+          records = []
         end
       end
 
@@ -208,13 +209,11 @@ namespace :migration do
           #Migrate data
           site_databases.each_with_index do |database, i|
             puts "Migrating database #{i} of #{site_databases.count}"
-            begin
+            #begin
               Benchmark.measure { import_non_duplicate_records(database[0]) }
-            rescue => e
-              File.write("#{Rails.root}/log/migration_errors.log",e,mode: 'a' )
-              @batch_size -= 10_000
-              retry
-            end
+            # rescue => e
+            #    File.write("#{Rails.root}/log/migration_errors.log",e,mode: 'a' )
+            # end
           end
             # sql = "DROP database #{database[0]};"
             # puts "Cleaning #{database[0]}"
