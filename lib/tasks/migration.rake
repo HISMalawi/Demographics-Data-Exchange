@@ -189,7 +189,7 @@ namespace :migration do
           #Migrate data
           site_databases.each_with_index do |database, i|
             puts "Migrating database #{i+1} of #{site_databases.count}"
-            ActiveRecord::Base.connection.execute <<~SQL
+            output = ActiveRecord::Base.connection.execute <<~SQL
               INSERT
                 IGNORE
               INTO
@@ -316,6 +316,8 @@ namespace :migration do
                 AND (family_name is not null
                   OR LENGTH(family_name) > 1);
             SQL
+            puts output
+            exit
           end
             # sql = "DROP database #{database[0]};"
             # puts "Cleaning #{database[0]}"
