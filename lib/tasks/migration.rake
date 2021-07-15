@@ -189,135 +189,92 @@ namespace :migration do
           #Migrate data
           site_databases.each_with_index do |database, i|
             puts "Migrating database #{i+1} of #{site_databases.count}"
-            output = ActiveRecord::Base.connection.execute <<~SQL
-              INSERT
-                IGNORE
-              INTO
-                #{@database_main}.person_details ( first_name,
-                last_name,
-                middle_name,
-                birthdate,
-                birthdate_estimated,
-                gender,
-                ancestry_district,
-                ancestry_ta,
-                ancestry_village,
-                home_district,
-                home_ta,
-                home_village,
-                npid,
-                person_uuid,
-                date_registered,
-                last_edited,
-                location_created_at,
-                location_updated_at,
-                created_at,
-                updated_at,
-                creator,
-                voided,
-                date_voided,
-                void_reason )
-              SELECT
-                given_name,
-                family_name,
-                middle_name,
-                birthdate,
-                birthdate_estimated,
-                LEFT(gender,
-                1),
-                attr.*,
-                npid,
-                couchdb_person_id created_at,
-                updated_at,
-                location_created_at,
-                location_created_at,
-                created_at,
-                updated_at,
-                creator,
-                voided,
-                date_voided,
-                void_reason
-              FROM
-                #{database[0]}.people pple
-              LEFT JOIN (
-                SELECT
-                  anc.person_id,
-                  anc.ancestry_district,
-                  anc_ta.ancestry_ta,
-                  anc_village.ancestry_village,
-                  hme_district.home_district,
-                  home_ta.home_ta,
-                  hme_vllg.home_village
-                FROM
-                  (
-                  SELECT
-                    pa.person_id,
-                    pa.value ancestry_district
-                  FROM
-                    #{database[0]}.person_attributes pa
-                  WHERE
-                    pa.person_attribute_type_id = 4
-                    and pa.voided = 0) anc
-                JOIN (
-                  SELECT
-                    pa.person_id,
-                    pa.value ancestry_ta
-                  FROM
-                    #{database[0]}.person_attributes pa
-                  WHERE
-                    pa.person_attribute_type_id = 5
-                    and pa.voided = 0) anc_ta ON
-                  anc.person_id = anc_ta.person_id
-                JOIN (
-                  SELECT
-                    pa.person_id,
-                    pa.value ancestry_village
-                  FROM
-                    #{database[0]}.person_attributes pa
-                  WHERE
-                    pa.person_attribute_type_id = 6
-                    and pa.voided = 0) anc_village ON
-                  anc.person_id = anc_village.person_id
-                JOIN (
-                  SELECT
-                    pa.person_id,
-                    pa.value home_district
-                  FROM
-                    #{database[0]}.person_attributes pa
-                  WHERE
-                    pa.person_attribute_type_id = 1
-                    and pa.voided = 0) hme_district ON
-                  anc.person_id = hme_district.person_id
-                JOIN (
-                  SELECT
-                    pa.person_id,
-                    pa.value home_ta
-                  FROM
-                    #{database[0]}.person_attributes pa
-                  WHERE
-                    pa.person_attribute_type_id = 2
-                    and pa.voided = 0) home_ta ON
-                  anc.person_id = home_ta.person_id
-                JOIN (
-                  SELECT
-                    pa.person_id,
-                    pa.value home_village
-                  FROM
-                    #{database[0]}.person_attributes pa
-                  WHERE
-                    pa.person_attribute_type_id = 3
-                    and pa.voided = 0) hme_vllg ON
-                  anc.person_id = hme_vllg.person_id) attr ON
-                pple.person_id = attr.person_id
-              WHERE
-                length(npid) > 0
-                AND (given_name is not null
-                  OR LENGTH(given_name) > 1)
-                AND (family_name is not null
-                  OR LENGTH(family_name) > 1);
+                 ActiveRecord::Base.connection.execute <<~SQL
+                      INSERT
+                        IGNORE
+                      INTO
+                        dde4.person_details (
+                              first_name,  last_name,   middle_name, birthdate, birthdate_estimated, gender,           ancestry_district,     ancestry_ta,      ancestry_village,       home_district,       home_ta,       home_village,      npid,  person_uuid,  date_registered,  last_edited,  location_created_at,  location_updated_at,  created_at,  updated_at,  creator,  voided,  date_voided,  void_reason )
+                      SELECT  given_name,  family_name, middle_name, birthdate, birthdate_estimated, LEFT(gender,1),  attr.ancestry_district, attr.ancestry_ta, attr.ancestry_village,  attr.home_district,  attr.home_ta,  attr.home_village, npid,  couchdb_person_id,created_at, updated_at,  location_created_at, location_created_at, created_at, updated_at, creator,  voided,  date_voided,  void_reason
+                      FROM
+                        npid_update12.people pple
+                      LEFT JOIN (
+                        SELECT
+                          anc.person_id,
+                          anc.ancestry_district,
+                          anc_ta.ancestry_ta,
+                          anc_village.ancestry_village,
+                          hme_district.home_district,
+                          home_ta.home_ta,
+                          hme_vllg.home_village
+                        FROM
+                          (
+                          SELECT
+                            pa.person_id,
+                            pa.value ancestry_district
+                          FROM
+                            npid_update12.person_attributes pa
+                          WHERE
+                            pa.person_attribute_type_id = 4
+                            and pa.voided = 0) anc
+                        JOIN (
+                          SELECT
+                            pa.person_id,
+                            pa.value ancestry_ta
+                          FROM
+                            npid_update12.person_attributes pa
+                          WHERE
+                            pa.person_attribute_type_id = 5
+                            and pa.voided = 0) anc_ta ON
+                          anc.person_id = anc_ta.person_id
+                        JOIN (
+                          SELECT
+                            pa.person_id,
+                            pa.value ancestry_village
+                          FROM
+                            npid_update12.person_attributes pa
+                          WHERE
+                            pa.person_attribute_type_id = 6
+                            and pa.voided = 0) anc_village ON
+                          anc.person_id = anc_village.person_id
+                        JOIN (
+                          SELECT
+                            pa.person_id,
+                            pa.value home_district
+                          FROM
+                            npid_update12.person_attributes pa
+                          WHERE
+                            pa.person_attribute_type_id = 1
+                            and pa.voided = 0) hme_district ON
+                          anc.person_id = hme_district.person_id
+                        JOIN (
+                          SELECT
+                            pa.person_id,
+                            pa.value home_ta
+                          FROM
+                            npid_update12.person_attributes pa
+                          WHERE
+                            pa.person_attribute_type_id = 2
+                            and pa.voided = 0) home_ta ON
+                          anc.person_id = home_ta.person_id
+                        JOIN (
+                          SELECT
+                            pa.person_id,
+                            pa.value home_village
+                          FROM
+                            npid_update12.person_attributes pa
+                          WHERE
+                            pa.person_attribute_type_id = 3
+                            and pa.voided = 0) hme_vllg ON
+                          anc.person_id = hme_vllg.person_id) attr ON
+                        pple.person_id = attr.person_id
+                      WHERE
+                        length(npid) = 6
+                        AND (given_name is not null
+                          OR LENGTH(given_name) > 1)
+                        AND (family_name is not null
+                          OR LENGTH(family_name) > 1);
             SQL
-            puts output
-            exit
           end
             # sql = "DROP database #{database[0]};"
             # puts "Cleaning #{database[0]}"
