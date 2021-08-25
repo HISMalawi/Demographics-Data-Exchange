@@ -15,14 +15,14 @@ module NpidService
 
     location = current_user.location_id if location.blank?
 
-    Parallel.each(available_ids) do |n|
+    Parallel.each(available_ids) do |npid|
       ActiveRecord::Base.transaction do
         LocationNpid.create(
-          npid: n.npid,
+          npid: npid.npid,
           location_id: location.to_i
         )
 
-        n.update(assigned: 1)
+        npid.update(assigned: true)
       end
     end
 
