@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  mount Rswag::Ui::Engine => '/api-docs'
+  mount Rswag::Api::Engine => '/api-docs'
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 
   namespace :api do
@@ -17,16 +19,16 @@ Rails.application.routes.draw do
   post "v1/verify_token/", to: "api/v1/user#verify_token"
 
   #people controller routes
-  post "v1/add_person", to: "api/v1/people#create"
-  post "v1/search_by_name_and_gender", to: "api/v1/people#search_by_name_and_gender"
-  post "v1/search_by_npid", to: "api/v1/people#search_by_npid"
-  post "v1/search_by_doc_id", to: "api/v1/people#search_by_doc_id"
+  post "v1/add_person", to: "api/v1/people_details#create"
+  post "v1/search_by_name_and_gender", to: "api/v1/people_details#search_by_name_and_gender"
+  post "v1/search_by_npid", to: "api/v1/people_details#search_by_npid"
+  post "v1/search_by_doc_id", to: "api/v1/people_details#search_by_doc_id"
   post "v1/search_by_attributes", to: "api/v1/people#search_by_attributes"
   post "v1/potential_duplicates", to: "api/v1/people#potential_duplicates"
-  post "v1/merge_people", to: "api/v1/people#merge_people"
+  post "v1/merge_people", to: "api/v1/people_details#merge_people"
   post "v1/assign_npid", to: "api/v1/people#assign_npid"
 
-  post "v1/update_person/", to: "api/v1/people#update_person"
+  post "v1/update_person/", to: "api/v1/people_details#update_person"
 
   #npid controller routes
   post "v1/assign_npids", to: "api/v1/npid#assign_npids"
@@ -44,7 +46,7 @@ Rails.application.routes.draw do
 
   #merging
   post "v1/merge_people", to: "api/v1/merge#merge"
-  post "v1/reassign_npid", to: "api/v1/people#reassign_npid"
+  post "v1/reassign_npid", to: "api/v1/people_details#reassign_npid"
 
   post "v1/search/people", to: "api/v1/people_match#get"
   get   "v1/get_regions", to: "api/v1/location#get_regions"
@@ -58,6 +60,16 @@ Rails.application.routes.draw do
   get   "v1/cum_total_assigned", to: "api/v1/people#cum_total_assigned"
   get   "v1/sync_info", to: "api/v1/location#sync_info"
   get   "v1/footprints", to: "api/v1/footprint#by_category"
+
+  #sync links
+  get   'v1/person_changes_new', to: 'api/v1/sync#pull_updates_new'
+  get   'v1/person_changes_updates', to: 'api/v1/sync#pull_updates'
+  post  'v1/push_changes_new', to: 'api/v1/sync#pushed_updates_new'
+  post  'v1/push_changes_updates', to: 'api/v1/sync#pushed_updates'
+  get   'v1/pull_npids', to: 'api/v1/sync#pull_npids'
+
+  #config routes
+  put 'v1/configs', to: 'api/v1/configs#update'
 
   root to: "api/v1/user#index"
 end

@@ -77,7 +77,7 @@ class Api::V1::PeopleController < ApplicationController
   def merge_people
     errors = ValidateParams.merge_people(params)
     if errors.blank?
-      merge_results = MergeService.merge(params[:primary_person_doc_id], params[:secondary_person_doc_id])
+      merge_results = MergeService.merge(params[:primary_person_doc_id], params[:secondary_person_doc_id], current_user)
       render json: merge_results
     else
       render json: errors
