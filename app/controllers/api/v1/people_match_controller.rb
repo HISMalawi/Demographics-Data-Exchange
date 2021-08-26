@@ -28,6 +28,7 @@ class Api::V1::PeopleMatchController < ApplicationController
     subject.gsub(/\s+/, "")
 
     matches = Parallel.map(same_soundex_pple) do | person |
+      next if (person.first_name.blank? || person.last_name.blank? || person.gender.blank? || person.home_village.blank? || person.home_ta.blank? || person.home_district.blank?)
       #Remove special characters from names
       person['first_name'].match? /\A[a-zA-Z']*\z/
       person['last_name'].match? /\A[a-zA-Z']*\z/

@@ -97,6 +97,25 @@ It was built by Baobab Health Trust.
     sudo sed -i 's/#TMPTIME=0/TMPTIME=0/g' /etc/default/rcS
 
     ```
+8. Set sync cronjob
+
+    ```
+    whenever --set 'environment=production' --update-crontab
+    ```
+9. Export and Generate Secret Base key run:
+
+    ```
+    rails secret
+
+    ```
+
+    then run
+
+    ```
+    export SECRET_KEY_BASE=YOUR OUTPUT FROM ABOVE COMMAND
+
+    ```
+
 
 
 

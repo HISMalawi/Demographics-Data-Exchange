@@ -12,9 +12,19 @@
 #   runner "MyModel.some_method"
 #   rake "some:great:rake:task"
 # end
-#
-every 1.minute do
-  runner 'bin/sync.rb', environment: 'development'
+
+puts @environment
+case @environment
+when 'production'
+  every 5.minutes do
+    runner 'bin/sync.rb'
+  end
+when 'development'
+  every 1.minute do
+    runner 'bin/sync.rb'
+  end
 end
+
+
 
 # Learn more: http://github.com/javan/whenever
