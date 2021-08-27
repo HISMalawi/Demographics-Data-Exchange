@@ -52,3 +52,5 @@ production:
   database: Demographics-Data-Exchange_production
   username: Demographics-Data-Exchange
   password: <%= ENV['DEMOGRAPHICS-DATA-EXCHANGE_DATABASE_PASSWORD'] %>
+
+:batch_size: '10_000'

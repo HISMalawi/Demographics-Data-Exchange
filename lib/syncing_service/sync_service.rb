@@ -1,9 +1,12 @@
 module SyncService
 
+  @batch = ActiveRecord::Base.configurations[:batch_size]['database'].to_i
+
+
   def self.person_changes_new(pull_params)
     site_id = pull_params[0]
     pull_seq = pull_params[1]
-  	updates = PersonDetail.unscoped.where('location_updated_at != ? AND id > ?', site_id, pull_seq).order(:id).limit(100)
+  	updates = PersonDetail.unscoped.where('location_updated_at != ? AND id > ?', site_id, pull_seq).order(:id).limit(@batch)
 
   	return updates
   end
@@ -12,7 +15,7 @@ module SyncService
     site_id = pull_params[0].to_i
     pull_seq = pull_params[1].to_i
     updates = PersonDetail.unscoped.joins(:person_details_audit).where('person_details.location_updated_at != ?
-      AND person_details_audits.id > ?',site_id, pull_seq).order('person_details_audits.id').limit(100).select('person_details.*,person_details_audits.id as update_seq')
+      AND person_details_audits.id > ?',site_id, pull_seq).order('person_details_audits.id').limit(@batch).select('person_details.*,person_details_audits.id as update_seq')
 
     return updates
   end
