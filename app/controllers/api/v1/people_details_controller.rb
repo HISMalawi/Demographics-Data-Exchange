@@ -82,6 +82,15 @@ class Api::V1::PeopleDetailsController < ApplicationController
     render json: person
   end
 
+  def void
+    person = PersonService.void_person(void_params,current_user)
+    unless person.blank?
+      render json: person, status: :ok
+    else
+      render json: {error: 'something went wrong'},  status: :internal_server_error
+    end
+  end
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_api_v1_people_detail
@@ -91,5 +100,10 @@ class Api::V1::PeopleDetailsController < ApplicationController
     # Only allow a trusted parameter "white list" through.
     def api_v1_people_detail_params
       params.fetch(:api_v1_people_detail, {})
+    end
+
+    def void_params
+      params.require(:void_reason)
+      {person_uuid: params[:person_uuid], void_reason: params[:void_reason]}
     end
 end

@@ -383,5 +383,25 @@ module PersonService
     return data.count
   end
 
+  def self.void_person(void_details,current_user)
+    person = PersonDetail.unscoped.find_by_person_uuid(void_details[:person_uuid])
+    if person.voided == true
+      return person
+    else
+      ActiveRecord::Base.transaction do
+        audit_record = person.dup
+        person.update(voided: true,
+                      void_reason: void_details[:void_reason],
+                      date_voided: Time.now,
+                      voided_by: current_user.id)
+        audit_person = JSON.parse(audit_record.to_json)
+        audit_person.delete('id')
+        audit_person.delete('updated_at')
+        PersonDetailsAudit.create!(audit_person)
+      end
+    end
+    return person
+  end
+
 end
 
