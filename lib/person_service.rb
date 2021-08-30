@@ -49,6 +49,7 @@ module PersonService
 
     occupation              = params[:attributes][:occupation] rescue nil
     cellphone_number        = params[:attributes][:cellphone_number] rescue nil
+
     current_district        = params[:attributes][:current_district] rescue nil
     current_ta              = params[:attributes][:current_traditional_authority] rescue nil
     current_village         = params[:attributes][:current_village] rescue nil
@@ -56,10 +57,6 @@ module PersonService
     ancestry_district           = params[:attributes][:home_district] rescue nil
     ancestry_ta                 = params[:attributes][:home_traditional_authority] rescue nil
     ancestry_village            = params[:attributes][:home_village] rescue nil
-
-    home_district           = params[:attributes][:home_district] rescue nil
-    home_ta                 = params[:attributes][:home_traditional_authority] rescue nil
-    home_village            = params[:attributes][:home_village] rescue nil
 
     art_number              = params[:identifiers][:art_number] rescue nil
     htn_number              = params[:identifiers][:htn_number] rescue nil
@@ -81,9 +78,9 @@ module PersonService
                                       ancestry_district: ancestry_district,
                                       ancestry_ta: ancestry_ta,
                                       ancestry_village: ancestry_village,
-                                      home_district: home_district,
-                                      home_ta: home_ta,
-                                      home_village: home_village,
+                                      home_district: current_district,
+                                      home_ta: current_ta,
+                                      home_village: current_village,
                                       creator: current_user.id,
                                       location_updated_at: current_user.location_id,
                                       date_registered: Time.now,
