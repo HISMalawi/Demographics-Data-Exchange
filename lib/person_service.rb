@@ -57,9 +57,9 @@ module PersonService
     ancestry_ta                 = params[:attributes][:home_traditional_authority] rescue nil
     ancestry_village            = params[:attributes][:home_village] rescue nil
 
-    current_district           = params[:attributes][:home_district] rescue nil
-    current_ta                 = params[:attributes][:home_traditional_authority] rescue nil
-    current_village            = params[:attributes][:home_village] rescue nil
+    home_district           = params[:attributes][:home_district] rescue nil
+    home_ta                 = params[:attributes][:home_traditional_authority] rescue nil
+    home_village            = params[:attributes][:home_village] rescue nil
 
     art_number              = params[:identifiers][:art_number] rescue nil
     htn_number              = params[:identifiers][:htn_number] rescue nil
@@ -71,14 +71,27 @@ module PersonService
         npid = params[:npid] || location_npids.sample
         uuid = params[:doc_id] || ActiveRecord::Base.connection.execute('SELECT uuid() as uuid').first[0]
 
-        person = PersonDetail.create!(first_name: given_name, last_name: family_name,
-        middle_name: middle_name, gender: gender, birthdate: birthdate,
-        birthdate_estimated: birthdate_estimated, location_created_at: current_user.location_id,
-        ancestry_district: ancestry_district, creator: current_user.id, ancestry_ta: ancestry_ta,
-        ancestry_village: ancestry_village, home_district: current_district, home_ta: current_ta,
-        home_village: current_village,location_updated_at: current_user.location_id,
-        date_registered: Time.now,last_edited: Time.now, npid: npid.npid, person_uuid: uuid,
-        first_name_soundex: given_name.soundex, last_name_soundex: family_name.soundex )
+        person = PersonDetail.create!(first_name: given_name,
+                                      last_name: family_name,
+                                      middle_name: middle_name,
+                                      gender: gender,
+                                      birthdate: birthdate,
+                                      birthdate_estimated: birthdate_estimated,
+                                      location_created_at: current_user.location_id,
+                                      ancestry_district: ancestry_district,
+                                      ancestry_ta: ancestry_ta,
+                                      ancestry_village: ancestry_village,
+                                      home_district: home_district,
+                                      home_ta: home_ta,
+                                      home_village: home_village,
+                                      creator: current_user.id,
+                                      location_updated_at: current_user.location_id,
+                                      date_registered: Time.now,
+                                      last_edited: Time.now,
+                                      npid: npid.npid,
+                                      person_uuid: uuid,
+                                      first_name_soundex: given_name.soundex,
+                                      last_name_soundex: family_name.soundex )
 
       #####################
       # NpidService.assign_npid(person)
