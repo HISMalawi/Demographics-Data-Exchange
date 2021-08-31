@@ -1,5 +1,5 @@
 class Api::V1::PeopleDetailsController < ApplicationController
-  before_action :set_api_v1_people_detail, only: [:show, :update, :destroy,:get_ip]
+  before_action :set_api_v1_people_detail, only: [:show, :update, :destroy]
 
 
 
@@ -107,9 +107,5 @@ class Api::V1::PeopleDetailsController < ApplicationController
     def void_params
       params.require(:void_reason)
       {person_uuid: params[:person_uuid], void_reason: params[:void_reason]}
-    end
-
-    def get_ip
-      debugger
     end
 end
