@@ -225,6 +225,7 @@ module PersonService
         birthdate:  person.birthdate,
         birthdate_estimated: person.birthdate_estimated,
         location_updated_at: person.location_updated_at,
+        last_edited: person.last_edited,
         attributes: {
           #occupation: self.get_attribute(person, "Occupation"),
           #cellphone_number: self.get_attribute(person, "Cell phone number"),
