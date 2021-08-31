@@ -10,17 +10,19 @@ module PersonService
     #Assign new NPID
     npid = LocationNpid.where(location_id: current_user.location_id, assigned: false).limit(100).sample
 
-    updated_person = person.dup
-    updated_person[:npid] = npid.npid
+    audit_person = person.dup
+    person[:npid] = npid.npid
 
     ActiveRecord::Base.transaction do
-      person.destroy!
+      person.save!
+      audit_person = JSON.parse(audit_person.to_json)
+      audit_person.delete('id')
+      audit_person.delete('updated_at')
+      PersonDetailsAudit.create!(audit_person)
+      npid.update(assigned: true)
       person = JSON.parse(person.to_json)
       person.delete('id')
       person.delete('updated_at')
-      PersonDetail.create!(JSON.parse(updated_person.to_json))
-      PersonDetailsAudit.create!(person)
-      npid.update(assigned: true)
     end
     return self.get_person_obj(OpenStruct.new(person)) #OpenStruct to allow don notation
   end
