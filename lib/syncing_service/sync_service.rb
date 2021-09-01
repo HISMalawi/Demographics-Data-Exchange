@@ -48,6 +48,7 @@ module SyncService
             audit_record.delete('update_seq')
             PersonDetailsAudit.create!(audit_record)
         end
+        LocationNpid.find_by_npid(data[:npid]).update(assigned: true)
         push_seq.update(push_seq: current_seq)
         return {status: 200, push_seq: current_seq}
       end
@@ -81,6 +82,7 @@ module SyncService
             audit_record.delete('update_seq')
             PersonDetailsAudit.create!(audit_record)
         end
+        LocationNpid.find_by_npid(data[:npid]).update(assigned: true)
         push_seq.update(push_seq: current_seq)
         return {status: 200, push_seq: current_seq}
       end
