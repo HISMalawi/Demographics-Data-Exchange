@@ -1,6 +1,8 @@
 class Api::V1::PeopleDetailsController < ApplicationController
   before_action :set_api_v1_people_detail, only: [:show, :update, :destroy]
 
+
+
   # GET /api/v1/people_details
   def index
     @api_v1_people_details = Api::V1::PeopleDetail.all

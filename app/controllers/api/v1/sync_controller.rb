@@ -2,6 +2,9 @@ require "syncing_service/sync_service"
 
 class Api::V1::SyncController < ApplicationController
 
+  before_action :validate_pull_source, only: [:pull_updates_new, :pull_updates, :pull_npids]
+  before_action :validate_push_source, only: [:pushed_updates_new, :pushed_updates]
+
   def pull_updates_new
   	records_changed = SyncService.person_changes_new(update_params)
 
@@ -19,7 +22,7 @@ class Api::V1::SyncController < ApplicationController
     if update
       render json: update, status: 200
     else
-      render json: {status: 402}
+      render json: {msg: 'Something went wrong'},status: 402
     end
   end
 
@@ -28,7 +31,7 @@ class Api::V1::SyncController < ApplicationController
     if update
       render json: update, status: 200
     else
-      render json: {status: 402}
+      render json: {msg: 'Something went wrong'}, status: :unprocessable_entity
     end
   end
 
@@ -36,7 +39,6 @@ class Api::V1::SyncController < ApplicationController
     npids = SyncService.pull_npids(npid_params)
     render json: npids
   end
-
 
   private
 
@@ -82,4 +84,17 @@ class Api::V1::SyncController < ApplicationController
                   :update_seq
                   )
   end
+
+  def validate_pull_source
+    if params[:site_id].to_i != (Location.find_by_ip_address(request.remote_ip).location_id rescue nil)
+      render json: {msg: 'Request source cannot be verified please contact Admin'}, status: :network_authentication_required
+    end
+  end
+
+  def validate_push_source
+    if params[:location_updated_at].to_i != (Location.find_by_ip_address(request.remote_ip).location_id rescue nil)
+      render json: {msg: 'Request source cannot be verified please contact Admin'}, status: :network_authentication_required
+    end
+  end
+
 end
