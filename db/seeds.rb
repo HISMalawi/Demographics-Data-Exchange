@@ -56,14 +56,20 @@ Config.create!(config: 'npid_seq',
 
 unless User.exists?
 #Load proxy Meta data
+metadata_sql_files = %w[dde4_metadata dde4_locations]
 connection = ActiveRecord::Base.connection
-sql = File.read('db/meta_data/dde4_metadata.sql')
-  statements = sql.split(/;$/)
-  statements.pop
+(metadata_sql_files || []).each do |metadata_sql_file|
+  puts "Loading #{metadata_sql_file} metadata sql file"
+  sql = File.read("db/meta_data/#{metadata_sql_file}.sql")
+    statements = sql.split(/;$/)
+    statements.pop
 
-  ActiveRecord::Base.transaction do
-    statements.each do |statement|
-      connection.execute(statement)
+    ActiveRecord::Base.transaction do
+      statements.each do |statement|
+        connection.execute(statement)
+      end
     end
+    puts "Loaded #{metadata_sql_file} metadata sql file successfully"
+    puts ''
   end
 end

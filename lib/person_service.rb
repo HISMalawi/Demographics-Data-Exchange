@@ -125,7 +125,7 @@ module PersonService
         htn_number: params[:htn_number]
 
       },
-      npid: (person.npid rescue nil),
+      npid: person.npid,
       doc_id: person.person_uuid
     }
 
