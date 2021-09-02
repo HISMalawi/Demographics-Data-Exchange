@@ -113,7 +113,7 @@ def push_records_new
   records_to_push.each do | record |
     begin
       response = JSON.parse(RestClient.post(url,format_payload(record), headers={Authorization: authenticate }))
-      Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response['status'] == 200
+      Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response.code == 201
     rescue => e
         File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
         exit
@@ -132,8 +132,8 @@ def push_records_updates
   #PUSH UPDATES
   records_to_push.each do | record |
     begin
-      response = JSON.parse(RestClient.post(url,format_payload(record), headers={Authorization: authenticate }))
-      Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i) if response['status'] == 200
+      response = RestClient.post(url,format_payload(record), headers={Authorization: authenticate })
+      Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i) if response.code == 201
     rescue => e
         File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
         exit
@@ -175,6 +175,17 @@ def format_payload(person)
             }
 end
 
+def push_footprints
+  url = "http://#{@host}:#{@port}/v1/push_footprints"
+
+  footprints = FootPrint.where(synced: false)
+
+  footprints.each do |foot|
+     response = RestClient.post(url,foot.as_json, headers={Authorization: authenticate })
+     foot.update(synced: true) if response.code == 201
+  end
+end
+
 
 def main
   if File.exists?("/tmp/dde_sync.lock")
@@ -188,6 +199,7 @@ def main
    pull_updated_records
    push_records_new
    push_records_updates
+   push_footprints
    pull_npids
   ensure
     if File.exists?("/tmp/dde_sync.lock")

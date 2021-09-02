@@ -4,6 +4,7 @@ class Api::V1::SyncController < ApplicationController
 
   before_action :validate_pull_source, only: [:pull_updates_new, :pull_updates, :pull_npids]
   before_action :validate_push_source, only: [:pushed_updates_new, :pushed_updates]
+  before_action :validate_foot_print_source, only: [:pushed_footprints]
 
   def pull_updates_new
   	records_changed = SyncService.person_changes_new(update_params)
@@ -20,16 +21,16 @@ class Api::V1::SyncController < ApplicationController
   def pushed_updates
     update = SyncService.update_records_updates(push_params)
     if update
-      render json: update, status: 200
+      render json: update, status: :created
     else
-      render json: {msg: 'Something went wrong'},status: 402
+      render json: {msg: 'Something went wrong'},status: :internal_server_error
     end
   end
 
    def pushed_updates_new
     update = SyncService.update_records_new(push_params)
     if update
-      render json: update, status: 200
+      render json: update, status: :created
     else
       render json: {msg: 'Something went wrong'}, status: :unprocessable_entity
     end
@@ -38,6 +39,15 @@ class Api::V1::SyncController < ApplicationController
   def pull_npids
     npids = SyncService.pull_npids(npid_params)
     render json: npids
+  end
+
+  def pushed_footprints
+    footprints = SyncService.save_footprint(foot_print_params)
+    if footprints
+      render json: footprints, status: :created
+    else
+      render json: {msg: 'Something went wrong'}, status: :internal_server_error
+    end
   end
 
   private
@@ -95,6 +105,18 @@ class Api::V1::SyncController < ApplicationController
     if params[:location_updated_at].to_i != (Location.find_by_ip_address(request.remote_ip).location_id rescue nil)
       render json: {msg: 'Request source cannot be verified please contact Admin'}, status: :network_authentication_required
     end
+  end
+
+  def validate_foot_print_source
+    if params[:location_id].to_i != (Location.find_by_ip_address(request.remote_ip).location_id rescue nil)
+      render json: {msg: 'Request source cannot be verified please contact Admin'}, status: :network_authentication_required
+    end
+  end
+
+  def foot_print_params
+     params.require([:user_id,:person_uuid,:program_id,:location_id,:uuid])
+    {user_id: params[:user_id],person_uuid: params[:person_uuid],
+      program_id: params[:program_id], location_id: params[:location_id], uuid: params[:uuid]}
   end
 
 end
