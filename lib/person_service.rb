@@ -343,7 +343,7 @@ module PersonService
       end
 
       if people_arr.length == 1
-        FootPrintService.create(people.first)
+        #FootPrintService.create(people.first)
       end
 
     end
