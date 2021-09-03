@@ -91,4 +91,12 @@ module SyncService
   def self.pull_npids(npid_params)
     npids = LocationNpid.where('location_id =? AND id > ? AND assigned = 0', npid_params[0],npid_params[1]).order(:id)
   end
+
+  def self.save_footprint(footprint_record)
+    footprint = FootPrint.find_by_uuid(footprint_record[:uuid])
+   if footprint.blank?
+         footprint = FootPrint.create(footprint_record)
+   end
+   return footprint
+  end
 end

@@ -11,9 +11,10 @@ module PersonService
     npid = LocationNpid.where(location_id: current_user.location_id, assigned: false).limit(100).sample
 
     audit_person = person.dup
-    person[:npid] = npid.npid
 
     ActiveRecord::Base.transaction do
+      person[:npid] = npid.npid
+      person[:location_updated_at] = current_user.location_id
       person.save!
       audit_person = JSON.parse(audit_person.to_json)
       audit_person.delete('id')

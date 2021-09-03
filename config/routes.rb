@@ -66,6 +66,7 @@ Rails.application.routes.draw do
   get   'v1/person_changes_updates', to: 'api/v1/sync#pull_updates'
   post  'v1/push_changes_new', to: 'api/v1/sync#pushed_updates_new'
   post  'v1/push_changes_updates', to: 'api/v1/sync#pushed_updates'
+  post  'v1/push_footprints', to: 'api/v1/sync#pushed_footprints'
   get   'v1/pull_npids', to: 'api/v1/sync#pull_npids'
 
   #config routes
