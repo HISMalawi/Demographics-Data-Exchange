@@ -1,13 +1,22 @@
 module FootPrintService
 
   def self.create(person)
-
-   footprint = FootPrint.create(
-      person_uuid: person.person_uuid,
-      user_id: User.current.id
-    )
-
-    return footprint
+   footprint = FootPrint.where('person_uuid = ? AND
+                                program_id = ? AND
+                                date(created_at) = ?',
+                                person[:person_uuid],
+                                person[:program_id],
+                                Time.now.strftime('%Y-%m-%d'))
+   if footprint.blank?
+         footprint = FootPrint.create(
+            person_uuid: person[:person_uuid],
+            user_id: person[:user_id],
+            program_id: person[:program_id],
+            location_id: person[:location_id],
+            uuid: ActiveRecord::Base.connection.execute('select uuid();').first[0]
+         )
+   end
+   return footprint
   end
 
   def self.client_movements
