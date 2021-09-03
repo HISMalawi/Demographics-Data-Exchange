@@ -319,7 +319,7 @@ module PersonService
       person = PersonDetail.find_by_person_uuid(doc_id)
       unless person.blank?
         person_obj = self.get_person_obj(person)
-        FootPrintService.create(person)
+        #FootPrintService.create(person)
 
         return [person_obj]
       end
@@ -356,7 +356,7 @@ module PersonService
     doc_id = params[:doc_id]
     person = PersonDetail.where(person_uuid: doc_id)
     return [] if person.blank?
-    FootPrintService.create(person.first)
+    #FootPrintService.create(person.first)
     return [self.get_person_obj(person.first)]
   end
 
