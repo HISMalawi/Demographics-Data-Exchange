@@ -6,7 +6,7 @@ module FootPrintService
                                 date(created_at) = ?',
                                 person[:person_uuid],
                                 person[:program_id],
-                                person[:encounter_datetime].strftime('%Y-%m-%d'))
+                                person[:encounter_datetime].to_date)
    if footprint.blank?
          footprint = FootPrint.create(
             person_uuid: person[:person_uuid],
