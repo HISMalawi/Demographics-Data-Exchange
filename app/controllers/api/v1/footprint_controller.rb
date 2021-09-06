@@ -11,8 +11,9 @@ class Api::V1::FootprintController < ApplicationController
 
   private
    def foot_params
-    params.require([:user_id,:person_uuid,:program_id,:location_id])
-    {user_id: params[:user_id],person_uuid: params[:person_uuid],program_id: params[:program_id], location_id: params[:location_id]}
+    params.require([:user_id,:person_uuid,:program_id,:location_id,:encounter_datetime])
+    {user_id: params[:user_id],person_uuid: params[:person_uuid],program_id: params[:program_id], location_id: params[:location_id],
+      encounter_datetime: params[:encounter_datetime]}
    end
 
 end
