@@ -43,7 +43,7 @@ class Api::V1::SyncController < ApplicationController
 
   def pushed_footprints
     footprints = SyncService.save_footprint(foot_print_params)
-    if footprints
+    unless footprints.errors.any?
       render json: footprints, status: :created
     else
       render json: {msg: 'Something went wrong'}, status: :internal_server_error
@@ -114,8 +114,10 @@ class Api::V1::SyncController < ApplicationController
   end
 
   def foot_print_params
-     params.require([:user_id,:person_uuid,:program_id,:location_id,:uuid])
-    {user_id: params[:user_id],person_uuid: params[:person_uuid],
+     params.require([:user_id,:person_uuid,:program_id,:location_id,:uuid,:encounter_datetime])
+     params.permit(:user_id,:person_uuid,:program_id,:location_id,:uuid,:encounter_datetime)
+
+    {user_id: params[:user_id],person_uuid: params[:person_uuid],encounter_datetime: params[:encounter_datetime],
       program_id: params[:program_id], location_id: params[:location_id], uuid: params[:uuid]}
   end
 

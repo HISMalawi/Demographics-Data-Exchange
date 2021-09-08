@@ -94,7 +94,7 @@ module SyncService
 
   def self.save_footprint(footprint_record)
     footprint = FootPrint.find_by_uuid(footprint_record[:uuid])
-   if footprint.blank?
+   if footprint
          footprint = FootPrint.create(footprint_record)
    end
    return footprint
