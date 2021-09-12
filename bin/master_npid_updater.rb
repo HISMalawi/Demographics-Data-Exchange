@@ -92,6 +92,9 @@ end
 
     ActiveRecord::Base.connection.execute(update_location_npid_state)
 
+    ActiveRecord::Base.connection.execute("INSERT INTO location_npids (location_id,npid,assigned,created_at,updated_at) select 1077,n.npid,n.assigned,now(),now() from
+npids n left join location_npids ln on n.npid = ln.npid WHERE ln.npid is null and n.assigned = true;")
+
     # sql = "DROP database #{database[0]};"
     # puts "Cleaning #{database[0]}"
     # ActiveRecord::Base.connection.execute(sql)
