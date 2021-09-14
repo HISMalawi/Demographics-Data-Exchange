@@ -9,7 +9,7 @@ module NpidService
   # Takes the number of requested IDs and requesting user.
   def self.assign(number_of_ids, current_user, location = "")
     # Gets available unassigned npids from master npid table.
-    available_ids = Npid.where(assigned: 0).limit(number_of_ids)
+    available_ids = Npid.where(assigned: false).limit(number_of_ids).distinct
 
     # Assign the available npids to a site /location.
 
