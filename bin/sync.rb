@@ -113,7 +113,9 @@ def push_records_new
   records_to_push.each do | record |
     begin
       response = RestClient.post(url,format_payload(record), headers={Authorization: authenticate })
-      Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response.code == 201
+      redo if response.code != 201
+      updated = Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response.code == 201
+      redo if updated != true
     rescue => e
         File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
         exit
@@ -133,7 +135,9 @@ def push_records_updates
   records_to_push.each do | record |
     begin
       response = RestClient.post(url,format_payload(record), headers={Authorization: authenticate })
-      Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i) if response.code == 201
+      redo if response.code != 201
+      updated = Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i) if response.code == 201
+      redo if updated != true
     rescue => e
         File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
         exit
