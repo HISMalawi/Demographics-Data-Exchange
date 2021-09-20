@@ -28,7 +28,7 @@ class Api::V1::PeopleMatchController < ApplicationController
     subject.gsub(/\s+/, "")
 
     matches = Parallel.map(same_soundex_pple) do | person |
-      next if (person.first_name.blank? || person.last_name.blank? || person.gender.blank? || person.home_village.blank? || person.home_ta.blank? || person.home_district.blank?)
+      next if (person.first_name.blank? || person.last_name.blank? || person.gender.blank? || person.ancestry_village.blank? || person.ancestry_ta.blank? || person.ancestry_district.blank?)
       #Remove special characters from names
       person['first_name'].match? /\A[a-zA-Z']*\z/
       person['last_name'].match? /\A[a-zA-Z']*\z/
@@ -37,9 +37,9 @@ class Api::V1::PeopleMatchController < ApplicationController
       potential_duplicate << person.first_name
       potential_duplicate << person.last_name
       potential_duplicate << person.gender
-      potential_duplicate << person.home_village
-      potential_duplicate << person.home_ta
-      potential_duplicate << person.home_district
+      potential_duplicate << person.ancestry_village
+      potential_duplicate << person.ancestry_ta
+      potential_duplicate << person.ancestry_district
 
 
       score = calculate_similarity_score(subject.gsub(/\s+/, "").downcase,potential_duplicate.gsub(/\s+/, "").downcase)
@@ -115,7 +115,7 @@ class Api::V1::PeopleMatchController < ApplicationController
   def get_potential_duplicates(first_name_soundex, last_name_soundex)
     same_soundex_pple = PersonDetail.where(first_name_soundex: first_name_soundex,
                                              last_name_soundex: last_name_soundex).select(:person_uuid, :first_name,
-                                             :last_name,:gender,:birthdate,:home_district, :home_ta, :home_village)
+                                             :last_name,:gender,:birthdate,:ancestry_district, :ancestry_ta, :ancestry_village)
   end
 
   def convert_to_json(person)
@@ -126,9 +126,9 @@ class Api::V1::PeopleMatchController < ApplicationController
       birthdate: person.birthdate,
       given_name: person.first_name,
       family_name: person.last_name,
-      home_village: person.home_village,
-      home_traditional_authority: person.home_ta,
-      home_district: person.home_district
+      home_village: person.ancestry_village,
+      home_traditional_authority: person.ancestry_ta,
+      home_district: person.ancestry_district
       },
     }
   end
