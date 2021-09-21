@@ -1,9 +1,12 @@
 require 'rest-client'
 
-@host = Config.find_by_config('host').config_value
-@port = Config.find_by_config('peer_port').config_value
-@username = Config.find_by_config('sync_user').config_value
-@pwd = Config.find_by_config('sync_pwd').config_value
+sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"))[:dde_sync_config]
+
+
+@host = sync_configs[:host]
+@port = sync_configs[:port]
+@username = sync_configs[:username]
+@pwd = sync_configs[:host]
 @location = User.find_by_username(@username)['location_id'].to_i
 
 def authenticate
