@@ -6,7 +6,7 @@ sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"))[:dde_sy
 @host = sync_configs[:host]
 @port = sync_configs[:port]
 @username = sync_configs[:username]
-@pwd = sync_configs[:host]
+@pwd = sync_configs[:password]
 @location = User.find_by_username(@username)['location_id'].to_i
 
 def authenticate
