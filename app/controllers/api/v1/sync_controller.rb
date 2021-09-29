@@ -119,7 +119,7 @@ class Api::V1::SyncController < ApplicationController
 
     {user_id: params[:user_id],person_uuid: params[:person_uuid],encounter_datetime: params[:encounter_datetime],
       program_id: params[:program_id], location_id: params[:location_id], uuid: params[:uuid],
-      app_date_created: params[:created_at],app_date_update: params[:update_at]}
+      app_date_created: params[:created_at],app_date_updated: params[:update_at]}
   end
 
 end
