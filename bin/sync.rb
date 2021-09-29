@@ -202,10 +202,10 @@ def main
     FileUtils.touch "/tmp/dde_sync.lock"
   end
   begin
-	 # pull_new_records
-   # pull_updated_records
-   # push_records_new
-   # push_records_updates
+	 pull_new_records
+   pull_updated_records
+   push_records_new
+   push_records_updates
    push_footprints
    pull_npids
   ensure
