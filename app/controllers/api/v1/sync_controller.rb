@@ -114,11 +114,12 @@ class Api::V1::SyncController < ApplicationController
   end
 
   def foot_print_params
-     params.require([:user_id,:person_uuid,:program_id,:location_id,:uuid,:encounter_datetime])
-     params.permit(:user_id,:person_uuid,:program_id,:location_id,:uuid,:encounter_datetime)
+     params.require([:user_id,:person_uuid,:program_id,:location_id,:uuid,:encounter_datetime,:created_at, :updated_at])
+     params.permit(:user_id,:person_uuid,:program_id,:location_id,:uuid,:encounter_datetime,:created_at,:updated_at)
 
     {user_id: params[:user_id],person_uuid: params[:person_uuid],encounter_datetime: params[:encounter_datetime],
-      program_id: params[:program_id], location_id: params[:location_id], uuid: params[:uuid]}
+      program_id: params[:program_id], location_id: params[:location_id], uuid: params[:uuid],
+      app_date_created: params[:created_at],app_date_update: params[:update_at]}
   end
 
 end
