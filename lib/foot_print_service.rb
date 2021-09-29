@@ -3,7 +3,7 @@ module FootPrintService
   def self.create(person)
    footprint = FootPrint.where('person_uuid = ? AND
                                 program_id = ? AND
-                                date(created_at) = ?',
+                                date(encounter_datetime) = ?',
                                 person[:person_uuid],
                                 person[:program_id],
                                 person[:encounter_datetime].to_date)
