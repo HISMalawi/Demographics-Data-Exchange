@@ -24,6 +24,7 @@ class Api::V1::PeopleMatchController < ApplicationController
     subject << search_params['home_village']
     subject << search_params['home_traditional_authority']
     subject << search_params['home_district']
+    subject << search_params['birthdate'].to_date.strftime('%Y-%m-%d').gsub('-', '')
 
     subject.gsub(/\s+/, "")
 
@@ -40,6 +41,7 @@ class Api::V1::PeopleMatchController < ApplicationController
       potential_duplicate << person.ancestry_village
       potential_duplicate << person.ancestry_ta
       potential_duplicate << person.ancestry_district
+      potential_duplicate << person.birthdate.to_date.strftime('%Y-%m-%d').gsub('-', '')
 
 
       score = calculate_similarity_score(subject.gsub(/\s+/, "").downcase,potential_duplicate.gsub(/\s+/, "").downcase)
@@ -85,7 +87,7 @@ class Api::V1::PeopleMatchController < ApplicationController
   end
 
   def params
-    permitted = super.permit(:family_name, :given_name, :birth_date, :gender,
+    permitted = super.permit(:family_name, :given_name, :birthdate, :gender,
                              attributes: PERSON_ATTRIBUTE_FIELDS)
     print "Permitted: #{permitted}\n"
     permitted
