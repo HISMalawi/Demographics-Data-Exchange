@@ -61,6 +61,11 @@ Rails.application.routes.draw do
   get   "v1/sync_info", to: "api/v1/location#sync_info"
   get   "v1/footprints", to: "api/v1/footprint#by_category"
 
+  get   "v1/new_registrations", to: "api/v1/dashboard#new_registrations"
+  get   "v1/new_registrations_by_site", to: "api/v1/dashboard#new_registrations_by_site"
+  get   'v1/new_reg_past_30', to: 'api/v1/dashboard#new_reg_past_30'
+  get   'v1/client_movement', to: 'api/v1/dashboard#client_movement'
+
   #sync links
   get   'v1/person_changes_new', to: 'api/v1/sync#pull_updates_new'
   get   'v1/person_changes_updates', to: 'api/v1/sync#pull_updates'

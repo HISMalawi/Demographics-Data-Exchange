@@ -34,7 +34,7 @@ def pull_new_records
   updates = JSON.parse(RestClient.get(url,headers={Authorization: authenticate }))
 
   updates.each do |record|
-  	person = PersonDetail.unscoped.find_by(npid: record['npid'],person_uuid: record['person_uuid'])
+  	person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
     pull_seq = record['id'].to_i
     record.delete('id')
     record.delete('created_at')
@@ -62,7 +62,7 @@ def pull_updated_records
   updates = JSON.parse(RestClient.get(url,headers={Authorization: authenticate }))
 
   updates.each do |record|
-    person = PersonDetail.unscoped.find_by(npid: record['npid'],person_uuid: record['person_uuid'])
+    person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
     pull_seq = record['update_seq'].to_i
     record.delete('id')
     record.delete('created_at')
