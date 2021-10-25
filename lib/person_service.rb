@@ -1,27 +1,31 @@
-require "people_matching_service/elasticsearch_client"
-require "people_matching_service/elasticsearch_person_dao"
-require "people_matching_service/dde_person_transformer"
+require "people_matching_service/bantu_soundex"
+# require "people_matching_service/elasticsearch_person_dao"
+# require "people_matching_service/dde_person_transformer"
 
 module PersonService
 
-  def self.reassign_npid(params)
-    couchdb_person = CouchdbPerson.find(params[:doc_id])
-    return {} if couchdb_person.blank?
-    person = Person.find_by_couchdb_person_id(couchdb_person.id)
+  def self.reassign_npid(params, current_user)
+    person = PersonDetail.find_by_person_uuid(params[:doc_id])
+    #create if person.blank? #need to think about this one
+    #Assign new NPID
+    npid = LocationNpid.where(location_id: current_user.location_id, assigned: false).limit(100).sample
 
-    person_attributes = PersonAttribute.where(person_id: person.id,person_attribute_type_id: 14)
-    (person_attributes || []).each do |person_att|
-        couchdb_attr_id = person_att.couchdb_person_attribute_id
-        couchdb_attr = CouchdbPersonAttribute.find(couchdb_attr_id)
-        couchdb_attr.update_attributes(voided: true)
-        person_att.update_attributes(voided: true,void_reason: "Reassigned",voided_by: User.current.id)
+    audit_person = person.dup
+
+    ActiveRecord::Base.transaction do
+      person[:npid] = npid.npid
+      person[:location_updated_at] = current_user.location_id
+      person.save!
+      audit_person = JSON.parse(audit_person.to_json)
+      audit_person.delete('id')
+      audit_person.delete('updated_at')
+      PersonDetailsAudit.create!(audit_person)
+      npid.update(assigned: true)
+      person = JSON.parse(person.to_json)
+      person.delete('id')
+      person.delete('updated_at')
     end
-
-    couchdb_person.update_attributes(npid: nil)
-    person.update_attributes(npid: nil)
-
-    NpidService.assign_npid(couchdb_person)
-    return self.get_person_obj(person)
+    return self.get_person_obj(OpenStruct.new(person)) #OpenStruct to allow don notation
   end
 
   def self.assign_npid(params)
@@ -34,7 +38,7 @@ module PersonService
 
   def self.create(params, current_user)
     location_npids = LocationNpid.where(["location_id = ?
-      AND assigned = FALSE",current_user.location_id])
+      AND assigned = FALSE",current_user.location_id]).limit(100)
 
     return {'error': 'No NPIDs to assign'} if location_npids.blank?
 
@@ -48,6 +52,7 @@ module PersonService
 
     occupation              = params[:attributes][:occupation] rescue nil
     cellphone_number        = params[:attributes][:cellphone_number] rescue nil
+
     current_district        = params[:attributes][:current_district] rescue nil
     current_ta              = params[:attributes][:current_traditional_authority] rescue nil
     current_village         = params[:attributes][:current_village] rescue nil
@@ -56,10 +61,6 @@ module PersonService
     ancestry_ta                 = params[:attributes][:home_traditional_authority] rescue nil
     ancestry_village            = params[:attributes][:home_village] rescue nil
 
-    current_district           = params[:attributes][:home_district] rescue nil
-    current_ta                 = params[:attributes][:home_traditional_authority] rescue nil
-    current_village            = params[:attributes][:home_village] rescue nil
-
     art_number              = params[:identifiers][:art_number] rescue nil
     htn_number              = params[:identifiers][:htn_number] rescue nil
 
@@ -67,16 +68,30 @@ module PersonService
     person = nil
 
     ActiveRecord::Base.transaction do
-        npid = params[:uuid] || LocationNpid.where(location_id: current_user.location_id, assigned: false).limit(1)
-        uuid = params[:person_uuid] || ActiveRecord::Base.connection.execute('SELECT uuid() as uuid').first[0]
+        npid = params[:npid] || location_npids.sample
+        uuid = params[:doc_id] || ActiveRecord::Base.connection.execute('SELECT uuid() as uuid').first[0]
 
-        person = PersonDetail.create!(first_name: given_name, last_name: family_name,
-        middle_name: middle_name, gender: gender, birthdate: birthdate,
-        birthdate_estimated: birthdate_estimated, location_created_at: current_user.location_id,
-        ancestry_district: ancestry_district, creator: current_user.id, ancestry_ta: ancestry_ta,
-        ancestry_village: ancestry_village, home_district: current_district, home_ta: current_ta,
-        home_village: current_village,location_updated_at: current_user.location_id,
-        date_registered: Time.now,last_edited: Time.now, npid: npid.first.npid, person_uuid: uuid)
+        person = PersonDetail.create!(first_name: given_name,
+                                      last_name: family_name,
+                                      middle_name: middle_name,
+                                      gender: gender,
+                                      birthdate: birthdate,
+                                      birthdate_estimated: birthdate_estimated,
+                                      location_created_at: current_user.location_id,
+                                      ancestry_district: ancestry_district,
+                                      ancestry_ta: ancestry_ta,
+                                      ancestry_village: ancestry_village,
+                                      home_district: current_district,
+                                      home_ta: current_ta,
+                                      home_village: current_village,
+                                      creator: current_user.id,
+                                      location_updated_at: current_user.location_id,
+                                      date_registered: Time.now,
+                                      last_edited: Time.now,
+                                      npid: npid.npid,
+                                      person_uuid: uuid,
+                                      first_name_soundex: given_name.soundex,
+                                      last_name_soundex: family_name.soundex )
 
       #####################
       # NpidService.assign_npid(person)
@@ -111,7 +126,7 @@ module PersonService
         htn_number: params[:htn_number]
 
       },
-      npid: (person.npid rescue nil),
+      npid: person.npid,
       doc_id: person.person_uuid
     }
 
@@ -132,6 +147,8 @@ module PersonService
                       first_name:            params[:given_name],
                       last_name:             params[:family_name],
                       middle_name:           params[:middle_name],
+                      first_name_soundex:    params[:given_name].soundex,
+                      last_name_soundex:     params[:family_name].soundex,
                       gender:                params[:gender],
                       birthdate:             params[:birthdate],
                       birthdate_estimated:   params[:birthdate_estimated],
@@ -147,7 +164,6 @@ module PersonService
                       ancestry_district:         (params[:attributes][:home_district] rescue nil),
                       ancestry_ta:               (params[:attributes][:home_traditional_authority] rescue nil),
                       ancestry_village:          (params[:attributes][:home_village] rescue nil),
-                      creator:              current_user.id,
                       location_created_at:  person.location_created_at,
                       location_updated_at:  current_user.location_id,
                       date_registered:      person.date_registered,
@@ -159,12 +175,12 @@ module PersonService
                     }
 
     ActiveRecord::Base.transaction do
-      person.destroy!
-      person = JSON.parse(person.to_json)
-      person.delete('id')
-      person.delete('updated_at')
-      PersonDetail.create!(updated_person)
-      PersonDetailsAudit.create!(person)
+      audit_record = person.dup
+      person.update(updated_person)
+      audit_person = JSON.parse(audit_record.to_json)
+      audit_person.delete('id')
+      audit_person.delete('updated_at')
+      PersonDetailsAudit.create!(audit_person)
     end
   end
 
@@ -209,6 +225,8 @@ module PersonService
         gender: person.gender,
         birthdate:  person.birthdate,
         birthdate_estimated: person.birthdate_estimated,
+        location_updated_at: person.location_updated_at,
+        last_edited: person.last_edited,
         attributes: {
           #occupation: self.get_attribute(person, "Occupation"),
           #cellphone_number: self.get_attribute(person, "Cell phone number"),
@@ -301,7 +319,7 @@ module PersonService
       person = PersonDetail.find_by_person_uuid(doc_id)
       unless person.blank?
         person_obj = self.get_person_obj(person)
-        FootPrintService.create(person)
+        #FootPrintService.create(person)
 
         return [person_obj]
       end
@@ -326,7 +344,7 @@ module PersonService
       end
 
       if people_arr.length == 1
-        FootPrintService.create(people.first)
+        #FootPrintService.create(people.first)
       end
 
     end
@@ -336,9 +354,9 @@ module PersonService
 
   def self.search_by_doc_id(params)
     doc_id = params[:doc_id]
-    person = Person.where(couchdb_person_id: doc_id)
+    person = PersonDetail.where(person_uuid: doc_id)
     return [] if person.blank?
-    FootPrintService.create(person.first)
+    #FootPrintService.create(person.first)
     return [self.get_person_obj(person.first)]
   end
 
@@ -377,6 +395,26 @@ module PersonService
       AND family_name NOT LIKE '%test%') AND voided = 0")
 
     return data.count
+  end
+
+  def self.void_person(void_details,current_user)
+    person = PersonDetail.unscoped.find_by_person_uuid(void_details[:person_uuid])
+    if person.voided == true
+      return person
+    else
+      ActiveRecord::Base.transaction do
+        audit_record = person.dup
+        person.update(voided: true,
+                      void_reason: void_details[:void_reason],
+                      date_voided: Time.now,
+                      voided_by: current_user.id)
+        audit_person = JSON.parse(audit_record.to_json)
+        audit_person.delete('id')
+        audit_person.delete('updated_at')
+        PersonDetailsAudit.create!(audit_person)
+      end
+    end
+    return person
   end
 
 end

@@ -41,11 +41,12 @@ class Api::V1::ConfigsController < ApplicationController
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_api_v1_config
-      @api_v1_config = Api::V1::Config.find(params[:id])
+      params.require(:config)
+      @api_v1_config = Config.find_by_config(params[:config])
     end
 
     # Only allow a trusted parameter "white list" through.
     def api_v1_config_params
-      params.fetch(:api_v1_config, {})
+      params.permit(:config_value)
     end
 end

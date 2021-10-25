@@ -18,6 +18,8 @@ class Api::V1::UserController < ApplicationController
 
   def add_user
     # POST /add_user
+     true if Integer(params[:location]) rescue return render json: {msg: 'Please provide an integer for location'}, status: :unprocessable_entity
+
     location_id = Location.find_by_location_id(params[:location]).id
     user = User.create(username: params[:username],
                        email: params[:email], password: params[:password],
