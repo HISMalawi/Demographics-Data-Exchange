@@ -31,8 +31,12 @@ class Api::V1::PeopleDetailsController < ApplicationController
   def update_person
     errors = ValidateParams.update_person(params)
     if errors.blank?
-      person = PersonService.update_person(params, current_user)
-      render json: person
+      if PersonDetail.find_by_person_uuid(params[:doc_id]).blank?
+        create
+      else
+        person = PersonService.update_person(params, current_user)
+        render json: person
+      end
     else
       render json: errors
     end
