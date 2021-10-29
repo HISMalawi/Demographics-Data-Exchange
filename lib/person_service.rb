@@ -40,7 +40,7 @@ module PersonService
     location_npids = LocationNpid.where(["location_id = ?
       AND assigned = FALSE",current_user.location_id]).limit(100)
 
-    return {'error': 'No NPIDs to assign'} if location_npids.blank?
+    return {'error': 'No NPIDs to assign'}, status: :unprocessable_entity if location_npids.blank?
 
     given_name              = params[:given_name]
     family_name             = params[:family_name]
