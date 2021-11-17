@@ -44,7 +44,7 @@ class Api::V1::PeopleMatchController < ApplicationController
       potential_duplicate << person.birthdate.to_date.strftime('%Y-%m-%d').gsub('-', '')
 
 
-      score = WhiteSimilarity.similarity(subject.gsub(/\s+/, "").downcase, potential_duplicate.gsub(/\s+/, "").downcase)
+      score = (WhiteSimilarity.similarity(subject.gsub(/\s+/, "").downcase, potential_duplicate.gsub(/\s+/, "").downcase)).round(4)
       puts score
       if score >= 0.8
         json_person = convert_to_json(person)
