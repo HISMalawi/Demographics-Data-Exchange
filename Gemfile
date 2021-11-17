@@ -42,8 +42,6 @@ gem 'jwt'
 gem 'simple_command'
 gem 'passenger'
 
-gem 'whitesimilarity'
-
 #matching algorithm
 gem 'whitesimilarity'
 
