@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 class Api::V1::DashboardController < ApplicationController
   def new_registrations
-    registrations = PersonDetail.where('date(date_registered) = date(last_edited)').count
+    registrations = PersonDetail.where('date(date_registered) = date(now())').count
 
     if registrations
       render json: { total_new_registrations: registrations }, status: :ok
@@ -35,5 +35,15 @@ class Api::V1::DashboardController < ApplicationController
     else
       ender json: { error: 'something went wrong' }, status: :unprocessable_entity
     end
+  end
+
+  def npid_status
+    npid_state = DashboardService.npids
+    if npid_state
+      render json: { npid_status: npid_state }, status: :ok
+    else
+      render json: { error: 'something went wrong' }, status: :unprocessable_entity
+    end
+
   end
 end

@@ -45,7 +45,7 @@ gem 'passenger'
 gem 'whitesimilarity'
 
 #matching algorithm
-gem 'damerau-levenshtein'
+gem 'whitesimilarity'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
