@@ -23,9 +23,27 @@ module DashboardService
   end
 
   def self.npids
-    assigned_unassiged_npids = LocationNpid.all.group(:location_id, :assigned)
+    assigned_unassiged_npids = ActiveRecord::Base.connection.select_all("
+      SELECT l.name location_name, ln.location_id,
+      count(if(assigned = false,1,null)) unassigned,
+      count(if(assigned = true,1,null)) assigned,
+      max(ln.updated_at) date_last_updated,
+      ROUND(count(if(assigned = true,1,null))/(DATEDIFF(max(date(ln.updated_at)),min(date(ln.updated_at))))) avg_consumption_rate_per_day
+      FROM location_npids ln
+      JOIN locations l
+      ON ln.location_id = l.location_id
+      WHERE l.ip_address is not null
+      GROUP BY ln.location_id,l.name
+      ORDER BY max(ln.updated_at) desc,count(*);
+      ")
+  end
 
-    averaged_consumption_rate =
+  def self.connected_sites
+    connected_sites = Location.where('ip_address is not null').select(:name, :ip_address)
 
+    ping_tested_sites = Parallel.map(connected_sites) do |site|
+      check = Net::Ping::External.new(site.ip_address)
+      {site: site.name, reacheable: check.ping?}
+    end
   end
 end

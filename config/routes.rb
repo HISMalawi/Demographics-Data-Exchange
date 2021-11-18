@@ -66,6 +66,7 @@ Rails.application.routes.draw do
   get   'v1/new_reg_past_30', to: 'api/v1/dashboard#new_reg_past_30'
   get   'v1/client_movement', to: 'api/v1/dashboard#client_movement'
   get   'v1/npid_status', to: 'api/v1/dashboard#npid_status'
+  get   'v1/connected_sites', to: 'api/v1/dashboard#connected_sites'
 
   #sync links
   get   'v1/person_changes_new', to: 'api/v1/sync#pull_updates_new'

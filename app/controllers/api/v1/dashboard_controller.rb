@@ -46,4 +46,13 @@ class Api::V1::DashboardController < ApplicationController
     end
 
   end
+
+  def connected_sites
+    connected_state = DashboardService.connected_sites
+    if connected_state
+      render json: { npid_status: connected_state }, status: :ok
+    else
+      render json: { error: 'something went wrong' }, status: :unprocessable_entity
+    end
+  end
 end
