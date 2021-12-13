@@ -1,7 +1,7 @@
 class ApplicationController < ActionController::API
 	before_action :authenticate_request, except: %i[index, verify_token]
 	attr_reader :current_user
-	
+
 	include ExceptionHandler
 
 	# [...]

@@ -7,6 +7,7 @@ config/email.yml
 config/application.yml
 config/settings.yml
 config/couchdb.yml
+storage/*.*
 notes
 development.sql
 development_structure.sql
