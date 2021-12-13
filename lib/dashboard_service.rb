@@ -9,15 +9,15 @@ module DashboardService
       JOIN locations l
       ON pd.location_created_at = l.location_id
       WHERE date(date_registered) >= DATE_SUB(date(now()), INTERVAL 30 DAY)
-      GROUP BY date(date_registered)
-      ORDER BY date(date_registered) desc;')
+      GROUP BY l.name,date(date_registered)')
 
 
     result.group_by{ |site| site[:name] }
   end
 
   def self.client_movements
-    sites = FootPrint.find_by_sql('SELECT sites_visited, count(*) number_of_pple FROM (SELECT person_uuid, count(*) as sites_visited FROM (SELECT DISTINCT person_uuid,location_id FROM foot_prints fp
+    sites = FootPrint.find_by_sql('SELECT sites_visited, count(*) number_of_pple FROM (SELECT person_uuid, count(*) as sites_visited
+      FROM (SELECT DISTINCT person_uuid,location_id FROM foot_prints fp
       group by person_uuid,location_id) movement group by person_uuid) sites
       GROUP BY sites_visited;')
   end
@@ -54,6 +54,6 @@ module DashboardService
       FROM foot_prints fp
       JOIN locations l
       ON fp.location_id = l.location_id
-      GROUP  BY l.name')
+      GROUP BY l.name')
   end
 end
