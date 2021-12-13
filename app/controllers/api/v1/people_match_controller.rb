@@ -44,7 +44,7 @@ class Api::V1::PeopleMatchController < ApplicationController
       potential_duplicate << person.birthdate.to_date.strftime('%Y-%m-%d').gsub('-', '')
 
 
-      score = calculate_similarity_score(subject.gsub(/\s+/, "").downcase,potential_duplicate.gsub(/\s+/, "").downcase)
+      score = (WhiteSimilarity.similarity(subject.gsub(/\s+/, "").downcase, potential_duplicate.gsub(/\s+/, "").downcase)).round(4)
       puts score
       if score >= 0.8
         json_person = convert_to_json(person)
@@ -91,27 +91,6 @@ class Api::V1::PeopleMatchController < ApplicationController
                              attributes: PERSON_ATTRIBUTE_FIELDS)
     print "Permitted: #{permitted}\n"
     permitted
-  end
-
-  def calculate_similarity_score(string_A,string_B)
-    #Calulating % Similarity using the formula %RSD = (SD/max_ed)%
-    #Where SD = Max(length(A),Length(B)) - Edit Distance
-    #SD = Similartiy Distance
-    #ed = edit Distance
-    #max_ed = maximum edit distance
-    #RSD
-
-    ed = DamerauLevenshtein.distance(string_A,string_B)
-
-    if string_A.size >= string_B.size
-      max_ed = string_A.size
-    else
-      max_ed = string_B.size
-    end
-
-    sd = max_ed - ed
-
-    score = (sd/max_ed.to_f).round(2)
   end
 
   def get_potential_duplicates(first_name_soundex, last_name_soundex)

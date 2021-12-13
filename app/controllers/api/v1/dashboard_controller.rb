@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 class Api::V1::DashboardController < ApplicationController
   def new_registrations
-    registrations = PersonDetail.where('date(date_registered) = date(last_edited)').count
+    registrations = PersonDetail.where('date(date_registered) = date(now())').count
 
     if registrations
       render json: { total_new_registrations: registrations }, status: :ok
@@ -34,6 +34,34 @@ class Api::V1::DashboardController < ApplicationController
       render json: { client_movement: movement }, status: :ok
     else
       ender json: { error: 'something went wrong' }, status: :unprocessable_entity
+    end
+  end
+
+  def npid_status
+    npid_state = DashboardService.npids
+    if npid_state
+      render json: { npid_status: npid_state }, status: :ok
+    else
+      render json: { error: 'something went wrong' }, status: :unprocessable_entity
+    end
+
+  end
+
+  def connected_sites
+    connected_state = DashboardService.connected_sites
+    if connected_state
+      render json: { connected_sites: connected_state }, status: :ok
+    else
+      render json: { error: 'something went wrong' }, status: :unprocessable_entity
+    end
+  end
+
+  def site_activity
+    site_activity = DashboardService.site_activities
+    if site_activity
+      render json: { site_activity: site_activity }, status: :ok
+    else
+      render json: { error: 'something went wrong' }, status: :unprocessable_entity
     end
   end
 end

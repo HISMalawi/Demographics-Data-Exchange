@@ -26,6 +26,8 @@ gem 'bcrypt', '~> 3.1.7'
 
 gem 'rest-client'
 
+gem 'net-ping'
+
 # Use ActiveStorage variant
 # gem 'mini_magick', '~> 4.8'
 
@@ -42,10 +44,8 @@ gem 'jwt'
 gem 'simple_command'
 gem 'passenger'
 
-gem 'whitesimilarity'
-
 #matching algorithm
-gem 'damerau-levenshtein'
+gem 'whitesimilarity'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
