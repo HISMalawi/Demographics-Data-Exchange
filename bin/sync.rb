@@ -8,6 +8,23 @@ sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"))[:dde_sy
 @username = sync_configs[:username]
 @pwd = sync_configs[:password]
 @location = User.find_by_username(@username)['location_id'].to_i
+@token = ''
+
+
+def authorize
+  if File.exist?("#{Rails.root}/tmp/token.json")
+    @token = JSON.parse(File.read("#{Rails.root}/tmp/token.json")).symbolize_keys[:token]
+    if token_valid(@token)
+      return @token
+    else
+      @token = authenticate
+      File.write("#{Rails.root}/tmp/token.json", {:token => @token}.to_json)
+    end
+  else
+    @token = authenticate
+    File.write("#{Rails.root}/tmp/token.json", {:token => @token}.to_json)
+  end
+end
 
 def authenticate
     url = "http://#{@host}:#{@port}/v1/login?username=#{@username}&password=#{@pwd}"
@@ -18,9 +35,13 @@ end
 def token_valid(token)
   url = "http://#{@host}:#{@port}/v1/verify_token"
 
-  response = JSON.parse(RestClient.post(url,{'token' => token}.to_json, {content_type: :json, accept: :json}))['message']
+  begin
+    response = RestClient.post(url,{'token' => token}.to_json, {content_type: :json, accept: :json})
+  rescue => e
+    return false
+  end
 
-  if response == 'Successful'
+  if response.code == 200
   	return true
   else
   	return false
@@ -31,7 +52,7 @@ def pull_new_records
   pull_seq = Config.find_by_config('pull_seq_new')['config_value'].to_i
   url = "http://#{@host}:#{@port}/v1/person_changes_new?site_id=#{@location}&pull_seq=#{pull_seq}"
 
-  updates = JSON.parse(RestClient.get(url,headers={Authorization: authenticate }))
+  updates = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
 
   updates.each do |record|
   	person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
@@ -59,7 +80,7 @@ def pull_updated_records
   pull_seq = Config.find_by_config('pull_seq_update')['config_value'].to_i
   url = "http://#{@host}:#{@port}/v1/person_changes_updates?site_id=#{@location}&pull_seq=#{pull_seq}"
 
-  updates = JSON.parse(RestClient.get(url,headers={Authorization: authenticate }))
+  updates = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
 
   updates.each do |record|
     person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
@@ -89,7 +110,7 @@ def pull_npids
   npid_seq = Config.find_by_config('npid_seq')['config_value'].to_i
   url = "http://#{@host}:#{@port}/v1/pull_npids?site_id=#{@location}&npid_seq=#{npid_seq}"
 
-  npids = JSON.parse(RestClient.get(url,headers={Authorization: authenticate }))
+  npids = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
 
   unless npids.blank?
     npids.each do |npid|
@@ -115,7 +136,7 @@ def push_records_new
   #PUSH UPDATES
   records_to_push.each do | record |
     begin
-      response = RestClient.post(url,format_payload(record), headers={Authorization: authenticate })
+      response = RestClient.post(url,format_payload(record), headers={Authorization: @token })
       redo if response.code != 201
       updated = Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response.code == 201
       redo if updated != true
@@ -137,7 +158,7 @@ def push_records_updates
   #PUSH UPDATES
   records_to_push.each do | record |
     begin
-      response = RestClient.post(url,format_payload(record), headers={Authorization: authenticate })
+      response = RestClient.post(url,format_payload(record), headers={Authorization: @token })
       redo if response.code != 201
       updated = Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i) if response.code == 201
       redo if updated != true
@@ -188,7 +209,7 @@ def push_footprints
   footprints = FootPrint.where(synced: false)
 
   footprints.each do |foot|
-     response = RestClient.post(url,foot.as_json, headers={Authorization: authenticate })
+     response = RestClient.post(url,foot.as_json, headers={Authorization: @token })
      foot.update(synced: true) if response.code == 201
   end
 end
@@ -202,6 +223,7 @@ def main
     FileUtils.touch "/tmp/dde_sync.lock"
   end
   begin
+   authorize
 	 pull_new_records
    pull_updated_records
    push_records_new
