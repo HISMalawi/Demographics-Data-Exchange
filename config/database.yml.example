@@ -60,3 +60,8 @@ production:
   :port: 3002
   :username: test
   :password: test
+
+:mpi_sync_config: 
+  :host: sqa-deployment.kuunika.org
+  :port: 5000
+
