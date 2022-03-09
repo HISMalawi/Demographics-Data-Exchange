@@ -163,6 +163,7 @@ def push_records_new_mpi
   records_to_push.each do | record |
     begin
       response = RestClient.post(url, format_payload(record), {content_type: :json, accept: :json})
+     
       redo if response.code != 201
       updated = Config.find_by_config('push_seq_new').update(config_value: record.update_seq.to_i) if response.code == 201
       redo if updated != true
@@ -206,21 +207,24 @@ def format_payload(person)
                 "update_seq": (person.update_seq rescue nil)
               }
   else
+    gender = "male" if person.gender == "M"
+    gender = "female" if person.gender == "F"
+  
     payload = {
               "nhid": "",
-              "identifier": [{"system": "DDE","value": "VBHHUJ","use": "DDE"}],
-              "name": [{"family": "Testname","given": ["Testfamily"]}],
-              "telecom": [{"value": "0883274808","use": "mobile"}],
-              "gender": "male",
-              "birthdate": "2022-03-02T08:44:57.396Z",
+              "identifier": [{"system": "DDE","value": person.npid ,"use": "DDE"}],
+              "name": [{"family": person.last_name,"given": [ person.first_name ]}],
+              "telecom": [{"value": "null","use": "mobile"}],
+              "gender": gender,
+              "birthdate": person.birthdate.to_s,
               "deceasedBoolean": false,
               "deceasedDateTime": "2022-03-02T08:44:57.396Z",
-              "address": [{"use": "home","line": ["some address here"],"district": "Somedistrict", "state": "somestate"}],
-              "maritalStatus": [{"text": "unknown" }],
+              "address": [{"use": "home","line": ["none"],"district": person.home_district, "state": person.home_village }],
+              "maritalStatus": [{"text": "unknown"}],
               "multipleBirthBoolean": false,
-              "contact": [ {"name": {"family": "Testname","given": ["Testfamily"]} ,"telecom": [{"value": "0997625691","use": "mobile"}],"relationship": [{"text": "other"}], "gender": "male" }],
+              "contact": [ {"name": {"family": "null","given": ["null"]} ,"telecom": [{"value": "null","use": "mobile"}],"relationship": [{"text": "unspecified"}], "gender": "unknown" }],
               "communication": [{"language": {"text": "english" },"preferred": true}],
-              "facilityCode": "700"
+              "facilityCode":  "#{person.location_created_at}"
             }
     payload.to_json
   end
