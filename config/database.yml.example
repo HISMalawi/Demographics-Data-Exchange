@@ -57,11 +57,7 @@ production:
 
 :dde_sync_config:
   :host: 10.44.0.48
-  :port: 3002
+  :port: 3000
+  :master: false
   :username: test
   :password: test
-
-:mpi_sync_config: 
-  :host: sqa-deployment.kuunika.org
-  :port: 5000
-

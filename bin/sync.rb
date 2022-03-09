@@ -1,4 +1,5 @@
 require 'rest-client'
+require 'json'
 
 sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"))[:dde_sync_config]
 
@@ -7,7 +8,11 @@ sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"))[:dde_sy
 @port = sync_configs[:port]
 @username = sync_configs[:username]
 @pwd = sync_configs[:password]
-@location = User.find_by_username(@username)['location_id'].to_i
+@master = sync_configs[:master] 
+
+if !@master 
+    @location = User.find_by_username(@username)['location_id'].to_i
+end
 
 def authenticate
     url = "http://#{@host}:#{@port}/v1/login?username=#{@username}&password=#{@pwd}"
@@ -104,7 +109,6 @@ def pull_npids
   end
 end
 
-
 def push_records_new
   url = "http://#{@host}:#{@port}/v1/push_changes_new"
 
@@ -148,38 +152,78 @@ def push_records_updates
   end
 end
 
+def push_records_new_mpi
+  url = "http://#{@host}:#{@port}/mpr/api/v1/fhir-patients"
+
+  push_seq = Config.find_by_config('push_seq_new')['config_value'].to_i
+
+  records_to_push = PersonDetail.unscoped.where('person_details.id > ? ', push_seq).order(:id).limit(100).select('person_details.*,person_details .id as update_seq')
+
+  #PUSH UPDATES
+  records_to_push.each do | record |
+    begin
+      response = RestClient.post(url, format_payload(record), {content_type: :json, accept: :json})
+      redo if response.code != 201
+      updated = Config.find_by_config('push_seq_new').update(config_value: record.update_seq.to_i) if response.code == 201
+      redo if updated != true
+    rescue => e
+      File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
+    end
+  end
+end
+
 def format_payload(person)
-  payload =  {
-              "id": person.id,
-              "last_name": person.last_name,
-              "first_name": person.first_name,
-              "middle_name": person.middle_name,
-              "gender": person.gender,
-              "occupation": '',
-              "cellphone_number": '',
-              "home_village": person.home_village,
-              "home_ta": person.home_ta,
-              "home_district": person.home_district,
-              "ancestry_village": person.ancestry_village,
-              "ancestry_ta": person.ancestry_ta,
-              "ancestry_district": person.ancestry_district,
-              "birthdate": person.birthdate,
-              "birthdate_estimated": person.birthdate_estimated,
-              "person_uuid": person.person_uuid,
-              "npid": person.npid,
-              "date_registered": person.date_registered,
-              "last_edited": person.last_edited,
-              "location_created_at": person.location_created_at,
-              "location_updated_at": person.location_updated_at,
-              "creator": person.creator,
-              "voided": person.voided,
-              "voided_by": person.voided_by,
-              "date_voided": person.date_voided,
-              "void_reason": person.void_reason,
-              "first_name_soundex": person.first_name_soundex,
-              "last_name_soundex": person.last_name_soundex,
-              "update_seq": (person.update_seq rescue nil)
+  if !@master
+    payload =  {
+                "id": person.id,
+                "last_name": person.last_name,
+                "first_name": person.first_name,
+                "middle_name": person.middle_name,
+                "gender": person.gender,
+                "occupation": '',
+                "cellphone_number": '',
+                "home_village": person.home_village,
+                "home_ta": person.home_ta,
+                "home_district": person.home_district,
+                "ancestry_village": person.ancestry_village,
+                "ancestry_ta": person.ancestry_ta,
+                "ancestry_district": person.ancestry_district,
+                "birthdate": person.birthdate,
+                "birthdate_estimated": person.birthdate_estimated,
+                "person_uuid": person.person_uuid,
+                "npid": person.npid,
+                "date_registered": person.date_registered,
+                "last_edited": person.last_edited,
+                "location_created_at": person.location_created_at,
+                "location_updated_at": person.location_updated_at,
+                "creator": person.creator,
+                "voided": person.voided,
+                "voided_by": person.voided_by,
+                "date_voided": person.date_voided,
+                "void_reason": person.void_reason,
+                "first_name_soundex": person.first_name_soundex,
+                "last_name_soundex": person.last_name_soundex,
+                "update_seq": (person.update_seq rescue nil)
+              }
+  else
+    payload = {
+              "nhid": "",
+              "identifier": [{"system": "DDE","value": "VBHHUJ","use": "DDE"}],
+              "name": [{"family": "Testname","given": ["Testfamily"]}],
+              "telecom": [{"value": "0883274808","use": "mobile"}],
+              "gender": "male",
+              "birthdate": "2022-03-02T08:44:57.396Z",
+              "deceasedBoolean": false,
+              "deceasedDateTime": "2022-03-02T08:44:57.396Z",
+              "address": [{"use": "home","line": ["some address here"],"district": "Somedistrict", "state": "somestate"}],
+              "maritalStatus": [{"text": "unknown" }],
+              "multipleBirthBoolean": false,
+              "contact": [ {"name": {"family": "Testname","given": ["Testfamily"]} ,"telecom": [{"value": "0997625691","use": "mobile"}],"relationship": [{"text": "other"}], "gender": "male" }],
+              "communication": [{"language": {"text": "english" },"preferred": true}],
+              "facilityCode": "700"
             }
+    payload.to_json
+  end
 end
 
 def push_footprints
@@ -202,12 +246,16 @@ def main
     FileUtils.touch "/tmp/dde_sync.lock"
   end
   begin
-	 pull_new_records
-   pull_updated_records
-   push_records_new
-   push_records_updates
-   push_footprints
-   pull_npids
+    if !@master 
+      pull_new_records
+      pull_updated_records
+      push_records_new
+      push_records_updates
+      push_footprints
+      pull_npids
+    else
+      push_records_new_mpi
+    end
   ensure
     if File.exists?("/tmp/dde_sync.lock")
       FileUtils.rm "/tmp/dde_sync.lock"

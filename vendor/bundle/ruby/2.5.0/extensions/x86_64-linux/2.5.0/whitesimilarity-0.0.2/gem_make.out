@@ -1,0 +1,16 @@
+current directory: /home/egpaf/Documents/EGPAF/EMR/DDE/Demographics-Data-Exchange/vendor/bundle/ruby/2.5.0/gems/whitesimilarity-0.0.2/ext/whitesimilarity
+/usr/share/rvm/rubies/ruby-2.5.3/bin/ruby -I /usr/share/rvm/rubies/ruby-2.5.3/lib/ruby/site_ruby/2.5.0 -r ./siteconf20220304-65143-1072p0n.rb extconf.rb
+creating Makefile
+
+current directory: /home/egpaf/Documents/EGPAF/EMR/DDE/Demographics-Data-Exchange/vendor/bundle/ruby/2.5.0/gems/whitesimilarity-0.0.2/ext/whitesimilarity
+make "DESTDIR=" clean
+
+current directory: /home/egpaf/Documents/EGPAF/EMR/DDE/Demographics-Data-Exchange/vendor/bundle/ruby/2.5.0/gems/whitesimilarity-0.0.2/ext/whitesimilarity
+make "DESTDIR="
+compiling white_similarity.c
+compiling whitesimilarity.c
+linking shared-object whitesimilarity.so
+
+current directory: /home/egpaf/Documents/EGPAF/EMR/DDE/Demographics-Data-Exchange/vendor/bundle/ruby/2.5.0/gems/whitesimilarity-0.0.2/ext/whitesimilarity
+make "DESTDIR=" install
+/usr/bin/install -m 0755 whitesimilarity.so ./.gem.20220304-65143-gjgsr2

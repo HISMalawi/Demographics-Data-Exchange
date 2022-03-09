@@ -1,0 +1,29 @@
+current directory: /home/egpaf/Documents/EGPAF/EMR/DDE/Demographics-Data-Exchange/vendor/bundle/ruby/2.5.0/gems/msgpack-1.4.5/ext/msgpack
+/usr/share/rvm/rubies/ruby-2.5.3/bin/ruby -I /usr/share/rvm/rubies/ruby-2.5.3/lib/ruby/site_ruby/2.5.0 -r ./siteconf20220304-65143-13zj1i5.rb extconf.rb
+checking for ruby/st.h... yes
+checking for st.h... yes
+checking for rb_enc_interned_str() in ruby.h... no
+creating Makefile
+
+current directory: /home/egpaf/Documents/EGPAF/EMR/DDE/Demographics-Data-Exchange/vendor/bundle/ruby/2.5.0/gems/msgpack-1.4.5/ext/msgpack
+make "DESTDIR=" clean
+
+current directory: /home/egpaf/Documents/EGPAF/EMR/DDE/Demographics-Data-Exchange/vendor/bundle/ruby/2.5.0/gems/msgpack-1.4.5/ext/msgpack
+make "DESTDIR="
+compiling buffer.c
+compiling buffer_class.c
+compiling extension_value_class.c
+compiling factory_class.c
+compiling packer.c
+compiling packer_class.c
+compiling packer_ext_registry.c
+compiling rbinit.c
+compiling rmem.c
+compiling unpacker.c
+compiling unpacker_class.c
+compiling unpacker_ext_registry.c
+linking shared-object msgpack/msgpack.so
+
+current directory: /home/egpaf/Documents/EGPAF/EMR/DDE/Demographics-Data-Exchange/vendor/bundle/ruby/2.5.0/gems/msgpack-1.4.5/ext/msgpack
+make "DESTDIR=" install
+/usr/bin/install -m 0755 msgpack.so ./.gem.20220304-65143-g86vw8/msgpack
