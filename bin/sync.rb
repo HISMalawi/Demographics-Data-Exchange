@@ -153,6 +153,30 @@ def push_records_updates
   end
 end
 
+def push_records_updates_mpi
+  url = "#{@protocol}://#{@host}:#{@port}/mpr/api/v1/fhir-patient-update"
+
+  push_seq = Config.find_by_config('push_seq_update')['config_value'].to_i
+
+  records_to_push = PersonDetail.unscoped.joins(:person_details_audit).where('person_details_audits.id > ?',
+      push_seq).order('person_details_audits.id').limit(100).select('person_details.*,person_details_audits.id as update_seq')
+
+  #PUSH  UPDATES to MPI
+  records_to_push.each do | record |
+    begin
+      debugger
+      response = RestClient.post(url, format_payload(record), {content_type: :json, accept: :json})
+      redo if response.code != 201
+      updated = Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i) if response.code == 201
+      redo if updated != true
+    rescue => e
+      File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
+      exit
+    end
+  end
+
+end
+
 def push_records_new_mpi
   url = "#{@protocol}://#{@host}:#{@port}/mpr/api/v1/fhir-patients"
 
@@ -160,7 +184,7 @@ def push_records_new_mpi
 
   records_to_push = PersonDetail.unscoped.where('person_details.id > ? ', push_seq).order(:id).limit(100).select('person_details.*,person_details .id as update_seq')
 
-  #PUSH UPDATES
+  #PUSH NEW RECORDS TO MPI
   records_to_push.each do | record |
     begin
       response = RestClient.post(url, format_payload(record), {content_type: :json, accept: :json})
@@ -260,6 +284,7 @@ def main
       pull_npids
     else
       push_records_new_mpi
+      push_records_updates_mpi
     end
   ensure
     if File.exists?("/tmp/dde_sync.lock")
