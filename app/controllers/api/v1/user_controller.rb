@@ -38,14 +38,12 @@ class Api::V1::UserController < ApplicationController
   end
 
   def verify_token
-    token_status = HashWithIndifferentAccess.new(
-      JWT.decode(params[:token], Rails.application.secrets.secret_key_base)[0]
-    ) rescue []
+    token_status = JsonWebToken.decode(params[:token]) rescue []
 
     if token_status.blank?
       return render json: {message: "Failed"}, status: 401
     else
-      return render json: {message: "Successful"}
+      return render json: {message: "Successful"}, status: :ok
     end
   end
 
