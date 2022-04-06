@@ -44,7 +44,6 @@ class Api::V1::DashboardController < ApplicationController
     else
       render json: { error: 'something went wrong' }, status: :unprocessable_entity
     end
-
   end
 
   def connected_sites
@@ -64,4 +63,19 @@ class Api::V1::DashboardController < ApplicationController
       render json: { error: 'something went wrong' }, status: :unprocessable_entity
     end
   end
+
+  def location_npid_status
+    npid_state = DashboardService.location_npids(location_npid_status_params[:location_id])
+    if npid_state
+      render json: { npid_status: npid_state }, status: :ok
+    else
+      render json: { error: 'something went wrong' }, status: :unprocessable_entity
+    end
+  end
+
+  private
+    def location_npid_status_params
+      params.require(:location_id)
+      params.permit(:location_id)
+    end
 end
