@@ -52,3 +52,11 @@ production:
   database: Demographics-Data-Exchange_production
   username: Demographics-Data-Exchange
   password: <%= ENV['DEMOGRAPHICS-DATA-EXCHANGE_DATABASE_PASSWORD'] %>
+
+:batch_size: '10_000'
+
+:dde_sync_config:
+  :host: 10.44.0.48
+  :port: 3002
+  :username: test
+  :password: test
