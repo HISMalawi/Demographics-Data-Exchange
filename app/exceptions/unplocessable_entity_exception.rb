@@ -1,1 +1,0 @@
-class UnprocessableEntityException < ApplicationException; end

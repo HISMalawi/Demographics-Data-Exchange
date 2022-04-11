@@ -1,2 +1,2 @@
-class ApplicationException < StardardError
+class ApplicationException < StandardError
 end
