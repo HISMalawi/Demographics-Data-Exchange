@@ -38,6 +38,23 @@ module DashboardService
       ")
   end
 
+  def self.location_npids(location_id)
+    assigned_unassiged_npids = ActiveRecord::Base.connection.select_all("
+      SELECT l.name location_name, ln.location_id,
+      count(if(assigned = false,1,null)) unassigned,
+      count(if(assigned = true,1,null)) assigned,
+      max(ln.updated_at) date_last_updated,
+      ROUND(count(if(assigned = true,1,null))/(DATEDIFF(max(date(ln.updated_at)),min(date(ln.updated_at))))) avg_consumption_rate_per_day
+      FROM location_npids ln
+      JOIN locations l
+      ON ln.location_id = l.location_id
+      WHERE l.location_id = #{location_id}
+      GROUP BY ln.location_id,l.name
+      ORDER BY max(ln.updated_at) desc,count(*);
+      ")
+  end
+
+
   def self.connected_sites
     connected_sites = Location.where('ip_address is not null').select(:name, :ip_address)
 
