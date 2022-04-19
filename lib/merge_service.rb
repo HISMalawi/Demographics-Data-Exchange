@@ -26,4 +26,27 @@ module MergeService
     end
     return PersonService.get_person_obj(primary_person)
   end
+
+  def self.rollback_merge(primary_doc_id, secondary_doc_id,current_user)
+    [primary_doc_id, secondary_doc_id].each do |doc_id|
+      ActiveRecord::Base.transaction do
+        person = PersonDetail.find_by_person_uuid(doc_id)
+        return [] if person.blank? || !voided?(person)
+        #audit routine
+        audit_person = person.dup
+        audit_person = JSON.parse(audit_person.to_json)
+        audit_person.delete('id')
+        audit_person.delete('updated_at')
+        PersonDetailsAudit.create!(audit_person)
+        #audit end
+        person.voided = 0
+        person.voided_by = nil
+        person.date_voided = nil
+        person.location_updated_at = current_user.location_id
+        person.last_edited = Time.now
+        person.void_reason = nil
+        person.update(JSON.parse(person.to_json))
+      end
+    end
+  end
 end
