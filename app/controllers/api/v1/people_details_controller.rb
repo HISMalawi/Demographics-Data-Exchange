@@ -49,7 +49,7 @@ class Api::V1::PeopleDetailsController < ApplicationController
       search_results = PersonService.search_by_name_and_gender(params)
       render json: search_results
     else
-      render json: errors, :unprocessable_entity
+      render json: errors, status: :unprocessable_entity
     end
   end
 
@@ -59,7 +59,7 @@ class Api::V1::PeopleDetailsController < ApplicationController
      search_results = PersonService.search_by_npid(params)
      render json: search_results
    else
-     render json: errors, :unprocessable_entity
+    render json: errors, status: :unprocessable_entity
    end
   end
 
@@ -69,7 +69,7 @@ class Api::V1::PeopleDetailsController < ApplicationController
       search_results = PersonService.search_by_doc_id(params)
       render json: search_results
     else
-      render json: errors, :unprocessable_entity
+      render json: errors, status: :unprocessable_entity
     end
   end
 
@@ -79,7 +79,7 @@ class Api::V1::PeopleDetailsController < ApplicationController
       merge_results = MergeService.merge(params[:primary_person_doc_id], params[:secondary_person_doc_id],current_user)
       render json: merge_results
     else
-      render json: errors, :unprocessable_entity
+      render json: errors, status: :unprocessable_entity
     end
   end
 
