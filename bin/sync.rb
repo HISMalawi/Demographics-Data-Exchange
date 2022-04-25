@@ -164,7 +164,6 @@ def push_records_updates_mpi
   #PUSH  UPDATES to MPI
   records_to_push.each do | record |
     begin
-      debugger
       response = RestClient.post(url, format_payload(record), {content_type: :json, accept: :json})
       redo if response.code != 201
       updated = Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i) if response.code == 201
@@ -187,8 +186,8 @@ def push_records_new_mpi
   #PUSH NEW RECORDS TO MPI
   records_to_push.each do | record |
     begin
+      debugger
       response = RestClient.post(url, format_payload(record), {content_type: :json, accept: :json})
-     
       redo if response.code != 201
       updated = Config.find_by_config('push_seq_new').update(config_value: record.update_seq.to_i) if response.code == 201
       redo if updated != true
