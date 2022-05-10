@@ -73,6 +73,10 @@ class Api::V1::DashboardController < ApplicationController
     end
   end
 
+  def refresh_dashboard
+    render json: {message: 'Initilized Dashboard Refresh'}, status: :ok if DashboardSocketDataJob.perform_later
+  end
+
   private
     def location_npid_status_params
       params.require(:location_id)

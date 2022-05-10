@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::API
-	before_action :authenticate_request, except: %i[index, verify_token]
-	after_action  :update_socket_dashboard
+	before_action :authenticate_request, except: %i[index, verify_token, refresh_dashboard]
+	after_action  :update_socket_dashboard, except: %i[:authenticate_request]
 	attr_reader :current_user
 
 	include ExceptionHandler
@@ -16,6 +16,5 @@ class ApplicationController < ActionController::API
 	def update_socket_dashboard
 	  DashboardSocketDataJob.perform_later 
 	end
-
 end
 
