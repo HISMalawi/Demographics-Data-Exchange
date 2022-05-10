@@ -3,9 +3,9 @@ class Api::V1::PeopleController < ApplicationController
     errors = ValidateParams.add_person(params)
     if errors.blank?
       person = PersonService.create(params, current_user)
-      render json: person
+      render json: person, status: 200
     else
-      render json: errors
+      render json: errors, status: 500
     end
   end
 
