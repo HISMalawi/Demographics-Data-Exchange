@@ -20,7 +20,7 @@ app_core=$(grep -c processor /proc/cpuinfo)
 
 
 read -p "Enter PORT: " app_port
-app_threads=$(cat /proc/cpuinfo | grep processor | wc -l)
+read -p "Enter maximum number of threads to run: " app_threads
 service_loop
 while [[ $service_name =~ $pattern ]]; do
     tput setaf 1; echo "===>Please enter a system name without spaces or tabs. Use dashes instead<==="
