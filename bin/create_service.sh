@@ -10,10 +10,6 @@ actions() {
     fi
 }
 
-service_loop(){
-    read -p "Enter system name or press enter to default to (dde4): " service_name
-}
-
 actions
 while [ ! -d $app_dir ]; do
     tput setaf 1; echo "===>Directory $app_dir DOES NOT EXISTS.<==="
