@@ -1,12 +1,17 @@
-rail_modes=("test" "development" "production")
-pattern=" |'"
+mode="production"
+service_name="dde4"
+ruby="2.5.3"
 
 actions() {
-    tput setaf 6; read -p "Enter Application full path: " app_dir
+    tput setaf 6; read -p "Enter Application full path or press Enter to default to (/var/www/dde4): " app_dir
+    if [ -z "$app_dir" ]
+    then
+        app_dir="/var/www/dde4"
+    fi
 }
 
 service_loop(){
-    read -p "Enter system name (use dashes instead of spaces or tabs): " service_name
+    read -p "Enter system name or press enter to default to (dde4): " service_name
 }
 
 actions
@@ -18,29 +23,25 @@ done
 
 app_core=$(grep -c processor /proc/cpuinfo)
 
+read -p "Enter PORT or enter to default to (8050): " app_port
 
-read -p "Enter PORT: " app_port
-read -p "Enter maximum number of threads to run: " app_threads
-service_loop
-while [[ $service_name =~ $pattern ]]; do
-    tput setaf 1; echo "===>Please enter a system name without spaces or tabs. Use dashes instead<==="
-    tput setaf 7;
-    service_loop
-done
-read -p "Enter ruby version: " ruby
-read -p "Enter puma path: " puma_dir
+if [ -z "$app_port" ]
+then
+    app_port="8050"
+fi
 
-PS3="Please select a RAILS ENVIRONMENT: "
-select mode in ${rail_modes[@]}
-do
-    if [ -z "$mode" ]; then
-        tput setaf 1; echo "invalid option selected"
-        tput setaf 7;
-    else
-        echo "$mode selected"
-        break
-    fi
-done
+
+puma_dir=$(which puma)
+
+if [ -z "$puma_dir" ] 
+then
+    echo "puma path not found"
+    echo "Please install ruby-railties"
+    echo "sudo apt-get update -y"
+    echo "sudo apt-get install -y ruby-railties"
+    echo "Then try again"
+    exit 0
+fi
 
 env=$mode
 
@@ -91,7 +92,7 @@ echo "# Puma can serve each request in a thread from an internal thread pool.
 # the maximum value specified for Puma. Default is set to 5 threads for minimum
 # and maximum; this matches the default thread size of Active Record.
 #
-threads_count = ENV.fetch('RAILS_MAX_THREADS') { $app_threads }
+threads_count = ENV.fetch('RAILS_MAX_THREADS') { $app_core }
 threads 2, threads_count
 
 # Specifies the port that Puma will listen on to receive requests; default is 3000.
