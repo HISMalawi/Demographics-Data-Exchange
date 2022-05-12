@@ -1,8 +1,8 @@
 module DashboardService
 
   def self.new_reg_by_site
-    PersonDetail.joins("JOIN locations l ON person_details.location_created_at = l.location_id").where('date_registered BETWEEN ? AND ?',
-      Date.today.strftime('%Y-%m-%d %H:%M:%S'),Date.today.strftime('%Y-%m-%d') + ' 23:59:59').group(:name).count
+    PersonDetail.joins("JOIN locations l ON person_details.location_created_at = l.location_id").where('date_registered_date = ?',
+      Date.today).group(:name).count
   end
 
   def self.new_reg_past_30
@@ -11,7 +11,7 @@ module DashboardService
       ON pd.location_created_at = l.location_id
       WHERE date_registered >= DATE_SUB(date(now()), INTERVAL 30 DAY)
       GROUP BY l.name,date(date_registered)')
-      
+
     result.group_by{ |site| site[:name] }
   end
 
