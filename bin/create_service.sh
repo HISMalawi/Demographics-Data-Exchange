@@ -120,10 +120,35 @@ sudo systemctl daemon-reload
 sudo systemctl enable ${service_name}.service
 sudo systemctl start ${service_name}.service
 
-echo "Service fired up"
+echo "${service_name} Service fired up"
 echo "Cleaning up"
 rm ./${service_name}.service
 rm ./${env}.rb
+
+whenever --set "environment=${env}" --update-crontab
+
+echo "Sync cron job configured"
+ 
 echo "Cleaning up done"
 
-echo "complete"
+echo "completed"
+
+echo "Service: ${service_name}"
+echo "Port: ${app_port}"
+echo "Environment: ${env}"
+echo "---------------------------"
+echo "*****SERVICE COMMANDS******"
+echo "Service status"
+echo "sudo service ${service_name} status"
+echo "Start Service"
+echo "sudo service ${service_name} start"
+echo "Restart Service"
+echo "sudo service ${service_name} restart "
+echo "Stop Service"
+echo "sudo service ${service_name} stop"
+echo "---------------------------"
+echo "Thank You!"
+
+
+
+
