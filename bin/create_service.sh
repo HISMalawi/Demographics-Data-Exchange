@@ -205,6 +205,7 @@ echo "Cleaning up"
 rm ./${service_name}.service
 rm ./${env}.rb
 
+whenever --set "environment=${env}" --update-crontab
 
 login_path="$host:$app_port/v1/login?username=$username&password=$password"
 
