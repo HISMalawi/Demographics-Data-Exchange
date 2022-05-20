@@ -1,12 +1,14 @@
+#!/bin/bash
+
 mode="production"
 service_name="dde4"
 ruby="2.5.3"
 production_db="dde4_production"
-username="admin"
-password="bht.dde3!"
 host="0.0.0.0"
-location="349"
 
+
+read -p "Enter DDE4 username: " username
+read -p "Enter DDE4  password: "  password
 
 actions() {
     tput setaf 6; read -p "Enter DDE4 full path or press Enter to default to (/var/www/dde4): " app_dir
@@ -15,9 +17,9 @@ actions() {
         app_dir="/var/www/dde4"
     fi
 
-    cp ${app_dir}/config/database.yml.example config/database.yml
-    cp ${app_dir}/config/secrets.yml.example  config/secrets.yml
-    cp ${app_dir}/config/storage.yml.example config/storage.yml
+    cp ${app_dir}/config/database.yml.example $app_dir/config/database.yml
+    cp ${app_dir}/config/secrets.yml.example  $app_dir/config/secrets.yml
+    cp ${app_dir}/config/storage.yml.example $app_dir/config/storage.yml
 
     read -p "Site Location Id: " location
     read -p "Production mysql username: " db_username
@@ -102,9 +104,7 @@ for program in "${program_names[@]}"; do
     \    password: ${passwords[$program]}"  $emr_dir/config/application.yml 
 done
 
-bundle install --local
-RAILS_ENV=$mode rails db:create db:migrate db:seed
-
+/bin/bash -lc "cd ${app_dir} && rvm use 2.5.3 && bundle install --local && RAILS_ENV=$mode rails db:create db:migrate db:seed"
 
 app_core=$(grep -c processor /proc/cpuinfo)
 puma_dir=$(which puma)
@@ -204,6 +204,7 @@ echo "${service_name} Service fired up"
 echo "Cleaning up"
 rm ./${service_name}.service
 rm ./${env}.rb
+
 
 login_path="$host:$app_port/v1/login?username=$username&password=$password"
 
