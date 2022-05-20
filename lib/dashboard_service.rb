@@ -11,7 +11,7 @@ module DashboardService
       ON pd.location_created_at = l.location_id
       WHERE date_registered >= DATE_SUB(date(now()), INTERVAL 30 DAY)
       GROUP BY l.name,date(date_registered)')
-      
+
     result.group_by{ |site| site[:name] }
   end
 

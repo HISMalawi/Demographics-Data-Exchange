@@ -38,6 +38,10 @@ module DemographicsDataExchange
     #autoloads lib folder during development
     config.autoload_paths << Rails.root.join("lib")
 
+    #ActiveJob adapter
+    config.active_job.queue_adapter = ActiveJob::QueueAdapters::AsyncAdapter.new(min_threads:1, 
+      max_threads: 2 * Concurrent.processor_count)
+
     #Action Cable
     config.action_cable.mount_path = '/cable'
     config.action_cable.disable_request_forgery_protection = true
