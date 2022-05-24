@@ -4,4 +4,4 @@ development:
 test:
   adapter: test 
 production:
-  adapter: async
+  adapter: redis
