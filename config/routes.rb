@@ -71,6 +71,7 @@ Rails.application.routes.draw do
   get   'v1/site_activity', to: 'api/v1/dashboard#site_activity'
   get   'v1/location_npid_status', to: 'api/v1/dashboard#location_npid_status'
   get   'v1/refresh_dashboard', to: 'api/v1/dashboard#refresh_dashboard'
+  get   'v1/npid_reservoir', to: 'api/v1/dashboard#npid_reservoir'
 
   #sync links
   get   'v1/person_changes_new', to: 'api/v1/sync#pull_updates_new'
