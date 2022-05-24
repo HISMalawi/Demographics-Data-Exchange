@@ -65,12 +65,15 @@ module DashboardService
   end
 
   def self.site_activities
-    site_activity = ActiveRecord::Base.connection.select_all('
-      SELECT l.name site_name, max(app_date_updated) last_activity,
-      max(fp.created_at) last_seen
+    site_activity = ActiveRecord::Base.connection.select_all("
+      SELECT l.name site_name, 
+      max(app_date_updated) last_activity,
+      max(fp.created_at) last_seen,
+      DATEDIFF(CURDATE(),max(app_date_updated)) days_since_last_activity,
+      DATEDIFF(CURDATE(),max(fp.created_at)) days_since_last_seen
       FROM foot_prints fp
       JOIN locations l
       ON fp.location_id = l.location_id
-      GROUP BY l.name')
+      GROUP BY l.name;")
   end
 end
