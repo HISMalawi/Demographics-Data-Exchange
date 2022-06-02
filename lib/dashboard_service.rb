@@ -56,10 +56,12 @@ module DashboardService
 
 
   def self.connected_sites
-    connected_sites = Location.where('ip_address is not null').select(:name, :ip_address)
+    connected_sites = Location.where('ip_address is not null').select(:location_id, :name, :ip_address, :last_seen)
 
     ping_tested_sites = Parallel.map(connected_sites) do |site|
       check = Net::Ping::External.new(site.ip_address)
+
+      site.update(last_seen: Time.now) if check.ping?
       {site: site.name, reacheable: check.ping?}
     end
   end
@@ -67,10 +69,10 @@ module DashboardService
   def self.site_activities
     site_activity = ActiveRecord::Base.connection.select_all("
       SELECT l.name site_name, 
-      max(app_date_updated) last_activity,
-      max(fp.created_at) last_seen,
-      DATEDIFF(CURDATE(),max(app_date_updated)) days_since_last_activity,
-      DATEDIFF(CURDATE(),max(fp.created_at)) days_since_last_seen
+      max(fp.created_at) last_activity,
+      l.last_seen last_seen,
+      TIMESTAMPDIFF(DAY, max(fp.created_at), CURRENT_TIMESTAMP()) days_since_last_activity,
+      TIMESTAMPDIFF(DAY, l.last_seen, CURRENT_TIMESTAMP()) days_since_last_seen
       FROM foot_prints fp
       JOIN locations l
       ON fp.location_id = l.location_id
