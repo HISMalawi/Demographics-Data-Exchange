@@ -76,6 +76,6 @@ module DashboardService
       FROM foot_prints fp
       JOIN locations l
       ON fp.location_id = l.location_id
-      GROUP BY l.name;")
+      GROUP BY l.name, l.last_seen;")
   end
 end
