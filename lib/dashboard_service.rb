@@ -72,9 +72,10 @@ module DashboardService
       l.last_seen last_seen,
       TIMESTAMPDIFF(DAY, max(fp.created_at), CURRENT_TIMESTAMP()) days_since_last_activity,
       TIMESTAMPDIFF(DAY, l.last_seen, CURRENT_TIMESTAMP()) days_since_last_seen
-      FROM foot_prints fp
-      JOIN locations l
+      FROM locations l
+      LEFT JOIN foot_prints fp
       ON fp.location_id = l.location_id
+      WHERE l.ip_address is not null
       GROUP BY l.name, l.last_seen;")
   end
 end
