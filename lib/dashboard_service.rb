@@ -58,11 +58,10 @@ module DashboardService
   def self.connected_sites
     connected_sites = Location.where('ip_address is not null').select(:location_id, :name, :ip_address, :last_seen)
 
-    ping_tested_sites = Parallel.map(connected_sites) do |site|
+    ping_tested_sites = Parallel.map(connected_sites, in_threads: 200) do |site|
       check = Net::Ping::External.new(site.ip_address)
-
-      site.update(last_seen: Time.now) if check.ping?
-      {site: site.name, reacheable: check.ping?}
+        site.update(last_seen: Time.now) if check.ping?
+        {site: site.name, reacheable: check.ping?}
     end
   end
 
