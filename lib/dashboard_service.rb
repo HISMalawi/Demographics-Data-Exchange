@@ -56,13 +56,22 @@ module DashboardService
 
 
   def self.connected_sites
-    connected_sites = Location.where('ip_address is not null').select(:location_id, :name, :ip_address, :last_seen)
+    connected_sites = Location.where('ip_address is not null').select(:location_id, :name, :ip_address, :creator, :created_at, :updated_at, :last_seen)
+    reachable_sites = 'INSERT into `locations` (location_id, name, creator, created_at, updated_at, last_seen) VALUES '
 
     ping_tested_sites = Parallel.map(connected_sites, in_threads: 200) do |site|
       check = Net::Ping::External.new(site.ip_address)
-        site.update(last_seen: Time.now) if check.ping?
+       #Add site to update list if it is reachable
+       last_seen = site.last_seen.to_datetime.strftime('%Y-%m-%d %H:%M:%S') unless site.last_seen.blank?
+       created_at = site.created_at.to_datetime.strftime('%Y-%m-%d %H:%M:%S') unless site.created_at.blank?
+       updated_at = site.updated_at.to_datetime.strftime('%Y-%m-%d %H:%M:%S') unless site.updated_at.blank?
+
+       reachable_sites += " (#{site.location_id}, \"#{site.name}\", #{site.creator}, \"#{created_at}\", \"#{updated_at}\", \"#{last_seen || '1900-01-01 00:00:00'}\"), " if check.ping?
         {site: site.name, reacheable: check.ping?}
     end
+    reachable_sites.chop!.chop!
+    reachable_sites += ' ON DUPLICATE KEY UPDATE last_seen = VALUES(last_seen);'
+    ActiveRecord::Base.connection.execute(reachable_sites)
   end
 
   def self.site_activities
