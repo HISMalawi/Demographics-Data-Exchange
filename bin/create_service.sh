@@ -37,6 +37,8 @@ actions() {
     read -p "Sync port: " SYNC_PORT
     read -p "Sync username: " SYNC_USERNAME
     read -p "Sync password: " SYNC_PASSWORD
+
+    SYNC_USERNAME="${SYNC_USERNAME}_${LOCATION}"
     
     #Updates YAML file with new configurations
     sed -i -e "/^production:/,/database:/{/^\([[:space:]]*database: \).*/s//\1${PRODUCTION_DB}/}" \
