@@ -1,115 +1,168 @@
 #!/bin/bash
 
-mode="production"
-service_name="dde4"
-ruby="2.5.3"
-production_db="dde4_production"
-host="0.0.0.0"
+#Initializing service constants
+MODE="production"
+SERVICE_NAME="dde4"
+RUBY="2.5.3"
+PRODUCTION_DB="dde4_production"
+HOST="0.0.0.0"
 
+#Prompts entering of user details used for aunthentication
+read -p "Enter DDE4  username: " USERNAME
+read -p "Enter DDE4  password: "  PASSWORD
 
-read -p "Enter DDE4 username: " username
-read -p "Enter DDE4  password: "  password
-
+#Configures DDE database YAML 
 actions() {
-    tput setaf 6; read -p "Enter DDE4 full path or press Enter to default to (/var/www/dde4): " app_dir
-    if [ -z "$app_dir" ]
+    
+    #Gets DDE directory entered or default 
+    tput setaf 6; read -p "Enter DDE4 full path or press Enter to default to (/var/www/dde4): " APP_DIR
+    if [ -z "$APP_DIR" ]
     then
-        app_dir="/var/www/dde4"
+        APP_DIR="/var/www/dde4"
     fi
 
-    cp ${app_dir}/config/database.yml.example $app_dir/config/database.yml
-    cp ${app_dir}/config/secrets.yml.example  $app_dir/config/secrets.yml
-    cp ${app_dir}/config/storage.yml.example $app_dir/config/storage.yml
+    #Copying YAML files
+    cp ${APP_DIR}/config/database.yml.example $APP_DIR/config/database.yml
+    cp ${APP_DIR}/config/secrets.yml.example  $APP_DIR/config/secrets.yml
+    cp ${APP_DIR}/config/storage.yml.example $APP_DIR/config/storage.yml
 
-    read -p "Site Location Id: " location
-    read -p "Production mysql username: " db_username
-    read -p "Production mysql password: " db_password
-    read -p "Sync host: " sync_host
-    read -p "Sync port: " sync_port
-    read -p "Sync username: " sync_username
-    read -p "Sync password: " sync_password
+    read -p "Site Location Id: " LOCATION
+
+    #Gets production database password and username    
+    read -p "Production mysql username: " DDE_DB_USERNAME
+    read -p "Production mysql password: " DDE_DB_PASSWORD
+
+    #Gets SYNC with master configurations
+    read -p "Sync host: " SYNC_HOST
+    read -p "Sync port: " SYNC_PORT
+    read -p "Sync username: " SYNC_USERNAME
+    read -p "Sync password: " SYNC_PASSWORD
+
+    SYNC_USERNAME="${SYNC_USERNAME}_${LOCATION}"
     
+    #Updates YAML file with new configurations
+    sed -i -e "/^production:/,/database:/{/^\([[:space:]]*database: \).*/s//\1${PRODUCTION_DB}/}" \
+           -e "/^production:/,/username:/{/^\([[:space:]]*username: \).*/s//\1${DDE_DB_USERNAME}/}" \
+           -e "/^production:/,/password:/{/^\([[:space:]]*password: \).*/s//\1${DDE_DB_PASSWORD}/}" \
+           -e "/^:dde_sync_config:/,/:host:/{/^\([[:space:]]*:host: \).*/s//\1${SYNC_HOST}/}" \
+           -e "/^:dde_sync_config:/,/:port:/{/^\([[:space:]]*:port: \).*/s//\1${SYNC_PORT}/}" \
+           -e "/^:dde_sync_config:/,/:username:/{/^\([[:space:]]*:username: \).*/s//\1${SYNC_USERNAME}/}" \
+           -e "/^:dde_sync_config:/,/:password:/{/^\([[:space:]]*:password: \).*/s//\1${SYNC_PASSWORD}/}" \
+            ${APP_DIR}/config/database.yml
 
-    sed -i -e "/^production:/,/database:/{/^\([[:space:]]*database: \).*/s//\1${production_db}/}" \
-           -e "/^production:/,/username:/{/^\([[:space:]]*username: \).*/s//\1${db_username}/}" \
-           -e "/^production:/,/password:/{/^\([[:space:]]*password: \).*/s//\1${db_password}/}" \
-           -e "/^:dde_sync_config:/,/:host:/{/^\([[:space:]]*:host: \).*/s//\1${sync_host}/}" \
-           -e "/^:dde_sync_config:/,/:port:/{/^\([[:space:]]*:port: \).*/s//\1${sync_port}/}" \
-           -e "/^:dde_sync_config:/,/:username:/{/^\([[:space:]]*:username: \).*/s//\1${sync_username}/}" \
-           -e "/^:dde_sync_config:/,/:password:/{/^\([[:space:]]*:password: \).*/s//\1${sync_password}/}" \
-            ${app_dir}/config/database.yml
-
-    }
+}
 
 actions
-while [ ! -d $app_dir ]; do
-    tput setaf 1; echo "===>Directory $app_dir DOES NOT EXISTS.<==="
+
+#Unless DDE Directory exists call method to set DDE directory
+while [ ! -d $APP_DIR ]; do
+    tput setaf 1; echo "===>Directory $APP_DIR DOES NOT EXISTS.<==="
     tput setaf 7;
     actions
 done
 
-read -p "Enter DDE PORT or press enter to default to (8050): " app_port
-
-if [ -z "$app_port" ]
+# Prompts for DDE PORT or Defaults to PORT 8050
+read -p "Enter DDE PORT or press enter to default to (8050): " APP_PORT
+if [ -z "$APP_PORT" ]
 then
-    app_port="8050"
+    APP_PORT="8050"
 fi
 
-
+# Sets up EMR-API configs
 emr_config(){
-    tput setaf 6; read -p "Enter BHT-EMR-API full path or press Enter to default to (/var/www/BHT-EMR-API): " emr_dir
-    if [ -z "$emr_dir" ]
+    
+    tput setaf 6; read -p "Enter BHT-EMR-API full path or press Enter to default to (/var/www/BHT-EMR-API): " EMR_DIR
+    if [ -z "$EMR_DIR" ]
     then
-        emr_dir="/var/www/BHT-EMR-API"
+        EMR_DIR="/var/www/BHT-EMR-API"
     fi
 
-    sed -i -e "/^dde:/,/url:/{/^\([[:space:]]*url: \).*/s//\1${host}:${app_port}/}" $emr_dir/config/application.yml 
+    read -p "Enter EMR database: " EMR_DATABASE
+    read -p "Enter EMR database username: " EMR_DB_USERNAME
+    read -p "Enter EMR database password: " EMR_DB_PASSWORD 
+
+    sed -i -e "/^dde:/,/url:/{/^\([[:space:]]*url: \).*/s//\1${HOST}:${APP_PORT}/}" $EMR_DIR/config/application.yml 
 }
 
 emr_config
-while [ ! -d $emr_dir ]; do
-    tput setaf 1; echo "===>Directory $emr_dir DOES NOT EXISTS.<==="
+
+
+#Unless EMR Directory exists call method to set EMR directory
+while [ ! -d $EMR_DIR ]; do
+    tput setaf 1; echo "===>Directory $EMR_DIR DOES NOT EXISTS.<==="
     tput setaf 7;
     emr_config
 done
 
-declare -A program_names
-declare -A usernames
-declare -A passwords
+declare -A PROGRAM_NAMES
+declare -A PROGRAM_USERNAMES
+declare -A PROGRAM_PASSWORDS
 
-program_index=0
+PROGRAM_INDEX=0
+
+#Iterates through programs
 add_programs(){
-    read -p "Enter EMR new program name: " program_name
-    read -p "Enter $program_name username: " program_username
-    read -p "Enter password for $program_username: " program_password
+    read -p "Enter EMR program name: " PROGRAM_NAME
 
-    program_names[$program_index]=$program_name
-    usernames["$program_name"]=$program_username
-    passwords["$program_name"]=$program_password
+    QUERY="SELECT EXISTS(SELECT * FROM program WHERE 
+    name = UPPER('${PROGRAM_NAME}') and retired = false);"
 
-    read -p "Do you want to add another program(y/n): " choice
-    if [[ $choice == "y" ]]; then
-        program_index=$(($program_index+1))
+    RESULT=`mysql --user=$EMR_DB_USERNAME --password=$EMR_DB_PASSWORD -s -N $EMR_DATABASE -e "${QUERY}"`
+
+    #Checks if entered program exist
+    if [[ $RESULT == 1 ]]; then
+      
+      read -p "Enter $PROGRAM_NAME username: " PROGRAM_USERNAME
+      read -p "Enter password for $PROGRAM_USERNAME user: " PROGRAM_PASSWORD
+
+      PROGRAM_NAMES[$PROGRAM_INDEX]=$PROGRAM_NAME
+      PROGRAM_USERNAMES["$PROGRAM_NAME"]=$PROGRAM_USERNAME
+      PROGRAM_PASSWORDS["$PROGRAM_NAME"]=$PROGRAM_PASSWORD
+    
+      read -p "Do you want to add another program(y/n): " CHOICE
+      if [[ $CHOICE == "y" ]]; then
+        PROGRAM_INDEX=$(($PROGRAM_INDEX+1))
         add_programs
+      fi
+
+    else
+      echo "program does not exist"
+      add_programs
     fi
 }
 
 add_programs
-for program in "${program_names[@]}"; do
-    sed -i "/dde:$/a\
-    \  ${program}:" $emr_dir/config/application.yml 
-    sed -i "/${program}:$/a\
-    \    username: ${usernames[$program]}" $emr_dir/config/application.yml 
-    sed -i "/${program}:$/a\
-    \    password: ${passwords[$program]}"  $emr_dir/config/application.yml 
+
+EMR_APP_YML_PATH=$EMR_DIR/config/application.yml
+
+
+for PROGRAM in "${PROGRAM_NAMES[@]}"; do
+
+    if grep -E "${PROGRAM}:" $EMR_APP_YML_PATH
+    then
+        sed -i -e "/${PROGRAM}:/,/username:/{/^\([[:space:]]*username: \).*/s//\1${PROGRAM_USERNAMES[$PROGRAM]}/}" $EMR_APP_YML_PATH
+        sed -i -e "/${PROGRAM}/,/password:/{/^\([[:space:]]*password: \).*/s//\1${PROGRAM_PASSWORDS[$PROGRAM]}/}" $EMR_APP_YML_PATH
+    else
+       sed -i "/dde:$/a\
+       \  ${PROGRAM}:" $EMR_APP_YML_PATH 
+      sed -i "/${PROGRAM}:$/a\
+       \    password: ${PROGRAM_PASSWORDS[$PROGRAM]}"  $EMR_APP_YML_PATH
+       sed -i "/${PROGRAM}:$/a\
+       \    username: ${PROGRAM_USERNAMES[$PROGRAM]}" $EMR_APP_YML_PATH
+    fi
 done
 
-/bin/bash -lc "cd ${app_dir} && rvm use 2.5.3 && bundle install --local && RAILS_ENV=$mode rails db:create db:migrate db:seed"
+#Runs rails bundle install, creates database, migration and seed
+/bin/bash -lc "cd ${APP_DIR} && rvm use 2.5.3 && bundle install --local && RAILS_ENV=$MODE rails db:create db:migrate db:seed"
 
-app_core=$(grep -c processor /proc/cpuinfo)
-puma_dir=$(which puma)
+#Get number of CPU cores
+APP_CORE=$(grep -c processor /proc/cpuinfo)
 
-if [ -z "$puma_dir" ] 
+#Fetches puma directory
+PUMA_DIR=$(which puma)
+
+#Exits if puma does not exist and recommends installation of ruby railties
+if [ -z "$PUMA_DIR" ] 
 then
     echo "puma path not found"
     echo "Please install ruby-railties"
@@ -119,19 +172,19 @@ then
     exit 0
 fi
 
-env=$mode
+ENV=$MODE
 
-
-if systemctl --all --type service | grep -q "${service_name}.service";then
+#Stops and disables current DDE service
+if systemctl --all --type service | grep -q "${SERVICE_NAME}.service";then
     echo "stopping service"
-    sudo systemctl stop ${service_name}.service
-    sudo systemctl disable ${service_name}.service
+    sudo systemctl stop ${SERVICE_NAME}.service
+    sudo systemctl disable ${SERVICE_NAME}.service
     echo "service stopped"
 else
     echo "Setting up service"
 fi
 
-curr_dir=$(pwd)
+CURR_DIR=$(pwd)
 
 echo "Writing the service"
 echo "[Unit]
@@ -143,24 +196,24 @@ Type=simple
 
 User=$USER
 
-WorkingDirectory=$app_dir
+WorkingDirectory=$APP_DIR
 
-Environment=RAILS_ENV=$env
+Environment=RAILS_ENV=$ENV
 
-ExecStart=/bin/bash -lc 'rvm use ${ruby} && ${puma_dir} -C ${app_dir}/config/server/${env}.rb'
+ExecStart=/bin/bash -lc 'rvm use ${RUBY} && ${PUMA_DIR} -C ${APP_DIR}/config/server/${ENV}.rb'
 
 Restart=always
 
 KillMode=process
 
 [Install]
-WantedBy=multi-user.target" > ${service_name}.service
+WantedBy=multi-user.target" > ${SERVICE_NAME}.service
 
-sudo cp ./${service_name}.service /etc/systemd/system
+sudo cp ./${SERVICE_NAME}.service /etc/systemd/system
 
 echo "Writing puma configuration"
 
-[ ! -d ${app_dir}/config/server ] && mkdir ${app_dir}/config/server
+[ ! -d ${APP_DIR}/config/server ] && mkdir ${APP_DIR}/config/server
 
 echo "# Puma can serve each request in a thread from an internal thread pool.
 # The threads method setting takes two numbers: a minimum and maximum.
@@ -168,19 +221,19 @@ echo "# Puma can serve each request in a thread from an internal thread pool.
 # the maximum value specified for Puma. Default is set to 5 threads for minimum
 # and maximum; this matches the default thread size of Active Record.
 #
-threads_count = ENV.fetch('RAILS_MAX_THREADS') { $app_core }
+threads_count = ENV.fetch('RAILS_MAX_THREADS') { $APP_CORE }
 threads 2, threads_count
 
 # Specifies the port that Puma will listen on to receive requests; default is 3000.
 #
-port        ENV.fetch('PORT') { $app_port }
+port        ENV.fetch('PORT') { $APP_PORT }
 
 # Specifies the environment that Puma will run in.
 #
-environment ENV.fetch('RAILS_ENV') { '$env' }
+environment ENV.fetch('RAILS_ENV') { '$ENV' }
 
 # Specifies the number of workers to boot in clustered mode.
-workers ENV.fetch('WEB_CONCURRENCY') { $app_core }
+workers ENV.fetch('WEB_CONCURRENCY') { $APP_CORE }
 
 # Use the preload_app! method when specifying a workers number.
 
@@ -189,37 +242,75 @@ preload_app!
 # Allow puma to be restarted by rails restart command.
 plugin :tmp_restart
 
-rackup '${app_dir}/config.ru'" > ${env}.rb
+rackup '${APP_DIR}/config.ru'" > ${ENV}.rb
 
-sudo cp ./${env}.rb ${app_dir}/config/server/
+sudo cp ./${ENV}.rb ${APP_DIR}/config/server/
 
 
 echo "Firing the service up"
 
+#Starts service
 sudo systemctl daemon-reload
-sudo systemctl enable ${service_name}.service
-sudo systemctl start ${service_name}.service
+sudo systemctl enable ${SERVICE_NAME}.service
+sudo systemctl start ${SERVICE_NAME}.service
 
-echo "${service_name} Service fired up"
+echo "${SERVICE_NAME} Service fired up"
 echo "Cleaning up"
-rm ./${service_name}.service
-rm ./${env}.rb
+rm ./${SERVICE_NAME}.service
+rm ./${ENV}.rb
 
-whenever --set "environment=${env}" --update-crontab
+# Updates crontab for DDE sync cron job
+whenever --set "environment=${ENV}" --update-crontab
 
-login_path="$host:$app_port/v1/login?username=$username&password=$password"
+#Building path for login using DDE username and password
+LOGIN_PATH="$HOST:$APP_PORT/v1/login?username=$USERNAME&password=$PASSWORD"
 
-RESPONSE="$(sleep 5 && curl  --location --request POST $login_path)"
+#Login Request Sent
+RESPONSE="$(sleep 5 && curl  --location --request POST $LOGIN_PATH)"
+
+#Fetchs token from response object
+TOKEN=`echo "$RESPONSE" | grep -o '"access_token":"[^"]*' | grep -o '[^"]*$'`
+
+if [ -z "$TOKEN" ]
+then
+    #Adds program users 
+    for PROGRAM in "${PROGRAM_NAMES[@]}"; do
+        ADD_USER_PATH="$HOST:$APP_PORT/v1/add_user?username=${PROGRAM_USERNAMES[$PROGRAM]}&password=${PROGRAM_PASSWORDS[$PROGRAM]}&location=$LOCATION"
+        RESPONSE="$(sleep 2 && curl --location --request POST ${ADD_USER_PATH} --header "Authorization: ${TOKEN}")"
+    done
+
+    #Adds DDE sync user
+    ADD_USER_PATH="$HOST:$APP_PORT/v1/add_user?username=${SYNC_USERNAME}&password=${SYNC_PASSWORD}&location=$LOCATION"
+    RESPONSE="$(sleep 2 && curl --location --request POST ${ADD_USER_PATH} --header "Authorization: ${TOKEN}")"
+
+    echo "Local Sync user response is $RESPONSE"
+else
+    echo "Failed to login"
+    exit 0
+fi
+
+
+#Authentication with master
+LOGIN_PATH="http://$SYNC_HOST:$SYNC_PORT/v1/login?username=$USERNAME&password=$PASSWORD"
+
+RESPONSE="$(sleep 6 && curl  --location --request POST $LOGIN_PATH)"
 
 TOKEN=`echo "$RESPONSE" | grep -o '"access_token":"[^"]*' | grep -o '[^"]*$'`
 
-for program in "${program_names[@]}"; do
-    add_user_path="$host:$app_port/v1/add_user?username=${usernames[$program]}&password=${passwords[$program]}&location=$location"
-    RESPONSE="$(sleep 2 && curl --location --request POST ${add_user_path} --header "Authorization: ${TOKEN}")"
-done
 
-add_user_path="$host:$app_port/v1/add_user?username=${sync_username}&password=${sync_password}&location=$location"
-RESPONSE="$(sleep 2 && curl --location --request POST ${add_user_path} --header "Authorization: ${TOKEN}")"
+if [ -z "$TOKEN" ]
+then
+    #Creating Sync User
+    ADD_USER_PATH="http://$SYNC_HOST:$SYNC_PORT/v1/add_user?username=${SYNC_USERNAME}&password=${SYNC_PASSWORD}&location=$LOCATION"
+    RESPONSE="$(sleep 2 && curl --location --request POST ${ADD_USER_PATH} --header "Authorization: ${TOKEN}")"
+
+    echo "Master sync user response is $RESPONSE"
+
+else
+    echo "Failed to login"
+    exit 0
+fi
+
 
 echo "Users created"
 
@@ -229,24 +320,26 @@ echo "Cleaning up done"
 
 echo "completed"
 
-echo "Service: ${service_name}"
-echo "Port: ${app_port}"
-echo "Environment: ${env}"
+#Displaying summary of service
+echo "Service: ${SERVICE_NAME}"
+echo "Port: ${APP_PORT}"
+echo "Environment: ${ENV}"
 echo "---------------------------"
+
 echo "*****SERVICE COMMANDS******"
 echo "Service status"
-echo "sudo service ${service_name} status"
+echo "sudo service ${SERVICE_NAME} status"
 echo "Start Service"
-echo "sudo service ${service_name} start"
+echo "sudo service ${SERVICE_NAME} start"
 echo "Restart Service"
-echo "sudo service ${service_name} restart "
+echo "sudo service ${SELEVICE_NAME} restart "
 echo "Stop Service"
-echo "sudo service ${service_name} stop"
+echo "sudo service ${SERVICE_NAME} stop"
 echo "Disable service"
-echo "sudo systemctl disable ${service_name}"
+echo "sudo systemctl disable ${SERVICE_NAME}"
 echo "---------------------------"
 echo "Thank You!"
-sudo service ${service_name} status
+sudo service ${SERVICE_NAME} status
 
 
 
