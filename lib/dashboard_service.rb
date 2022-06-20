@@ -10,6 +10,7 @@ module DashboardService
       JOIN locations l
       ON pd.location_created_at = l.location_id
       WHERE date_registered >= DATE_SUB(date(now()), INTERVAL 30 DAY)
+      AND activated = true
       GROUP BY l.name,date(date_registered)')
 
     result.group_by{ |site| site[:name] }
@@ -24,7 +25,7 @@ module DashboardService
 
   def self.npids
     assigned_unassiged_npids = ActiveRecord::Base.connection.select_all("
-      SELECT l.name location_name, ln.location_id,
+      SELECT l.name location_name, ln.location_id, l.activated,
       count(if(assigned = false,1,null)) unassigned,
       count(if(assigned = true,1,null)) assigned,
       max(ln.updated_at) date_last_updated,
@@ -33,7 +34,7 @@ module DashboardService
       JOIN locations l
       ON ln.location_id = l.location_id
       WHERE l.ip_address is not null
-      GROUP BY ln.location_id,l.name
+      GROUP BY ln.location_id,l.name, l.activated
       ORDER BY max(ln.updated_at) desc,count(*);
       ")
   end
@@ -56,10 +57,10 @@ module DashboardService
 
 
   def self.connected_sites
-    connected_sites = Location.where('ip_address is not null').select(:location_id, :name, :ip_address, :creator, :created_at, :updated_at, :last_seen)
-    reachable_sites = 'INSERT into `locations` (location_id, name, creator, created_at, updated_at, last_seen) VALUES '
+    connected_sites = Location.where('ip_address is not null').select(:location_id, :name, :ip_address, :creator, :created_at, :updated_at, :last_seen, :activated)
+    reachable_sites = ''
 
-    ping_tested_sites = Parallel.map(connected_sites, in_threads: 200) do |site|
+    ping_tested_sites = Parallel.map(connected_sites, in_threads: 1000) do |site|
       check = Net::Ping::External.new(site.ip_address)
        #Add site to update list if it is reachable
        last_seen = site.last_seen.to_datetime.strftime('%Y-%m-%d %H:%M:%S') unless site.last_seen.blank?
@@ -67,11 +68,15 @@ module DashboardService
        updated_at = site.updated_at.to_datetime.strftime('%Y-%m-%d %H:%M:%S') unless site.updated_at.blank?
 
        reachable_sites += " (#{site.location_id}, \"#{site.name}\", #{site.creator}, \"#{created_at}\", \"#{updated_at}\", \"#{last_seen || '1900-01-01 00:00:00'}\"), " if check.ping?
-        {site: site.name, reacheable: check.ping?}
+        {site: site.name, reacheable: check.ping?, activated: site.activated}
     end
-    reachable_sites.chop!.chop!
-    reachable_sites += ' ON DUPLICATE KEY UPDATE last_seen = VALUES(last_seen);'
-    ActiveRecord::Base.connection.execute(reachable_sites)
+
+    unless reachable_sites.blank?
+      reachable_sites.prepend('INSERT into `locations` (location_id, name, creator, created_at, updated_at, last_seen) VALUES ')
+      reachable_sites.chop!.chop!
+      reachable_sites += ' ON DUPLICATE KEY UPDATE last_seen = VALUES(last_seen);'
+      ActiveRecord::Base.connection.execute(reachable_sites)
+    end
     return ping_tested_sites
   end
 
@@ -80,6 +85,7 @@ module DashboardService
       SELECT l.name site_name, 
       max(fp.created_at) last_activity,
       l.last_seen last_seen,
+      l.activated,
       TIMESTAMPDIFF(DAY, max(fp.created_at), CURRENT_TIMESTAMP()) days_since_last_activity,
       TIMESTAMPDIFF(DAY, l.last_seen, CURRENT_TIMESTAMP()) days_since_last_seen
       FROM locations l
