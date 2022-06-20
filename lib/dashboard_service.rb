@@ -72,6 +72,7 @@ module DashboardService
     reachable_sites.chop!.chop!
     reachable_sites += ' ON DUPLICATE KEY UPDATE last_seen = VALUES(last_seen);'
     ActiveRecord::Base.connection.execute(reachable_sites)
+    return ping_tested_sites
   end
 
   def self.site_activities
