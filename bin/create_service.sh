@@ -273,6 +273,9 @@ TOKEN=`echo "$RESPONSE" | grep -o '"access_token":"[^"]*' | grep -o '[^"]*$'`
 
 if [ -z "$TOKEN" ]
 then
+    echo "Failed to login"
+    exit 0
+else
     #Adds program users 
     for PROGRAM in "${PROGRAM_NAMES[@]}"; do
         ADD_USER_PATH="$HOST:$APP_PORT/v1/add_user?username=${PROGRAM_USERNAMES[$PROGRAM]}&password=${PROGRAM_PASSWORDS[$PROGRAM]}&location=$LOCATION"
@@ -282,11 +285,6 @@ then
     #Adds DDE sync user
     ADD_USER_PATH="$HOST:$APP_PORT/v1/add_user?username=${SYNC_USERNAME}&password=${SYNC_PASSWORD}&location=$LOCATION"
     RESPONSE="$(sleep 2 && curl --location --request POST ${ADD_USER_PATH} --header "Authorization: ${TOKEN}")"
-
-    echo "Local Sync user response is $RESPONSE"
-else
-    echo "Failed to login"
-    exit 0
 fi
 
 
@@ -300,15 +298,12 @@ TOKEN=`echo "$RESPONSE" | grep -o '"access_token":"[^"]*' | grep -o '[^"]*$'`
 
 if [ -z "$TOKEN" ]
 then
+    echo "Failed to login"
+    exit 0
+else
     #Creating Sync User
     ADD_USER_PATH="http://$SYNC_HOST:$SYNC_PORT/v1/add_user?username=${SYNC_USERNAME}&password=${SYNC_PASSWORD}&location=$LOCATION"
     RESPONSE="$(sleep 2 && curl --location --request POST ${ADD_USER_PATH} --header "Authorization: ${TOKEN}")"
-
-    echo "Master sync user response is $RESPONSE"
-
-else
-    echo "Failed to login"
-    exit 0
 fi
 
 
