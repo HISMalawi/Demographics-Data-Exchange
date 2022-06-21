@@ -14,18 +14,23 @@ module NpidService
     # Assign the available npids to a site /location.
 
     location = current_user.location_id if location.blank?
+    npids = 'INSERT into `location_npids` (id, location_id, npid, created_at, updated_at) VALUES '
+    npid_pool_update = 'UPDATE `npids` SET assigned = true, updated_at = now() WHERE id IN ('
 
-    Parallel.each(available_ids) do |npid|
-      ActiveRecord::Base.transaction do
-        LocationNpid.create(
-          npid: npid.npid,
-          location_id: location.to_i
-        )
-
-        npid.update(assigned: true)
-      end
+    available_ids.each do |npid|
+      npids += "(NULL, #{location.to_i},'#{npid.npid}', now(), now()), "
+      npid_pool_update += "'#{npid.id}', "
     end
+      npids.chop!.chop!
+      npid_pool_update.chop!.chop!
+      npids += ';'
+      npid_pool_update += ');'
 
+      ActiveRecord::Base.transaction do
+        ActiveRecord::Base.connection.execute(npids)
+        ActiveRecord::Base.connection.execute(npid_pool_update)
+      end
+      return available_ids
   end
 
   #assigning individual npid to clients
