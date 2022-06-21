@@ -58,6 +58,7 @@ class Api::V1::SyncController < ApplicationController
 
   def npid_params
     params.require([:site_id,:npid_seq])
+    {site_id: params[:site_id], npid_seq: params[:npid_seq]}
   end
 
   def push_params

@@ -84,12 +84,19 @@ module SyncService
         end
         LocationNpid.find_by_npid(data[:npid]).update(assigned: true)
         push_seq.update(push_seq: current_seq)
-        return {status: 200, push_seq: current_seq}
+        return {status: 200, push_seq: current_seq}, status: :ok
       end
   end
 
   def self.pull_npids(npid_params)
-    npids = LocationNpid.where('location_id =? AND id > ? AND assigned = 0', npid_params[0],npid_params[1]).order(:id)
+    ActiveRecord::Base.transaction do
+      npids = LocationNpid.where('location_id =? AND id > ? AND assigned = 0', npid_params[:site_id],npid_params[:npid_seq]).order(:id)
+
+      # Automatically activate site if site if requesting for npids if its not activated
+      site = Location.find_by_location_id(npid_params[:site_id])
+      site.update(activated: true) if site.activated == false
+      return npids
+    end
   end
 
   def self.save_footprint(footprint_record)
