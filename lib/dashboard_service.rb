@@ -63,11 +63,15 @@ module DashboardService
     ping_tested_sites = Parallel.map(connected_sites, in_threads: 1000) do |site|
       check = Net::Ping::External.new(site.ip_address)
        #Add site to update list if it is reachable
-       last_seen = site.last_seen.to_datetime.strftime('%Y-%m-%d %H:%M:%S') unless site.last_seen.blank?
+       if site.last_seen.blank?
+        last_seen = '1900-01-01 00:00:00'
+       else
+        last_seen = site.last_seen.to_datetime.strftime('%Y-%m-%d %H:%M:%S')
+       end
        created_at = site.created_at.to_datetime.strftime('%Y-%m-%d %H:%M:%S') unless site.created_at.blank?
        updated_at = site.updated_at.to_datetime.strftime('%Y-%m-%d %H:%M:%S') unless site.updated_at.blank?
-
-       reachable_sites += " (#{site.location_id}, \"#{site.name}\", #{site.creator}, \"#{created_at}\", \"#{updated_at}\", \"#{last_seen || '1900-01-01 00:00:00'}\"), " if check.ping?
+   
+       reachable_sites += " (#{site.location_id}, \"#{site.name}\", #{site.creator}, \"#{created_at}\", \"#{updated_at}\", \"#{last_seen}\"), " if check.ping?
         {site: site.name, reacheable: check.ping?, activated: site.activated}
     end
 
