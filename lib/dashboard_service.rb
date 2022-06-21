@@ -96,6 +96,6 @@ module DashboardService
       LEFT JOIN foot_prints fp
       ON fp.location_id = l.location_id
       WHERE l.ip_address is not null
-      GROUP BY l.name, l.last_seen;")
+      GROUP BY l.name, l.last_seen, l.activated;")
   end
 end
