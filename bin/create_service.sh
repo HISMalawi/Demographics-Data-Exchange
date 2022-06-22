@@ -5,7 +5,6 @@ MODE="production"
 SERVICE_NAME="dde4"
 RUBY="2.5.3"
 PRODUCTION_DB="dde4_production"
-HOST="0.0.0.0"
 
 #Prompts entering of user details used for aunthentication
 read -p "Enter DDE4  username: " USERNAME
@@ -20,6 +19,8 @@ actions() {
     then
         APP_DIR="/var/www/dde4"
     fi
+
+    read -p "Enter DDE4 host IP Address: " HOST
 
     #Copying YAML files
     cp ${APP_DIR}/config/database.yml.example $APP_DIR/config/database.yml
@@ -49,7 +50,6 @@ actions() {
            -e "/^:dde_sync_config:/,/:username:/{/^\([[:space:]]*:username: \).*/s//\1${SYNC_USERNAME}/}" \
            -e "/^:dde_sync_config:/,/:password:/{/^\([[:space:]]*:password: \).*/s//\1${SYNC_PASSWORD}/}" \
             ${APP_DIR}/config/database.yml
-
 }
 
 actions
@@ -68,31 +68,37 @@ then
     APP_PORT="8050"
 fi
 
-# Sets up EMR-API configs
+
 emr_config(){
-    
+
+    read -p "Are you running BHT-EMR and DDE4 on same server?(y/n) " SAME_SERVER
+
     tput setaf 6; read -p "Enter BHT-EMR-API full path or press Enter to default to (/var/www/BHT-EMR-API): " EMR_DIR
     if [ -z "$EMR_DIR" ]
     then
         EMR_DIR="/var/www/BHT-EMR-API"
     fi
 
-    read -p "Enter EMR database: " EMR_DATABASE
-    read -p "Enter EMR database username: " EMR_DB_USERNAME
-    read -p "Enter EMR database password: " EMR_DB_PASSWORD 
+    if [[ $SAME_SERVER == "y" ]]; then
 
-    sed -i -e "/^dde:/,/url:/{/^\([[:space:]]*url: \).*/s//\1${HOST}:${APP_PORT}/}" $EMR_DIR/config/application.yml 
+      read -p "Enter EMR database: " EMR_DATABASE
+      read -p "Enter EMR database username: " EMR_DB_USERNAME
+      read -p "Enter EMR database password: " EMR_DB_PASSWORD 
+      sed -i -e "/^dde:/,/url:/{/^\([[:space:]]*url: \).*/s//\1${HOST}:${APP_PORT}/}" $EMR_DIR/config/application.yml
+
+    else
+ 
+      read -p "Enter IP ADDRESS of server BHT-EMR is running on: "  EMR_APIADDRESS
+      read -p "Enter username for ${EMR_APIADDRESS}: " SERVER_USERNAME
+
+      EMR_APP_YML_PATH=$EMR_DIR/config/application.yml
+      echo "${APP_DIR}"
+      scp "$SERVER_USERNAME@$EMR_APIADDRESS:$EMR_APP_YML_PATH" ${APP_DIR}/config/
+      sed -i -e "/^dde:/,/url:/{/^\([[:space:]]*url: \).*/s//\1${HOST}:${APP_PORT}/}" ${APP_DIR}/config/application.yml
+    fi
 }
 
 emr_config
-
-
-#Unless EMR Directory exists call method to set EMR directory
-while [ ! -d $EMR_DIR ]; do
-    tput setaf 1; echo "===>Directory $EMR_DIR DOES NOT EXISTS.<==="
-    tput setaf 7;
-    emr_config
-done
 
 declare -A PROGRAM_NAMES
 declare -A PROGRAM_USERNAMES
@@ -101,56 +107,82 @@ declare -A PROGRAM_PASSWORDS
 PROGRAM_INDEX=0
 
 #Iterates through programs
-add_programs(){
-    read -p "Enter EMR program name: " PROGRAM_NAME
+get_programs(){
+      read -p "Enter EMR program name: " PROGRAM_NAME
 
-    QUERY="SELECT EXISTS(SELECT * FROM program WHERE 
-    name = UPPER('${PROGRAM_NAME}') and retired = false);"
 
-    RESULT=`mysql --user=$EMR_DB_USERNAME --password=$EMR_DB_PASSWORD -s -N $EMR_DATABASE -e "${QUERY}"`
+    if [[ $SAME_SERVER == "y" ]]; then
+        QUERY="SELECT EXISTS(SELECT * FROM program WHERE 
+            name = UPPER('${PROGRAM_NAME}') and retired = false);"
+        RESULT=`mysql --user=$EMR_DB_USERNAME --password=$EMR_DB_PASSWORD -s -N $EMR_DATABASE -e "${QUERY}"`
 
-    #Checks if entered program exist
-    if [[ $RESULT == 1 ]]; then
-      
-      read -p "Enter $PROGRAM_NAME username: " PROGRAM_USERNAME
-      read -p "Enter password for $PROGRAM_USERNAME user: " PROGRAM_PASSWORD
+        if [[ $RESULT != 1 ]]; then
+          echo "program does not exist"
+          get_programs
+        fi
+    fi
 
-      PROGRAM_NAMES[$PROGRAM_INDEX]=$PROGRAM_NAME
-      PROGRAM_USERNAMES["$PROGRAM_NAME"]=$PROGRAM_USERNAME
-      PROGRAM_PASSWORDS["$PROGRAM_NAME"]=$PROGRAM_PASSWORD
-    
-      read -p "Do you want to add another program(y/n): " CHOICE
-      if [[ $CHOICE == "y" ]]; then
+    read -p "Enter $PROGRAM_NAME username: " PROGRAM_USERNAME
+    read -p "Enter password for $PROGRAM_USERNAME user: " PROGRAM_PASSWORD
+
+    PROGRAM_NAMES[$PROGRAM_INDEX]=$PROGRAM_NAME
+    PROGRAM_USERNAMES["$PROGRAM_NAME"]=$PROGRAM_USERNAME
+    PROGRAM_PASSWORDS["$PROGRAM_NAME"]=$PROGRAM_PASSWORD
+
+    read -p "Do you want to add another program(y/n): " CHOICE
+    if [[ $CHOICE == "y" ]]; then
         PROGRAM_INDEX=$(($PROGRAM_INDEX+1))
-        add_programs
-      fi
-
-    else
-      echo "program does not exist"
-      add_programs
+        get_programs
     fi
 }
 
-add_programs
+get_programs
 
-EMR_APP_YML_PATH=$EMR_DIR/config/application.yml
+add_remote_programs(){
+    for PROGRAM in "${PROGRAM_NAMES[@]}"; do
+
+        if grep -E "${PROGRAM}:" ${APP_DIR}/config/application.yml
+        then
+            sed -i -e "/${PROGRAM}:/,/username:/{/^\([[:space:]]*username: \).*/s//\1${PROGRAM_USERNAMES[$PROGRAM]}/}" ${APP_DIR}/config/application.yml
+            sed -i -e "/${PROGRAM}/,/password:/{/^\([[:space:]]*password: \).*/s//\1${PROGRAM_PASSWORDS[$PROGRAM]}/}" ${APP_DIR}/config/application.yml
+        else
+        sed -i "/dde:$/a\
+        \  ${PROGRAM}:"  ${APP_DIR}/config/application.yml
+        sed -i "/${PROGRAM}:$/a\
+        \    password: ${PROGRAM_PASSWORDS[$PROGRAM]}"  ${APP_DIR}/config/application.yml
+        sed -i "/${PROGRAM}:$/a\
+        \    username: ${PROGRAM_USERNAMES[$PROGRAM]}"  ${APP_DIR}/config/application.yml
+        fi
+    done
+
+    scp ${APP_DIR}/config/application.yml "$SERVER_USERNAME@$EMR_APIADDRESS:${EMR_APP_YML_PATH}" 
+    sudo rm ${APP_DIR}/config/application.yml
+}
 
 
-for PROGRAM in "${PROGRAM_NAMES[@]}"; do
+add_local_programs(){
+    for PROGRAM in "${PROGRAM_NAMES[@]}"; do
 
-    if grep -E "${PROGRAM}:" $EMR_APP_YML_PATH
-    then
-        sed -i -e "/${PROGRAM}:/,/username:/{/^\([[:space:]]*username: \).*/s//\1${PROGRAM_USERNAMES[$PROGRAM]}/}" $EMR_APP_YML_PATH
-        sed -i -e "/${PROGRAM}/,/password:/{/^\([[:space:]]*password: \).*/s//\1${PROGRAM_PASSWORDS[$PROGRAM]}/}" $EMR_APP_YML_PATH
-    else
-       sed -i "/dde:$/a\
-       \  ${PROGRAM}:" $EMR_APP_YML_PATH 
-      sed -i "/${PROGRAM}:$/a\
-       \    password: ${PROGRAM_PASSWORDS[$PROGRAM]}"  $EMR_APP_YML_PATH
-       sed -i "/${PROGRAM}:$/a\
-       \    username: ${PROGRAM_USERNAMES[$PROGRAM]}" $EMR_APP_YML_PATH
-    fi
-done
+        if grep -E "${PROGRAM}:" $EMR_APP_YML_PATH
+        then
+            sed -i -e "/${PROGRAM}:/,/username:/{/^\([[:space:]]*username: \).*/s//\1${PROGRAM_USERNAMES[$PROGRAM]}/}" $EMR_APP_YML_PATH
+            sed -i -e "/${PROGRAM}/,/password:/{/^\([[:space:]]*password: \).*/s//\1${PROGRAM_PASSWORDS[$PROGRAM]}/}" $EMR_APP_YML_PATH
+        else
+        sed -i "/dde:$/a\
+        \  ${PROGRAM}:" $EMR_APP_YML_PATH 
+        sed -i "/${PROGRAM}:$/a\
+        \    password: ${PROGRAM_PASSWORDS[$PROGRAM]}"  $EMR_APP_YML_PATH
+        sed -i "/${PROGRAM}:$/a\
+        \    username: ${PROGRAM_USERNAMES[$PROGRAM]}" $EMR_APP_YML_PATH
+        fi
+    done
+}
+
+if [[ $SAME_SERVER == "y" ]]; then
+    add_local_programs
+else
+    add_remote_programs
+fi
 
 #Runs rails bundle install, creates database, migration and seed
 /bin/bash -lc "cd ${APP_DIR} && rvm use 2.5.3 && bundle install --local && RAILS_ENV=$MODE rails db:create db:migrate db:seed"
@@ -335,8 +367,3 @@ echo "sudo systemctl disable ${SERVICE_NAME}"
 echo "---------------------------"
 echo "Thank You!"
 sudo service ${SERVICE_NAME} status
-
-
-
-
-
