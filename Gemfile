@@ -42,7 +42,6 @@ gem 'rack-cors'
 
 gem 'jwt'
 gem 'simple_command'
-gem 'passenger'
 
 #matching algorithm
 gem 'whitesimilarity'

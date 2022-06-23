@@ -42,7 +42,7 @@ module DemographicsDataExchange
     config.action_cable.mount_path = '/cable'
     config.action_cable.disable_request_forgery_protection = true
 
-    
+   
     config.time_zone = 'Harare'
     config.active_record.default_timezone = :local
   end

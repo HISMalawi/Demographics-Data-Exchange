@@ -1,6 +1,6 @@
 class DashboardSocketDataJob < ApplicationJob
   queue_as :default
-
+  
   def perform(*args)
     # Do something later
     if File.exists?("#{Rails.root}/log/npid_balance.json")
