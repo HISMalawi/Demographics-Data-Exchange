@@ -74,7 +74,11 @@ class Api::V1::DashboardController < ApplicationController
   end
 
   def refresh_dashboard
-    render json: {message: 'Initilized Dashboard Refresh'}, status: :ok if DashboardSocketDataJob.perform_later
+    if File.exists?("#{Rails.root}/log/dashboard_data.json") 
+      render json: {message: 'Initilized Dashboard Refresh'}, status: :ok if ActionCable.server.broadcast('dashboard_channel', message: JSON.parse(File.read("#{Rails.root}/log/dashboard_data.json")))
+    else
+      render json: {message: 'Initilized Dashboard Refresh'}, status: :ok if DashboardSocketDataJob.perform_later
+    end
   end
 
   private
