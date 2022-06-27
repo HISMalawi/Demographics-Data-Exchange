@@ -339,7 +339,7 @@ else
 fi
 
 
-echo "Users created"
+echo "Users created successfully"
 
 echo "Sync cron job configured"
  
@@ -353,7 +353,7 @@ echo "Port: ${APP_PORT}"
 echo "Environment: ${ENV}"
 echo "---------------------------"
 
-echo "*****SERVICE COMMANDS******"
+echo "*****SERVICE COMMANDS*******"
 echo "Service status"
 echo "sudo service ${SERVICE_NAME} status"
 echo "Start Service"
