@@ -38,6 +38,9 @@ module DemographicsDataExchange
     #autoloads lib folder during development
     config.autoload_paths << Rails.root.join("lib")
 
+    #ActiveJob queue adapter
+    config.active_job.queue_adapter = :sidekiq
+
     #Action Cable
     config.action_cable.mount_path = '/cable'
     config.action_cable.disable_request_forgery_protection = true

@@ -1,9 +1,10 @@
 class NpidPoolJob < ApplicationJob
-  queue_as :default
+  queue_as :npid_pool
 
   def perform(*args)
     # Do something later
     npid_balance = Npid.all.group(:assigned).count
-    File.write("#{Rails.root}/log/npid_balance.json", npid_balance.to_json)
+    DashboardStat.where(:name => "npid_balance").update(value: npid_balance)
+    DashboardSocketDataJob.perform_later # this will trigger the DashboardSocketDataJob to run after this job is finished
   end
 end

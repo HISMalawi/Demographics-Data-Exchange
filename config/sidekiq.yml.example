@@ -1,0 +1,5 @@
+:concurrency: 3
+:queues:
+- default
+- location_npid
+- npid_pool
