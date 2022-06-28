@@ -75,7 +75,7 @@ class Api::V1::DashboardController < ApplicationController
 
   def refresh_dashboard
       data = DashboardStat.where(:name => "dashboard_stats")
-      ActionCable.server.broadcast('dashboard_channel', message: data.first.value.to_json)
+      ActionCable.server.broadcast('dashboard_channel', message: data.first.value)
       render json: {message: 'Initilized Dashboard Refresh'}, status: :ok 
   end
 
