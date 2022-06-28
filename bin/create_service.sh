@@ -80,7 +80,7 @@ emr_config(){
     fi
 
     if [[ $SAME_SERVER == "y" ]]; then
-
+      EMR_APP_YML_PATH=$EMR_DIR/config/application.yml
       read -p "Enter EMR database: " EMR_DATABASE
       read -p "Enter EMR database username: " EMR_DB_USERNAME
       read -p "Enter EMR database password: " EMR_DB_PASSWORD 
