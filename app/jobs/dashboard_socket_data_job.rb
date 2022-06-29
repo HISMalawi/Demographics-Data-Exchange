@@ -16,7 +16,7 @@ class DashboardSocketDataJob < ApplicationJob
       npid_state: DashboardService.npids,
       site_activity: DashboardService.site_activities,
       npid_pool: {assigned: npid_balance.first.value['true'], unassigned: npid_balance.first.value['false']},
-      allocate_npids: {assigned: location_npid_balance.first.value['true'], unassigned: location_npid_balance.first.value['true']},
+      allocate_npids: {assigned: location_npid_balance.first.value['true'], unassigned: location_npid_balance.first.value['false']},
     }
 
     dashboard_stats.update(value: dash_data)
