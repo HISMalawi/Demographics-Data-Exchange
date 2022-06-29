@@ -16,7 +16,10 @@ class ApplicationController < ActionController::API
 	end
 
 	def update_socket_dashboard
-	  DashboardSocketDataJob.perform_later
+	  unless File.exist?(Rails.root.join('tmp', 'dashboard_stats.lock'))
+		FileUtils.touch(Rails.root.join('tmp/dashboard_stats.lock'))
+	  	DashboardSocketDataJob.perform_later
+	  end
 	end
 
 	def update_location_npids

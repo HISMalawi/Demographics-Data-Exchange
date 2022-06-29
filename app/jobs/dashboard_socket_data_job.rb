@@ -1,5 +1,5 @@
 class DashboardSocketDataJob < ApplicationJob
-    queue_as :default
+  queue_as :default
   
   def perform(*args)
     # Do something later
@@ -22,5 +22,6 @@ class DashboardSocketDataJob < ApplicationJob
     dashboard_stats.update(value: dash_data)
 
     ActionCable.server.broadcast('dashboard_channel', message: dash_data)
+    FileUtils.rm(Rails.root.join('tmp/dashboard_stats.lock'))
   end
 end
