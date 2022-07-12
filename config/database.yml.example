@@ -57,6 +57,7 @@ production:
 :batch_size: '10_000'
 
 :dde_sync_config:
+  :protocol: https
   :host: 10.44.0.48
   :port: 3002
   :username: test
