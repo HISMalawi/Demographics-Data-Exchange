@@ -2,11 +2,9 @@ class DashboardSocketDataJob < ApplicationJob
   queue_as :default
   
   def perform(*args)
-    if File.exist?('/tmp/dde_dashboard_stats.lock')
-      return
-    else
-      FileUtils.touch('/tmp/dde_dashboard_stats.lock')
-    end
+    return if File.exist?('/tmp/dde_dashboard_stats.lock')
+
+    FileUtils.touch('/tmp/dde_dashboard_stats.lock')
     # Do something later
     npid_balance = DashboardStat.where(:name => "npid_balance")
     location_npid_balance = DashboardStat.where(:name => "location_npid_balance")
