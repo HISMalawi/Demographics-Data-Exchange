@@ -60,7 +60,7 @@ module DashboardService
     connected_sites = Location.where('ip_address is not null').select(:location_id, :name, :ip_address, :creator, :created_at, :updated_at, :last_seen, :activated)
     reachable_sites = ''
 
-    ping_tested_sites = Parallel.map(connected_sites, in_threads: 1000) do |site|
+    ping_tested_sites = Parallel.map(connected_sites, in_threads: connected_sites.size.to_i) do |site|
       check = Net::Ping::External.new(site.ip_address)
        #Add site to update list if it is reachable
        created_at = site.created_at.to_datetime.strftime('%Y-%m-%d %H:%M:%S') unless site.created_at.blank?

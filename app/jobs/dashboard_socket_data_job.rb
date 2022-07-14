@@ -2,21 +2,14 @@ class DashboardSocketDataJob < ApplicationJob
   queue_as :default
   
   def perform(*args)
-    # Do something later
-    if File.exists?("#{Rails.root}/log/npid_balance.json")
-      npid_balance = JSON.parse(File.read("#{Rails.root}/log/npid_balance.json"))
-    else
-      npid_balance = Npid.all.group(:assigned).count
-      File.write("#{Rails.root}/log/npid_balance.json", npid_balance.to_json)
-    end
+    return if File.exist?('/tmp/dde_dashboard_stats.lock')
 
-    if File.exists?("#{Rails.root}/log/location_npid_balance.json")
-      location_npid_balance = JSON.parse(File.read("#{Rails.root}/log/location_npid_balance.json"))
-    else
-      location_npid_balance = LocationNpid.all.group(:assigned).count
-      File.write("#{Rails.root}/log/location_npid_balance.json", location_npid_balance.to_json)
-    end
-    
+    FileUtils.touch('/tmp/dde_dashboard_stats.lock')
+    # Do something later
+    npid_balance = DashboardStat.where(:name => "npid_balance")
+    location_npid_balance = DashboardStat.where(:name => "location_npid_balance")
+    dashboard_stats = DashboardStat.where(:name => "dashboard_stats")
+
     dash_data = {
       connected_state: DashboardService.connected_sites,
       total_new_registrations: PersonDetail.where('date_registered BETWEEN ? AND ?',Date.today.strftime('%Y-%m-%d %H:%M:%S'),Date.today.strftime('%Y-%m-%d') + ' 23:59:59').count,
@@ -25,12 +18,13 @@ class DashboardSocketDataJob < ApplicationJob
       client_movement: DashboardService.client_movements,
       npid_state: DashboardService.npids,
       site_activity: DashboardService.site_activities,
-      npid_pool: {assigned: npid_balance['true'], unassigned: npid_balance['false']},
-      allocate_npids: {assigned: location_npid_balance['true'], unassigned: location_npid_balance['false']}
+      npid_pool: {assigned: npid_balance.first.value['true'], unassigned: npid_balance.first.value['false']},
+      allocate_npids: {assigned: location_npid_balance.first.value['true'], unassigned: location_npid_balance.first.value['false']},
     }
 
-    File.write("#{Rails.root}/log/dashboard_data.json", dash_data.to_json)
+    dashboard_stats.update(value: dash_data)
 
     ActionCable.server.broadcast('dashboard_channel', message: dash_data)
+    FileUtils.rm('/tmp/dde_dashboard_stats.lock')
   end
 end
