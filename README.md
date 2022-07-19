@@ -77,7 +77,7 @@ And users to the application
        a -> Run the following command in your terminal replacing the URL with the one configured in the URL in dde config
          -> Copy the ACCESS_TOKEN to use in b
         ```bash
-        curl --location --request POST 'URL/v1/login?username=admin&password=bht.dde3!'
+        curl --location --request POST 'URL/v1/login?username=admin&password=DDE_ADMIN_PASSWORD'
         ```
 
       b -> Create the users configured in the EMR-API and dde_sync_config using the following command replacing the (URL,TOKEN,PASSWORD, USERNAME AND LOCATION) for each user

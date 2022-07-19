@@ -232,7 +232,7 @@ WorkingDirectory=$APP_DIR
 
 Environment=RAILS_ENV=$ENV
 
-ExecStart=/bin/bash -lc 'rvm use ${RUBY} && ${PUMA_DIR} -C ${APP_DIR}/config/server/${ENV}.rb'
+ExecStart=/bin/bash -lc 'rvm use ${RUBY} && bundle exec ${PUMA_DIR} -C ${APP_DIR}/config/server/${ENV}.rb'
 
 Restart=always
 
