@@ -25,6 +25,9 @@ class DashboardSocketDataJob < ApplicationJob
     dashboard_stats.update(value: dash_data)
 
     ActionCable.server.broadcast('dashboard_channel', message: dash_data)
+    
     FileUtils.rm('/tmp/dde_dashboard_stats.lock')
   end
+
+  
 end
