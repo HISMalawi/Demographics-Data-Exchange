@@ -2,9 +2,6 @@ class DashboardSocketDataJob < ApplicationJob
   queue_as :default
   
   def perform(*args)
-    return if File.exist?('/tmp/dde_dashboard_stats.lock')
-
-    FileUtils.touch('/tmp/dde_dashboard_stats.lock')
     # Do something later
     npid_balance = DashboardStat.where(:name => "npid_balance")
     location_npid_balance = DashboardStat.where(:name => "location_npid_balance")
@@ -25,6 +22,5 @@ class DashboardSocketDataJob < ApplicationJob
     dashboard_stats.update(value: dash_data)
 
     ActionCable.server.broadcast('dashboard_channel', message: dash_data)
-    FileUtils.rm('/tmp/dde_dashboard_stats.lock')
   end
 end
