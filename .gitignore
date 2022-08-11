@@ -8,6 +8,7 @@ config/application.yml
 config/settings.yml
 config/couchdb.yml
 storage/*.*
+config/server/*.*
 notes
 development.sql
 development_structure.sql
