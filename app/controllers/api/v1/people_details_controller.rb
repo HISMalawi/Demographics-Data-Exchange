@@ -47,7 +47,7 @@ class Api::V1::PeopleDetailsController < ApplicationController
     errors = ValidateParams.search_by_name_and_gender(params)
     if errors.blank?
       search_results = PersonService.search_by_name_and_gender(params)
-      render json: search_results
+      render json: search_results, status: search_results.blank? ? :not_found : :ok
     else
       render json: errors, status: :unprocessable_entity
     end
@@ -57,7 +57,7 @@ class Api::V1::PeopleDetailsController < ApplicationController
    errors = ValidateParams.search_by_npid(params)
    if errors.blank?
      search_results = PersonService.search_by_npid(params)
-     render json: search_results
+     render json: search_results, status: search_results.blank? ? :not_found : :ok
    else
     render json: errors, status: :unprocessable_entity
    end
@@ -67,7 +67,7 @@ class Api::V1::PeopleDetailsController < ApplicationController
     errors = ValidateParams.search_by_doc_id(params)
     if errors.blank?
       search_results = PersonService.search_by_doc_id(params)
-      render json: search_results
+      render json: search_results, status: search_results.blank? ? :not_found : :ok
     else
       render json: errors, status: :unprocessable_entity
     end
@@ -77,7 +77,7 @@ class Api::V1::PeopleDetailsController < ApplicationController
     errors = ValidateParams.merge_people(params)
     if errors.blank?
       merge_results = MergeService.merge(params[:primary_person_doc_id], params[:secondary_person_doc_id],current_user)
-      render json: merge_results
+      render json: merge_results, status: merge_results.blank? ? :not_found : :ok
     else
       render json: errors, status: :unprocessable_entity
     end
