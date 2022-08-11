@@ -4,7 +4,7 @@ class Npid < ApplicationRecord
   self.primary_key = 'id'
 
   def update_npid
-    NpidPoolJob.perform_later
-    LocationNpidJob.perform_later
+    NpidPoolJob.perform_later('refresh_npid_pool')
+    LocationNpidJob.perform_later('refresh_location_npids')
   end
 end
