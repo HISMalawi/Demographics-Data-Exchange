@@ -1,5 +1,6 @@
-:concurrency: 3
+:concurrency: 4
 :queues:
 - default
 - location_npid
 - npid_pool
+- email_notifications
