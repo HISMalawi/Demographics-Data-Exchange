@@ -6,9 +6,21 @@ SERVICE_NAME="dde4"
 RUBY="2.5.3"
 PRODUCTION_DB="dde4_production"
 
+read -p "Select Action 
+1.New DDE service setup 
+2.Add programs on existing DDE service
+" SETUP_TYPE
+
 #Prompts entering of user details used for aunthentication
 read -p "Enter DDE4  username: " USERNAME
 read -p "Enter DDE4  password: "  PASSWORD
+read -p "Enter DDE4 host IP address: " HOST
+read -p "Site Location Id: " LOCATION
+
+if [[ $SETUP_TYPE == 2 ]]; then
+    read -p "Enter DDE PORT : " APP_PORT
+fi
+
 
 #Configures DDE database YAML 
 actions() {
@@ -20,14 +32,10 @@ actions() {
         APP_DIR="/var/www/dde4"
     fi
 
-    read -p "Enter DDE4 host IP Address: " HOST
-
     #Copying YAML files
     cp ${APP_DIR}/config/database.yml.example $APP_DIR/config/database.yml
     cp ${APP_DIR}/config/secrets.yml.example  $APP_DIR/config/secrets.yml
     cp ${APP_DIR}/config/storage.yml.example $APP_DIR/config/storage.yml
-
-    read -p "Site Location Id: " LOCATION
 
     #Gets production database password and username    
     read -p "Production mysql username: " DDE_DB_USERNAME
@@ -38,6 +46,7 @@ actions() {
     read -p "Sync port: " SYNC_PORT
     read -p "Sync username: " SYNC_USERNAME
     read -p "Sync password: " SYNC_PASSWORD
+
 
     SYNC_USERNAME="${SYNC_USERNAME}_${LOCATION}"
     
@@ -52,21 +61,22 @@ actions() {
             ${APP_DIR}/config/database.yml
 }
 
-actions
 
-#Unless DDE Directory exists call method to set DDE directory
-while [ ! -d $APP_DIR ]; do
-    tput setaf 1; echo "===>Directory $APP_DIR DOES NOT EXISTS.<==="
-    tput setaf 7;
+ if [[ $SETUP_TYPE == 1 ]]; then
     actions
-done
-
-# Prompts for DDE PORT or Defaults to PORT 8050
-read -p "Enter DDE PORT or press enter to default to (8050): " APP_PORT
-if [ -z "$APP_PORT" ]
-then
-    APP_PORT="8050"
-fi
+    #Unless DDE Directory exists call method to set DDE directory
+    while [ ! -d $APP_DIR ]; do
+        tput setaf 1; echo "===>Directory $APP_DIR DOES NOT EXISTS.<==="
+        tput setaf 7;
+        actions
+    done
+    # Prompts for DDE PORT or Defaults to PORT 8050
+    read -p "Enter DDE PORT or press enter to default to (8050): " APP_PORT
+    if [ -z "$APP_PORT" ]
+    then
+        APP_PORT="8050"
+    fi
+ fi
 
 
 emr_config(){
@@ -108,8 +118,7 @@ PROGRAM_INDEX=0
 
 #Iterates through programs
 get_programs(){
-      read -p "Enter EMR program name: " PROGRAM_NAME
-
+    read -p "Enter EMR program name: " PROGRAM_NAME
 
     if [[ $SAME_SERVER == "y" ]]; then
         QUERY="SELECT EXISTS(SELECT * FROM program WHERE 
@@ -182,6 +191,44 @@ if [[ $SAME_SERVER == "y" ]]; then
     add_local_programs
 else
     add_remote_programs
+fi
+
+
+add_program_users(){
+    #Building path for login using DDE username and password
+    LOGIN_PATH="$HOST:$APP_PORT/v1/login?username=$USERNAME&password=$PASSWORD"
+
+    #Login Request Sent
+    RESPONSE="$(sleep 5 && curl  --location --request POST $LOGIN_PATH)"
+
+    #Fetchs token from response object
+    TOKEN=`echo "$RESPONSE" | grep -o '"access_token":"[^"]*' | grep -o '[^"]*$'`
+
+    if [ -z "$TOKEN" ]
+    then
+        echo "Failed to login"
+        exit 0
+    else
+        #Adds program users 
+        for PROGRAM in "${PROGRAM_NAMES[@]}"; do
+            ADD_USER_PATH="$HOST:$APP_PORT/v1/add_user?username=${PROGRAM_USERNAMES[$PROGRAM]}&password=${PROGRAM_PASSWORDS[$PROGRAM]}&location=$LOCATION"
+            RESPONSE="$(sleep 2 && curl --location --request POST ${ADD_USER_PATH} --header "Authorization: ${TOKEN}")"
+        done
+
+        if [[ $SETUP_TYPE == 1 ]]; then 
+            #Adds DDE sync user
+            ADD_USER_PATH="$HOST:$APP_PORT/v1/add_user?username=${SYNC_USERNAME}&password=${SYNC_PASSWORD}&location=$LOCATION"
+            RESPONSE="$(sleep 2 && curl --location --request POST ${ADD_USER_PATH} --header "Authorization: ${TOKEN}")"
+        fi
+    fi
+}
+
+
+#When setup type is for adding programs, only add programs then exit
+if [[ $SETUP_TYPE == 2 ]]; then 
+    add_program_users
+    echo "Programs added successfully"
+    exit 0
 fi
 
 #Runs rails bundle install, creates database, migration and seed
@@ -294,30 +341,9 @@ rm ./${ENV}.rb
 # Updates crontab for DDE sync cron job
 whenever --set "environment=${ENV}" --update-crontab
 
-#Building path for login using DDE username and password
-LOGIN_PATH="$HOST:$APP_PORT/v1/login?username=$USERNAME&password=$PASSWORD"
 
-#Login Request Sent
-RESPONSE="$(sleep 5 && curl  --location --request POST $LOGIN_PATH)"
 
-#Fetchs token from response object
-TOKEN=`echo "$RESPONSE" | grep -o '"access_token":"[^"]*' | grep -o '[^"]*$'`
-
-if [ -z "$TOKEN" ]
-then
-    echo "Failed to login"
-    exit 0
-else
-    #Adds program users 
-    for PROGRAM in "${PROGRAM_NAMES[@]}"; do
-        ADD_USER_PATH="$HOST:$APP_PORT/v1/add_user?username=${PROGRAM_USERNAMES[$PROGRAM]}&password=${PROGRAM_PASSWORDS[$PROGRAM]}&location=$LOCATION"
-        RESPONSE="$(sleep 2 && curl --location --request POST ${ADD_USER_PATH} --header "Authorization: ${TOKEN}")"
-    done
-
-    #Adds DDE sync user
-    ADD_USER_PATH="$HOST:$APP_PORT/v1/add_user?username=${SYNC_USERNAME}&password=${SYNC_PASSWORD}&location=$LOCATION"
-    RESPONSE="$(sleep 2 && curl --location --request POST ${ADD_USER_PATH} --header "Authorization: ${TOKEN}")"
-fi
+add_program_users
 
 
 #Authentication with master
