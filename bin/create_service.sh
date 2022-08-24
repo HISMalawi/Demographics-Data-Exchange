@@ -5,20 +5,27 @@ MODE="production"
 SERVICE_NAME="dde4"
 RUBY="2.5.3"
 PRODUCTION_DB="dde4_production"
-
-read -p "Select Action 
-1.New DDE service setup 
-2.Add programs on existing DDE service
+echo $'\e[1;33m'Welcome to DDE4 Service Setup$'\e[0m'
+read -sn1 -s -p "SELECT ACTION
+(1)New DDE4 service setup 
+(2)Add programs on existing DDE4 service
 " SETUP_TYPE
+
+if [[ $SETUP_TYPE == 1 ]]; then
+    echo $'\e[1;33m'Initializing new DDE4 Service..$'\e[0m'
+else
+    echo $'\e[1;33m'Initializing adding of programs to DDE4 service$'\e[0m'
+fi
+
 
 #Prompts entering of user details used for aunthentication
 read -p "Enter DDE4  username: " USERNAME
-read -p "Enter DDE4  password: "  PASSWORD
+read -p  $"Enter DDE4  password: " PASSWORD
 read -p "Enter DDE4 host IP address: " HOST
-read -p "Site Location Id: " LOCATION
+read -p "Enter site location identifier: " LOCATION
 
 if [[ $SETUP_TYPE == 2 ]]; then
-    read -p "Enter DDE PORT : " APP_PORT
+    read -p "Enter the port where DDE4 service is running on: " APP_PORT
 fi
 
 
@@ -33,6 +40,7 @@ actions() {
     fi
 
     #Copying YAML files
+     echo $'\e[1;33m'Copying YAML files..$'\e[0m'
     cp ${APP_DIR}/config/database.yml.example $APP_DIR/config/database.yml
     cp ${APP_DIR}/config/secrets.yml.example  $APP_DIR/config/secrets.yml
     cp ${APP_DIR}/config/storage.yml.example $APP_DIR/config/storage.yml
@@ -51,6 +59,7 @@ actions() {
     SYNC_USERNAME="${SYNC_USERNAME}_${LOCATION}"
     
     #Updates YAML file with new configurations
+    echo $'\e[1;33m'Updating new configurations..$'\e[0m'
     sed -i -e "/^production:/,/database:/{/^\([[:space:]]*database: \).*/s//\1${PRODUCTION_DB}/}" \
            -e "/^production:/,/username:/{/^\([[:space:]]*username: \).*/s//\1${DDE_DB_USERNAME}/}" \
            -e "/^production:/,/password:/{/^\([[:space:]]*password: \).*/s//\1${DDE_DB_PASSWORD}/}" \
@@ -119,6 +128,9 @@ PROGRAM_INDEX=0
 #Iterates through programs
 get_programs(){
     read -p "Enter EMR program name: " PROGRAM_NAME
+    
+    #Converting program name to lowercase
+    PROGRAM_NAME=${PROGRAM_NAME,,}
 
     if [[ $SAME_SERVER == "y" ]]; then
         QUERY="SELECT EXISTS(SELECT * FROM program WHERE 
@@ -131,12 +143,12 @@ get_programs(){
         fi
     fi
 
-    read -p "Enter $PROGRAM_NAME username: " PROGRAM_USERNAME
-    read -p "Enter password for $PROGRAM_USERNAME user: " PROGRAM_PASSWORD
+    read -p "Enter ${PROGRAM_NAME} username: " PROGRAM_USERNAME
+    read -p "Enter password for ${PROGRAM_USERNAME} user: " PROGRAM_PASSWORD
 
-    PROGRAM_NAMES[$PROGRAM_INDEX]=$PROGRAM_NAME
-    PROGRAM_USERNAMES["$PROGRAM_NAME"]=$PROGRAM_USERNAME
-    PROGRAM_PASSWORDS["$PROGRAM_NAME"]=$PROGRAM_PASSWORD
+    PROGRAM_NAMES[$PROGRAM_INDEX]=${PROGRAM_NAME}
+    PROGRAM_USERNAMES["$PROGRAM_NAME"]=${PROGRAM_USERNAME}
+    PROGRAM_PASSWORDS["$PROGRAM_NAME"]=${PROGRAM_PASSWORD}
 
     read -p "Do you want to add another program(y/n): " CHOICE
     if [[ $CHOICE == "y" ]]; then
