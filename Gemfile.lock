@@ -93,6 +93,7 @@ GEM
     mini_portile2 (2.6.1)
     minitest (5.15.0)
     msgpack (1.5.0)
+    multi_json (1.15.0)
     mysql2 (0.5.3)
     net-ping (2.0.8)
     netrc (0.11.0)
@@ -105,7 +106,7 @@ GEM
     puma (4.3.8)
       nio4r (~> 2.0)
     racc (1.6.0)
-    rack (2.2.4)
+    rack (2.2.3)
     rack-cors (1.1.1)
       rack (>= 2.0.0)
     rack-test (1.1.0)
@@ -138,7 +139,7 @@ GEM
     rb-fsevent (0.11.1)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
-    redis (4.7.1)
+    redis (4.6.0)
     redlock (1.2.2)
       redis (>= 3.0.0, < 5.0)
     rest-client (2.1.0)
@@ -181,7 +182,7 @@ GEM
     rswag-ui (2.5.1)
       actionpack (>= 3.1, < 7.1)
       railties (>= 3.1, < 7.1)
-    sidekiq (6.5.4)
+    sidekiq (6.5.5)
       connection_pool (>= 2.2.2)
       rack (~> 2.0)
       redis (>= 4.5.0)
@@ -224,6 +225,7 @@ DEPENDENCIES
   jwt
   kramdown
   listen
+  multi_json
   mysql2 (>= 0.4.4, < 0.6.0)
   net-ping
   parallel

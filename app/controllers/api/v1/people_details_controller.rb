@@ -93,7 +93,7 @@ class Api::V1::PeopleDetailsController < ApplicationController
     unless person.blank?
       render json: person, status: :ok
     else
-      render json: {error: 'something went wrong'},  status: :internal_server_error
+      render json: {error: 'Person not found'},  status: :not_found
     end
   end
 

@@ -399,6 +399,7 @@ module PersonService
 
   def self.void_person(void_details,current_user)
     person = PersonDetail.unscoped.find_by_person_uuid(void_details[:person_uuid])
+    return if person.blank?
     if person.voided == true
       return person
     else
@@ -411,6 +412,8 @@ module PersonService
         audit_person = JSON.parse(audit_record.to_json)
         audit_person.delete('id')
         audit_person.delete('updated_at')
+        audit_person.delete('date_registered_date') if audit_person.has_key?('date_registered_date')
+        puts audit_person
         PersonDetailsAudit.create!(audit_person)
       end
     end
