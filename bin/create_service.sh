@@ -5,10 +5,29 @@ MODE="production"
 SERVICE_NAME="dde4"
 RUBY="2.5.3"
 PRODUCTION_DB="dde4_production"
+echo $'\e[1;33m'Welcome to DDE4 Service Setup$'\e[0m'
+read -sn1 -s -p "SELECT ACTION
+(1)New DDE4 service setup 
+(2)Add programs on existing DDE4 service
+" SETUP_TYPE
+
+if [[ $SETUP_TYPE == 1 ]]; then
+    echo $'\e[1;33m'Initializing new DDE4 Service..$'\e[0m'
+else
+    echo $'\e[1;33m'Initializing adding of programs to DDE4 service$'\e[0m'
+fi
+
 
 #Prompts entering of user details used for aunthentication
 read -p "Enter DDE4  username: " USERNAME
-read -p "Enter DDE4  password: "  PASSWORD
+read -p  $"Enter DDE4  password: " PASSWORD
+read -p "Enter DDE4 host IP address: " HOST
+read -p "Enter site location identifier: " LOCATION
+
+if [[ $SETUP_TYPE == 2 ]]; then
+    read -p "Enter the port where DDE4 service is running on: " APP_PORT
+fi
+
 
 #Configures DDE database YAML 
 actions() {
@@ -20,14 +39,11 @@ actions() {
         APP_DIR="/var/www/dde4"
     fi
 
-    read -p "Enter DDE4 host IP Address: " HOST
-
     #Copying YAML files
+     echo $'\e[1;33m'Copying YAML files..$'\e[0m'
     cp ${APP_DIR}/config/database.yml.example $APP_DIR/config/database.yml
     cp ${APP_DIR}/config/secrets.yml.example  $APP_DIR/config/secrets.yml
     cp ${APP_DIR}/config/storage.yml.example $APP_DIR/config/storage.yml
-
-    read -p "Site Location Id: " LOCATION
 
     #Gets production database password and username    
     read -p "Production mysql username: " DDE_DB_USERNAME
@@ -39,9 +55,11 @@ actions() {
     read -p "Sync username: " SYNC_USERNAME
     read -p "Sync password: " SYNC_PASSWORD
 
+
     SYNC_USERNAME="${SYNC_USERNAME}_${LOCATION}"
     
     #Updates YAML file with new configurations
+    echo $'\e[1;33m'Updating new configurations..$'\e[0m'
     sed -i -e "/^production:/,/database:/{/^\([[:space:]]*database: \).*/s//\1${PRODUCTION_DB}/}" \
            -e "/^production:/,/username:/{/^\([[:space:]]*username: \).*/s//\1${DDE_DB_USERNAME}/}" \
            -e "/^production:/,/password:/{/^\([[:space:]]*password: \).*/s//\1${DDE_DB_PASSWORD}/}" \
@@ -52,21 +70,22 @@ actions() {
             ${APP_DIR}/config/database.yml
 }
 
-actions
 
-#Unless DDE Directory exists call method to set DDE directory
-while [ ! -d $APP_DIR ]; do
-    tput setaf 1; echo "===>Directory $APP_DIR DOES NOT EXISTS.<==="
-    tput setaf 7;
+ if [[ $SETUP_TYPE == 1 ]]; then
     actions
-done
-
-# Prompts for DDE PORT or Defaults to PORT 8050
-read -p "Enter DDE PORT or press enter to default to (8050): " APP_PORT
-if [ -z "$APP_PORT" ]
-then
-    APP_PORT="8050"
-fi
+    #Unless DDE Directory exists call method to set DDE directory
+    while [ ! -d $APP_DIR ]; do
+        tput setaf 1; echo "===>Directory $APP_DIR DOES NOT EXISTS.<==="
+        tput setaf 7;
+        actions
+    done
+    # Prompts for DDE PORT or Defaults to PORT 8050
+    read -p "Enter DDE PORT or press enter to default to (8050): " APP_PORT
+    if [ -z "$APP_PORT" ]
+    then
+        APP_PORT="8050"
+    fi
+ fi
 
 
 emr_config(){
@@ -108,8 +127,10 @@ PROGRAM_INDEX=0
 
 #Iterates through programs
 get_programs(){
-      read -p "Enter EMR program name: " PROGRAM_NAME
-
+    read -p "Enter EMR program name: " PROGRAM_NAME
+    
+    #Converting program name to lowercase
+    PROGRAM_NAME=${PROGRAM_NAME,,}
 
     if [[ $SAME_SERVER == "y" ]]; then
         QUERY="SELECT EXISTS(SELECT * FROM program WHERE 
@@ -122,12 +143,12 @@ get_programs(){
         fi
     fi
 
-    read -p "Enter $PROGRAM_NAME username: " PROGRAM_USERNAME
-    read -p "Enter password for $PROGRAM_USERNAME user: " PROGRAM_PASSWORD
+    read -p "Enter ${PROGRAM_NAME} username: " PROGRAM_USERNAME
+    read -p "Enter password for ${PROGRAM_USERNAME} user: " PROGRAM_PASSWORD
 
-    PROGRAM_NAMES[$PROGRAM_INDEX]=$PROGRAM_NAME
-    PROGRAM_USERNAMES["$PROGRAM_NAME"]=$PROGRAM_USERNAME
-    PROGRAM_PASSWORDS["$PROGRAM_NAME"]=$PROGRAM_PASSWORD
+    PROGRAM_NAMES[$PROGRAM_INDEX]=${PROGRAM_NAME}
+    PROGRAM_USERNAMES["$PROGRAM_NAME"]=${PROGRAM_USERNAME}
+    PROGRAM_PASSWORDS["$PROGRAM_NAME"]=${PROGRAM_PASSWORD}
 
     read -p "Do you want to add another program(y/n): " CHOICE
     if [[ $CHOICE == "y" ]]; then
@@ -182,6 +203,44 @@ if [[ $SAME_SERVER == "y" ]]; then
     add_local_programs
 else
     add_remote_programs
+fi
+
+
+add_program_users(){
+    #Building path for login using DDE username and password
+    LOGIN_PATH="$HOST:$APP_PORT/v1/login?username=$USERNAME&password=$PASSWORD"
+
+    #Login Request Sent
+    RESPONSE="$(sleep 5 && curl  --location --request POST $LOGIN_PATH)"
+
+    #Fetchs token from response object
+    TOKEN=`echo "$RESPONSE" | grep -o '"access_token":"[^"]*' | grep -o '[^"]*$'`
+
+    if [ -z "$TOKEN" ]
+    then
+        echo "Failed to login"
+        exit 0
+    else
+        #Adds program users 
+        for PROGRAM in "${PROGRAM_NAMES[@]}"; do
+            ADD_USER_PATH="$HOST:$APP_PORT/v1/add_user?username=${PROGRAM_USERNAMES[$PROGRAM]}&password=${PROGRAM_PASSWORDS[$PROGRAM]}&location=$LOCATION"
+            RESPONSE="$(sleep 2 && curl --location --request POST ${ADD_USER_PATH} --header "Authorization: ${TOKEN}")"
+        done
+
+        if [[ $SETUP_TYPE == 1 ]]; then 
+            #Adds DDE sync user
+            ADD_USER_PATH="$HOST:$APP_PORT/v1/add_user?username=${SYNC_USERNAME}&password=${SYNC_PASSWORD}&location=$LOCATION"
+            RESPONSE="$(sleep 2 && curl --location --request POST ${ADD_USER_PATH} --header "Authorization: ${TOKEN}")"
+        fi
+    fi
+}
+
+
+#When setup type is for adding programs, only add programs then exit
+if [[ $SETUP_TYPE == 2 ]]; then 
+    add_program_users
+    echo "Programs added successfully"
+    exit 0
 fi
 
 #Runs rails bundle install, creates database, migration and seed
@@ -294,30 +353,9 @@ rm ./${ENV}.rb
 # Updates crontab for DDE sync cron job
 whenever --set "environment=${ENV}" --update-crontab
 
-#Building path for login using DDE username and password
-LOGIN_PATH="$HOST:$APP_PORT/v1/login?username=$USERNAME&password=$PASSWORD"
 
-#Login Request Sent
-RESPONSE="$(sleep 5 && curl  --location --request POST $LOGIN_PATH)"
 
-#Fetchs token from response object
-TOKEN=`echo "$RESPONSE" | grep -o '"access_token":"[^"]*' | grep -o '[^"]*$'`
-
-if [ -z "$TOKEN" ]
-then
-    echo "Failed to login"
-    exit 0
-else
-    #Adds program users 
-    for PROGRAM in "${PROGRAM_NAMES[@]}"; do
-        ADD_USER_PATH="$HOST:$APP_PORT/v1/add_user?username=${PROGRAM_USERNAMES[$PROGRAM]}&password=${PROGRAM_PASSWORDS[$PROGRAM]}&location=$LOCATION"
-        RESPONSE="$(sleep 2 && curl --location --request POST ${ADD_USER_PATH} --header "Authorization: ${TOKEN}")"
-    done
-
-    #Adds DDE sync user
-    ADD_USER_PATH="$HOST:$APP_PORT/v1/add_user?username=${SYNC_USERNAME}&password=${SYNC_PASSWORD}&location=$LOCATION"
-    RESPONSE="$(sleep 2 && curl --location --request POST ${ADD_USER_PATH} --header "Authorization: ${TOKEN}")"
-fi
+add_program_users
 
 
 #Authentication with master
