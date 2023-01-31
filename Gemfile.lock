@@ -60,12 +60,7 @@ GEM
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
     erubi (1.10.0)
-    et-orbi (1.2.7)
-      tzinfo
     ffi (1.15.5)
-    fugit (1.5.3)
-      et-orbi (~> 1, >= 1.2.7)
-      raabro (~> 1.4)
     globalid (1.0.0)
       activesupport (>= 5.0)
     http-accept (1.7.0)
@@ -95,6 +90,7 @@ GEM
     mini_portile2 (2.6.1)
     minitest (5.15.0)
     msgpack (1.5.0)
+    multi_json (1.15.0)
     mysql2 (0.5.3)
     net-ping (2.0.8)
     netrc (0.11.0)
@@ -103,12 +99,9 @@ GEM
       mini_portile2 (~> 2.6.1)
       racc (~> 1.4)
     parallel (1.22.1)
-    pony (1.13.1)
-      mail (>= 2.0)
     public_suffix (4.0.6)
     puma (4.3.8)
       nio4r (~> 2.0)
-    raabro (1.4.0)
     racc (1.6.0)
     rack (2.2.3)
     rack-cors (1.1.1)
@@ -188,9 +181,6 @@ GEM
       connection_pool (>= 2.2.2)
       rack (~> 2.0)
       redis (>= 4.2.0)
-    sidekiq-cron (1.4.0)
-      fugit (~> 1)
-      sidekiq (>= 4.2.1)
     simple_command (0.1.0)
     spring (2.1.1)
     spring-watcher-listen (2.0.1)
@@ -229,10 +219,10 @@ DEPENDENCIES
   jwt
   kramdown
   listen
+  multi_json
   mysql2 (>= 0.4.4, < 0.6.0)
   net-ping
   parallel
-  pony
   puma (~> 4.3.8)
   rack-cors
   rails (~> 5.2.0)
@@ -243,7 +233,6 @@ DEPENDENCIES
   rspec-rails
   rswag
   sidekiq
-  sidekiq-cron
   simple_command
   spring
   spring-watcher-listen (~> 2.0.0)
