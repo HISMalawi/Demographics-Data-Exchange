@@ -54,7 +54,18 @@ Rails.application.configure do
   # config.active_job.queue_adapter     = :resque
   # config.active_job.queue_name_prefix = "Demographics-Data-Exchange_#{Rails.env}"
 
-  config.action_mailer.perform_caching = false
+    # SMTP Settings
+    config.action_mailer.smtp_settings = {
+      address:                 "smtp.office365.com",
+      port:                     587,
+      user_name:                ENV['DDE_EMAIL_ADDRESS'],
+      password:                 ENV['DDE_EMAIL_PASSWORD'],
+      authentication:           :login,
+      enable_starttls_auto:      true,
+      domain:                   "pedaids.org"
+    }
+
+  config.action_mailer.perform_caching = true
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
