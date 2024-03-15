@@ -65,9 +65,9 @@ production:
   :password: test
 
 :email_config:
-  :user_name: dde@pedaids.org #commcaredev@pedaids.org #fchiyenda@gmail.com
-  :password: '%%Jungle#Book-0909' #'%%Travel#Lakes-99' #yksqjrhscuqvdtam
-  :address: smtp.office365.com #smtp.gmail.com
+  :user_name: example@gmail.com
+  :password: password 
+  :address: smtp.gmail.com
   :port: 587
   :authentication: :login
   :enable_starttls_auto: true
