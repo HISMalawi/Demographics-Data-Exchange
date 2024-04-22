@@ -3,7 +3,7 @@
 #Initializing service constants
 MODE="production"
 SERVICE_NAME="dde4"
-RUBY="2.5.3"
+RUBY="3.2.0"
 PRODUCTION_DB="dde4_production"
 echo $'\e[1;33m'Welcome to DDE4 Service Setup$'\e[0m'
 read -sn1 -s -p "SELECT ACTION
@@ -244,7 +244,7 @@ if [[ $SETUP_TYPE == 2 ]]; then
 fi
 
 #Runs rails bundle install, creates database, migration and seed
-/bin/bash -lc "cd ${APP_DIR} && rvm use 2.5.3 && bundle install --local && RAILS_ENV=$MODE rails db:create db:migrate db:seed"
+/bin/bash -lc "cd ${APP_DIR} && rvm use 3.2.0 && bundle install --local && RAILS_ENV=$MODE rails db:create db:migrate db:seed"
 
 #Get number of CPU cores
 APP_CORE=$(grep -c processor /proc/cpuinfo)

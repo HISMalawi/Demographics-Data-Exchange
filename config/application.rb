@@ -33,7 +33,7 @@ module DemographicsDataExchange
     config.api_only = true
 
     #autoloads lib folder during production
-    config.eager_load_paths << Rails.root.join("lib")
+    #config.eager_load_paths << Rails.root.join("lib")
 
     #autoloads lib folder during development
     config.autoload_paths << Rails.root.join("lib")

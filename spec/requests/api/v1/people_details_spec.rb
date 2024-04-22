@@ -18,10 +18,74 @@ RSpec.describe "/api/v1/people_details", type: :request do
   # adjust the attributes here as well.
   let(:valid_attributes) {
     skip("Add a hash of attributes valid for your model")
+    {
+    "given_name": "Daudi",
+    "family_name": "Master",
+    "gender": "M",
+    "birthdate": "1975-01-01",
+    "birthdate_estimated": 0,
+    "attributes": {
+        "current_district": "Lilongwe City",
+        "current_traditional_authority": "Mgona near njanji,market divason's plot",
+        "current_village": "Mgona",
+        "home_district": "Dedza",
+        "home_village": "Matenje",
+        "home_traditional_authority": "Chauma",
+        "occupation": ""
+    },
+    "people_detail": {
+        "given_name": "Daudi",
+        "family_name": "Master",
+        "gender": "M",
+        "birthdate": "1975-01-01",
+        "birthdate_estimated": 0,
+        "attributes": {
+            "current_district": "Lilongwe City",
+            "current_traditional_authority": "Mgona near njanji,market divason's plot",
+            "current_village": "Mgona",
+            "home_district": "Dedza",
+            "home_village": "Matenje",
+            "home_traditional_authority": "Chauma",
+            "occupation": ""
+        }
+    }
+}
   }
 
   let(:invalid_attributes) {
     skip("Add a hash of attributes invalid for your model")
+    {
+    "given_name": "Daudi",
+    "family_name": "Master",
+    "gender": "M",
+    "birthdate": "1975-01-01",
+    "birthdate_estimated": 0,
+    "attributes": {
+        "current_district": "Lilongwe City",
+        "current_traditional_authority": "Mgona near njanji,market divason's plot",
+        "current_village": "Mgona",
+        "home_district": "Dedza",
+        "home_village": "Matenje",
+        "home_traditional_authority": "Chauma",
+        "occupation": ""
+    },
+    "people_detail": {
+        "given_name": "Daudi",
+        "family_name": "Master",
+        "gender": "M",
+        "birthdate": "1975-01-01",
+        "birthdate_estimated": 0,
+        "attributes": {
+            "current_district": "Lilongwe City",
+            "current_traditional_authority": "Mgona near njanji,market divason's plot",
+            "current_village": "Mgona",
+            "home_district": "Dedza",
+            "home_village": "Matenje",
+            "home_traditional_authority": "Chauma",
+            "occupation": ""
+        }
+    }
+}
   }
 
   # This should return the minimal set of values that should be in the headers
@@ -29,7 +93,7 @@ RSpec.describe "/api/v1/people_details", type: :request do
   # Api::V1::PeopleDetailsController, or in your router and rack
   # middleware. Be sure to keep this updated too.
   let(:valid_headers) {
-    {}
+    {Authorization: 'eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE2MzUyNTk0MzF9.I28efB3kDr7_jnyzfGL2GEfc5P6-GlSz2KS--OchnBA'}
   }
 
   describe "GET /index" do

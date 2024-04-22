@@ -1,6 +1,7 @@
 module SyncService
 
-  @batch = ActiveRecord::Base.configurations[:batch_size]['database'].to_i
+config = YAML.load_file('config/database.yml')
+@batch = config[:batch_size][:batch].to_i
 
 
   def self.person_changes_new(pull_params)
