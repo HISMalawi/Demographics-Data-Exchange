@@ -46,7 +46,7 @@ fi
 if [[ $ruby_version_manager  == 1 ]]; then
    version_manager_path="$( bash -lc 'which rbenv')"
    bundle_path="$(bash -lc 'which bundle')"
-   new_exec_start="'$version_manager_path local 3.2.0 && $bundle_path exec puma -C /var/www/dde4/config/server/production.rb'"
+   new_exec_start="/bin/bash -lc '$version_manager_path local 3.2.0 && $bundle_path exec puma -C /var/www/dde4/config/server/production.rb'"
 else
    new_exec_start="/bin/bash -lc 'rvm  use 3.2.0 && bundle exec puma -C /var/www/dde4/config/server/production.rb'"
 fi
