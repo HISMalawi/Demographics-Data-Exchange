@@ -13,61 +13,57 @@ read -sn1 -s -p "SELECT Ruby Version Manager to use
 
 # Then Check if the service is running on port 8050
 if lsof -Pi :$port_number -sTCP:LISTEN -t >/dev/null ; then
-# If the service is running, stop it
-echo "Stopping the service running on port 8050..."
-sudo systemctl stop dde4.service
+    # If the service is running, stop it
+    echo "Stopping the service running on port $port_number..."
+    sudo systemctl stop dde4.service
 else
-echo "No service found running on port 8050."
+    echo "No service found running on port $port_number."
 fi
 
 # Kill the process using port 8050
-echo "Killing the process using port 8050..."
-sudo fuser -k 8050/tcp
+echo "Killing the process using port $port_number..."
+sudo fuser -k $port_number/tcp
 
 # Remove the vendor folder and Gemfile.lock
 echo "Removing vendor folder and Gemfile.lock"
 sudo rm -rf vendor/bundle/ruby/2.5.3
 sudo rm -f Gemfile.lock
 
-#Run Bundle install
+# Run Bundle install
 echo "Running Bundle install ..."
 bundle install --local
 
-#Get the path of Puma, Ruby and ruby version manager
-puma_path="$( bash -lc 'which puma')"
-ruby_path="$( bash -lc 'which ruby')"
+# Get the path of Puma, Ruby, and ruby version manager
+puma_path="$(which puma)"
+ruby_path="$(which ruby)"
 
-if [ -z "$puma_path" ]
-then
-    puma_path="puma"
-fi
-
-
-if [[ $ruby_version_manager  == 1 ]]; then
-   version_manager_path="$( bash -lc 'which rbenv')"
-   bundle_path="$(bash -lc 'which bundle')"
-   new_exec_start="/bin/bash -lc '$version_manager_path local 3.2.0 && $bundle_path exec puma -C /var/www/dde4/config/server/production.rb'"
+if [[ $ruby_version_manager == 1 ]]; then
+    version_manager_path="$(which rbenv)"
+    bundle_path="$(which bundle)"
+    new_exec_start="/bin/bash -lc '$version_manager_path local 3.2.0 && $bundle_path exec puma -C /var/www/dde4/config/server/production.rb'"
 else
-   new_exec_start="/bin/bash -lc 'rvm  use 3.2.0 && bundle exec puma -C /var/www/dde4/config/server/production.rb'"
+    new_exec_start="/bin/bash -lc 'rvm use 3.2.0 && bundle exec puma -C /var/www/dde4/config/server/production.rb'"
 fi
 
+# Create the service file with the new ExecStart directive
+echo "Creating the new dde4.service file..."
+sudo tee /etc/systemd/system/dde4.service > /dev/null << EOF
+[Unit]
+Description=Puma HTTP Server
+After=network.target
 
+[Service]
+Type=simple
+User=egpaf
+WorkingDirectory=/var/www/dde4
+Environment=RAILS_ENV=production
+ExecStart=$new_exec_start
+Restart=always
+KillMode=process
 
-# Edit the ExecStart directive in the dde4.service file
-echo "Editing the ExecStart directive in dde4.service..."
-echo "Changing to Ruby 3.2.0"
-# Define the new ExecStart value
-#'/home/ubuntu/.rbenv/bin/rbenv local 3.2.0 && /home/ubuntu/.rbenv/shims/bundle exec puma -C /var/www/dde4/config/server/production.rb'
-
-
-
-# Commenting out all occurrences of ExecStart lines
-echo "Commenting out all occurrences of ExecStart lines in dde4.service..."
-sudo sed -i '/^ExecStart=/ s|^ExecStart=|#&|' /etc/systemd/system/dde4.service
-
-# Add the new ExecStart after commenting the old one
-sudo sed -i "/^#ExecStart=/ a ExecStart=$new_exec_start" /etc/systemd/system/dde4.service
- 
+[Install]
+WantedBy=multi-user.target
+EOF
 
 # Reload daemon
 echo "Now reloading the service..."
@@ -78,6 +74,3 @@ echo "Restarting the service"
 sudo systemctl restart dde4.service
 
 echo "Finished setting up!!"
-
- 
-
