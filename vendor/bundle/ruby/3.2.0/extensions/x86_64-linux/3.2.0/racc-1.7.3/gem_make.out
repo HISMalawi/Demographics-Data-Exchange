@@ -1,0 +1,18 @@
+current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/racc-1.7.3/ext/racc/cparse
+/usr/share/rvm/rubies/ruby-3.2.0/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/racc-1.7.3/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20240513-83194-xho1gk sitelibdir\=./.gem.20240513-83194-xho1gk clean
+
+current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/racc-1.7.3/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20240513-83194-xho1gk sitelibdir\=./.gem.20240513-83194-xho1gk
+compiling cparse.c
+linking shared-object racc/cparse.so
+
+current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/racc-1.7.3/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20240513-83194-xho1gk sitelibdir\=./.gem.20240513-83194-xho1gk install
+/usr/bin/install -m 0755 cparse.so ./.gem.20240513-83194-xho1gk/racc
+
+current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/racc-1.7.3/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20240513-83194-xho1gk sitelibdir\=./.gem.20240513-83194-xho1gk clean

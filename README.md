@@ -11,13 +11,17 @@ It was built by Baobab Health Trust.
 
 ##Requirements
 
-* Ruby 2.5.3
+* Ruby 3.2.0
 
-* Rails 5.2.0
+* Rails 7.0.8
 
-* MySQL 5.7
+* MySQL 8
+
+* Sidekiq 7.2.2
 
 ##Dependancies
+
+You should be using RVM.
 
 
 ##Setting Up
@@ -64,7 +68,7 @@ If existing runing on an existing database run
 * Run the following command in your terminal (Replace the PORT with the port dde will run on):
 
   ```bash
-    /bin/bash -lc 'cd /var/www/dde4/ && rvm use 2.5.3 && rails s -p PORT -b 0.0.0.0 -d'
+    /bin/bash -lc 'cd /var/www/dde4/ && rvm use 3.2.0 && rails s -p PORT -b 0.0.0.0 -d'
   ```
 
 And users to the application
@@ -106,7 +110,7 @@ And users to the application
   ```
   Add the following line to the crontab (Replace the PORT with the port dde will run on):
   ```bash
-  @reboot /bin/bash -lc 'cd /var/www/dde4/ && rvm use 2.5.3 && rails s -p PORT -b 0.0.0.0 -d'
+  @reboot /bin/bash -lc 'cd /var/www/dde4/ && rvm use 3.2.0 && rails s -p PORT -b 0.0.0.0 -d'
   ```
 
 
@@ -128,5 +132,5 @@ And users to the application
   ```
 5. Add the following line to the crontab (Replace the PORT with the port dde will run on):
   ```bash
-  @reboot /bin/bash -lc 'cd /var/www/dde4/ && rvm use 2.5.3 && rails s -p PORT -b 0.0.0.0 -d'
+  @reboot /bin/bash -lc 'cd /var/www/dde4/ && rvm use 3.2.0 && rails s -p PORT -b 0.0.0.0 -d'
   ```
