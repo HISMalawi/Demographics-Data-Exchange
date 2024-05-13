@@ -26,18 +26,19 @@ sudo fuser -k 8050/tcp
 
 # Remove the vendor folder and Gemfile.lock
 echo "Removing vendor folder and Gemfile.lock"
-sudo rm -rf vendor/
+sudo rm -rf vendor/bundle/ruby/2.5.3
 sudo rm -f Gemfile.lock
 
 #Run Bundle install
-echo "RUnning Bundle install ..."
-bundle install
+echo "Running Bundle install ..."
+bundle install --local
 
 #Get the path of Puma, Ruby and ruby version manager
 puma_path="$( bash -lc 'which puma')"
 ruby_path="$( bash -lc 'which ruby')"
 
-if [ -z "$puma_path"]; then
+if [ -z "$puma_path" ]
+then
     puma_path="puma"
 fi
 
@@ -45,9 +46,9 @@ fi
 if [[ $ruby_version_manager  == 1 ]]; then
    version_manager_path="$( bash -lc 'which rbenv')"
    bundle_path="$(bash -lc 'which bundle')"
-   new_exec_start="'$version_manager_path local 3.2.0 && $bundle_path exec $puma_path -C /var/www/dde4/config/server/production.rb'"
+   new_exec_start="'$version_manager_path local 3.2.0 && $bundle_path exec puma -C /var/www/dde4/config/server/production.rb'"
 else
-   new_exec_start="/bin/bash -lc 'rvm  use 3.2.0 && bundle exec $puma_path -C /var/www/dde4/config/server/production.rb'"
+   new_exec_start="/bin/bash -lc 'rvm  use 3.2.0 && bundle exec puma -C /var/www/dde4/config/server/production.rb'"
 fi
 
 
