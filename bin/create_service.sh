@@ -13,9 +13,15 @@ read -sn1 -s -p "SELECT ACTION
 
 if [[ $SETUP_TYPE == 1 ]]; then
     echo $'\e[1;33m'Initializing new DDE4 Service..$'\e[0m'
+    # Prompt user to select ruby version manager to use
+    read -sn1 -s -p "SELECT Ruby Version Manager to use
+    (1)Rbenv
+    (2)rvm
+    " ruby_version_manager
 else
     echo $'\e[1;33m'Initializing adding of programs to DDE4 service$'\e[0m'
 fi
+
 
 
 #Prompts entering of user details used for aunthentication
@@ -40,7 +46,7 @@ actions() {
     fi
 
     #Copying YAML files
-     echo $'\e[1;33m'Copying YAML files..$'\e[0m'
+    echo $'\e[1;33m'Copying YAML files..$'\e[0m'
     cp ${APP_DIR}/config/database.yml.example $APP_DIR/config/database.yml
     cp ${APP_DIR}/config/secrets.yml.example  $APP_DIR/config/secrets.yml
     cp ${APP_DIR}/config/storage.yml.example $APP_DIR/config/storage.yml
@@ -243,8 +249,23 @@ if [[ $SETUP_TYPE == 2 ]]; then
     exit 0
 fi
 
-#Runs rails bundle install, creates database, migration and seed
-/bin/bash -lc "cd ${APP_DIR} && rvm use 3.2.0 && bundle install --local && RAILS_ENV=$MODE rails db:create db:migrate db:seed"
+
+# Get the path of Puma, Ruby, and ruby version manager
+puma_path="$(which puma)"
+ruby_path="$(which ruby)"
+
+if [[ $ruby_version_manager == 1 ]]; then
+    version_manager_path="$(which rbenv)"
+    bundle_path="$(which bundle)"
+    new_exec_start="/bin/bash -lc '$version_manager_path local 3.2.0 && $bundle_path exec puma -C /var/www/dde4/config/puma.rb'"
+    /bin/bash -lc "cd ${APP_DIR} &&  $version_manager_path local 3.2.0 && bundle install --local && RAILS_ENV=$MODE rails db:create db:migrate db:seed"
+else
+    #Runs rails bundle install, creates database, migration and seed
+    /bin/bash -lc "cd ${APP_DIR} && rvm use 3.2.0 && bundle install --local && RAILS_ENV=$MODE rails db:create db:migrate db:seed"
+    new_exec_start="/bin/bash -lc 'rvm use 3.2.0 && bundle exec puma -C /var/www/dde4/config/puma.rb'"
+fi
+
+
 
 #Get number of CPU cores
 APP_CORE=$(grep -c processor /proc/cpuinfo)
@@ -265,6 +286,7 @@ fi
 
 ENV=$MODE
 
+
 #Stops and disables current DDE service
 if systemctl --all --type service | grep -q "${SERVICE_NAME}.service";then
     echo "stopping service"
@@ -274,6 +296,48 @@ if systemctl --all --type service | grep -q "${SERVICE_NAME}.service";then
 else
     echo "Setting up service"
 fi
+
+# Create the Puma configuration file
+echo "Writing puma configuration"
+
+cat <<EOL > $APP_DIR/config/puma.rb
+# Puma can serve each request in a thread from an internal thread pool.
+# The \`threads\` method setting takes two numbers: a minimum and maximum.
+# Any libraries that use thread pools should be configured to match
+# the maximum value specified for Puma. Default is set to 5 threads for minimum
+# and maximum; this matches the default thread size of Active Record.
+#
+threads_count = ENV.fetch("RAILS_MAX_THREADS") { 5 }
+threads threads_count, threads_count
+
+# Specifies the \`port\` that Puma will listen on to receive requests; default is 3000.
+#
+port        ENV.fetch("PORT") { ${APP_PORT} }
+
+# Specifies the \`environment\` that Puma will run in.
+#
+environment ENV.fetch("RAILS_ENV") { "${ENV}" }
+
+# Specifies the number of \`workers\` to boot in clustered mode.
+# Workers are forked webserver processes. If using threads and workers together
+# the concurrency of the application would be max \`threads\` * \`workers\`.
+# Workers do not work on JRuby or Windows (both of which do not support
+# processes).
+#
+# workers ENV.fetch("WEB_CONCURRENCY") { $APP_CORE  }
+
+# Use the \`preload_app!\` method when specifying a \`workers\` number.
+# This directive tells Puma to first boot the application and load code
+# before forking the application. This takes advantage of Copy On Write
+# process behavior so workers use less memory.
+#
+# preload_app!
+
+# Allow puma to be restarted by \`rails restart\` command.
+plugin :tmp_restart
+EOL
+
+echo "Puma configuration file created successfully"
 
 CURR_DIR=$(pwd)
 
@@ -291,7 +355,7 @@ WorkingDirectory=$APP_DIR
 
 Environment=RAILS_ENV=$ENV
 
-ExecStart=/bin/bash -lc 'rvm use ${RUBY} && bundle exec ${PUMA_DIR} -C ${APP_DIR}/config/server/${ENV}.rb'
+ExecStart=$new_exec_start
 
 Restart=always
 
@@ -301,42 +365,6 @@ KillMode=process
 WantedBy=multi-user.target" > ${SERVICE_NAME}.service
 
 sudo cp ./${SERVICE_NAME}.service /etc/systemd/system
-
-echo "Writing puma configuration"
-
-[ ! -d ${APP_DIR}/config/server ] && mkdir ${APP_DIR}/config/server
-
-echo "# Puma can serve each request in a thread from an internal thread pool.
-# The threads method setting takes two numbers: a minimum and maximum.
-# Any libraries that use thread pools should be configured to match
-# the maximum value specified for Puma. Default is set to 5 threads for minimum
-# and maximum; this matches the default thread size of Active Record.
-#
-threads_count = ENV.fetch('RAILS_MAX_THREADS') { $APP_CORE }
-threads 2, threads_count
-
-# Specifies the port that Puma will listen on to receive requests; default is 3000.
-#
-port        ENV.fetch('PORT') { $APP_PORT }
-
-# Specifies the environment that Puma will run in.
-#
-environment ENV.fetch('RAILS_ENV') { '$ENV' }
-
-# Specifies the number of workers to boot in clustered mode.
-workers ENV.fetch('WEB_CONCURRENCY') { $APP_CORE }
-
-# Use the preload_app! method when specifying a workers number.
-
-preload_app!
-
-# Allow puma to be restarted by rails restart command.
-plugin :tmp_restart
-
-rackup '${APP_DIR}/config.ru'" > ${ENV}.rb
-
-sudo cp ./${ENV}.rb ${APP_DIR}/config/server/
-
 
 echo "Firing the service up"
 
@@ -353,10 +381,7 @@ rm ./${ENV}.rb
 # Updates crontab for DDE sync cron job
 whenever --set "environment=${ENV}" --update-crontab
 
-
-
 add_program_users
-
 
 #Authentication with master
 LOGIN_PATH="http://$SYNC_HOST:$SYNC_PORT/v1/login?username=$USERNAME&password=$PASSWORD"
