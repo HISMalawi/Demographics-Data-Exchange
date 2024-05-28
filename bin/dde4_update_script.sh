@@ -42,7 +42,7 @@ if [[ $ruby_version_manager == 1 ]]; then
     bundle_path="$(which bundle)"
     new_exec_start="/bin/bash -lc '$version_manager_path local 3.2.0 && $bundle_path exec puma -C /var/www/dde4/config/server/production.rb'"
 else
-    new_exec_start="/bin/bash -lc 'rvm use 3.2.0 && bundle exec puma -C /var/www/dde4/config/server/production.rb'"
+    new_exec_start="/bin/bash -lc 'rvm use ruby-3.2.0 && bundle exec puma -C /var/www/dde4/config/server/production.rb'"
 fi
 
 # Create the service file with the new ExecStart directive
@@ -54,7 +54,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=egpaf
+User=meduser
 WorkingDirectory=/var/www/dde4
 Environment=RAILS_ENV=production
 ExecStart=$new_exec_start
