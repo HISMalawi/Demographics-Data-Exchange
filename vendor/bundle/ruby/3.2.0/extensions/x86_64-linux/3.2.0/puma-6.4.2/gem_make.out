@@ -14,18 +14,18 @@ checking for Random.bytes... yes
 creating Makefile
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/puma-6.4.2/ext/puma_http11
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-tbuit8 sitelibdir\=./.gem.20240513-83194-tbuit8 clean
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-1r8rgm sitelibdir\=./.gem.20240522-95712-1r8rgm clean
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/puma-6.4.2/ext/puma_http11
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-tbuit8 sitelibdir\=./.gem.20240513-83194-tbuit8
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-1r8rgm sitelibdir\=./.gem.20240522-95712-1r8rgm
 compiling http11_parser.c
 compiling mini_ssl.c
 compiling puma_http11.c
 linking shared-object puma/puma_http11.so
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/puma-6.4.2/ext/puma_http11
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-tbuit8 sitelibdir\=./.gem.20240513-83194-tbuit8 install
-/usr/bin/install -m 0755 puma_http11.so ./.gem.20240513-83194-tbuit8/puma
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-1r8rgm sitelibdir\=./.gem.20240522-95712-1r8rgm install
+/usr/bin/install -m 0755 puma_http11.so ./.gem.20240522-95712-1r8rgm/puma
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/puma-6.4.2/ext/puma_http11
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-tbuit8 sitelibdir\=./.gem.20240513-83194-tbuit8 clean
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-1r8rgm sitelibdir\=./.gem.20240522-95712-1r8rgm clean

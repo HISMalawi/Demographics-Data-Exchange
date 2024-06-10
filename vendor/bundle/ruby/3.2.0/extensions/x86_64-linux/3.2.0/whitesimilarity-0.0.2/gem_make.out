@@ -3,10 +3,10 @@ current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/whitesimilarity-0
 creating Makefile
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/whitesimilarity-0.0.2/ext/whitesimilarity
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-kvd2ul sitelibdir\=./.gem.20240513-83194-kvd2ul clean
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-ccrzzo sitelibdir\=./.gem.20240522-95712-ccrzzo clean
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/whitesimilarity-0.0.2/ext/whitesimilarity
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-kvd2ul sitelibdir\=./.gem.20240513-83194-kvd2ul
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-ccrzzo sitelibdir\=./.gem.20240522-95712-ccrzzo
 compiling white_similarity.c
 compiling whitesimilarity.c
 whitesimilarity.c: In function ‘Init_whitesimilarity’:
@@ -20,8 +20,8 @@ cc1: warning: unrecognized command line option ‘-Wno-constant-logical-operand�
 linking shared-object whitesimilarity.so
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/whitesimilarity-0.0.2/ext/whitesimilarity
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-kvd2ul sitelibdir\=./.gem.20240513-83194-kvd2ul install
-/usr/bin/install -m 0755 whitesimilarity.so ./.gem.20240513-83194-kvd2ul
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-ccrzzo sitelibdir\=./.gem.20240522-95712-ccrzzo install
+/usr/bin/install -m 0755 whitesimilarity.so ./.gem.20240522-95712-ccrzzo
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/whitesimilarity-0.0.2/ext/whitesimilarity
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-kvd2ul sitelibdir\=./.gem.20240513-83194-kvd2ul clean
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-ccrzzo sitelibdir\=./.gem.20240522-95712-ccrzzo clean

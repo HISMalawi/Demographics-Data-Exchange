@@ -32,10 +32,10 @@ Setting libpath to /usr/lib/x86_64-linux-gnu
 creating Makefile
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/mysql2-0.5.6/ext/mysql2
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-xw52dj sitelibdir\=./.gem.20240513-83194-xw52dj clean
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-hdd6qe sitelibdir\=./.gem.20240522-95712-hdd6qe clean
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/mysql2-0.5.6/ext/mysql2
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-xw52dj sitelibdir\=./.gem.20240513-83194-xw52dj
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-hdd6qe sitelibdir\=./.gem.20240522-95712-hdd6qe
 compiling client.c
 In file included from client.c:15:
 mysql_enc_name_to_ruby.h: In function ‘mysql2_mysql_enc_name_to_rb_hash’:
@@ -86,8 +86,8 @@ cc1: warning: unrecognized command line option ‘-Wno-constant-logical-operand�
 linking shared-object mysql2/mysql2.so
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/mysql2-0.5.6/ext/mysql2
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-xw52dj sitelibdir\=./.gem.20240513-83194-xw52dj install
-/usr/bin/install -m 0755 mysql2.so ./.gem.20240513-83194-xw52dj/mysql2
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-hdd6qe sitelibdir\=./.gem.20240522-95712-hdd6qe install
+/usr/bin/install -m 0755 mysql2.so ./.gem.20240522-95712-hdd6qe/mysql2
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/mysql2-0.5.6/ext/mysql2
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-xw52dj sitelibdir\=./.gem.20240513-83194-xw52dj clean
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-hdd6qe sitelibdir\=./.gem.20240522-95712-hdd6qe clean

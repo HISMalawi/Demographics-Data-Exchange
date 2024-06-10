@@ -10,10 +10,10 @@ creating extconf.h
 creating Makefile
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/ffi-1.16.3/ext/ffi_c
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-z9be9d sitelibdir\=./.gem.20240513-83194-z9be9d clean
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-px58nt sitelibdir\=./.gem.20240522-95712-px58nt clean
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/ffi-1.16.3/ext/ffi_c
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-z9be9d sitelibdir\=./.gem.20240513-83194-z9be9d
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-px58nt sitelibdir\=./.gem.20240522-95712-px58nt
 compiling AbstractMemory.c
 compiling ArrayType.c
 compiling Buffer.c
@@ -40,8 +40,8 @@ compiling ffi.c
 linking shared-object ffi_c.so
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/ffi-1.16.3/ext/ffi_c
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-z9be9d sitelibdir\=./.gem.20240513-83194-z9be9d install
-/usr/bin/install -m 0755 ffi_c.so ./.gem.20240513-83194-z9be9d
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-px58nt sitelibdir\=./.gem.20240522-95712-px58nt install
+/usr/bin/install -m 0755 ffi_c.so ./.gem.20240522-95712-px58nt
 
 current directory: /var/www/dde4/vendor/bundle/ruby/3.2.0/gems/ffi-1.16.3/ext/ffi_c
-make DESTDIR\= sitearchdir\=./.gem.20240513-83194-z9be9d sitelibdir\=./.gem.20240513-83194-z9be9d clean
+make DESTDIR\= sitearchdir\=./.gem.20240522-95712-px58nt sitelibdir\=./.gem.20240522-95712-px58nt clean
