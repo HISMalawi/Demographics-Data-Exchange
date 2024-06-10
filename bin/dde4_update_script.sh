@@ -1,7 +1,8 @@
 #!/bin/bash
 
 PRODUCTION_DB="dde4_production"
-
+SYNC_HOST="10.44.0.64"
+SYNC_PORT="9000"
 
 #Gets DDE directory entered or default 
 tput setaf 6; read -p "Enter DDE4 full path or press Enter to default to (/var/www/dde4): " APP_DIR
@@ -10,56 +11,59 @@ then
     APP_DIR="/var/www/dde4"
 fi
 
-# Prompt user for the port number
-read -p "Enter DDE port please : " port_number
-
 # Prompt user for the username
 read -p "Enter server username (e.g., meduser): " username
 
-# Prompt the user for enviroment and port
-read -p "Enter the environment (e.g., development, production): " environment
+# Prompt the user for environment and port
+read -p "Enter the environment (e.g., development, production) [default: production]: " environment
+read -p "Enter the port number [default: 8050]: " port_number
 
-environment=${environment:-development}
-port_number=${port_number:-3000}
+environment=${environment:-production}
+port_number=${port_number:-8050}
 
-# Prompt user to select ruby version manager to use
-read -sn1 -s -p "SELECT Ruby Version Manager to use
-(1)Rbenv
-(2)rvm" ruby_version_manager
+# Prompt user to select Ruby version manager to use
+echo -e "\nSELECT Ruby Version Manager to use"
+echo "1) Rbenv"
+echo "2) RVM"
+read -sn1 -s ruby_version_manager
 
-#Copying YAML files
-echo $'\e[1;33m'Copying Database YAML file..$'\e[0m'
+# Copying YAML files
+echo -e '\n\e[1;33mCopying Database YAML file..\e[0m'
 
-#Gets production database password and username    
-read -p "Production mysql username: " DDE_DB_USERNAME
-read -p "Production mysql password: " DDE_DB_PASSWORD
+# Backing up current database.yml file
+cp ${APP_DIR}/config/database.yml $APP_DIR/config/database.backup.yml
 
-#Gets SYNC with master configurations
-read -p "Enter site location identifier: " LOCATION
-read -p "Sync host: " SYNC_HOST
-read -p "Sync port: " SYNC_PORT
-read -p "Sync username: " SYNC_USERNAME
-read -p "Sync password: " SYNC_PASSWORD
+# Function to read a value from YAML file
+read_yaml() {
+    local section=$1
+    local key=$2
+    grep -A 10 "^${section}:" ${APP_DIR}/config/database.yml | grep "^  ${key}:" | awk '{print $2}'
+}
 
-SYNC_USERNAME="${SYNC_USERNAME}_${LOCATION}"
+# Read the production database username and password
+DDE_DB_USERNAME=$(read_yaml "production" "username")
+DDE_DB_PASSWORD=$(read_yaml "production" "password")
 
-# Copying  database.yml.example agan because formating was changed for ruby 3.2.0
+# Read the dde_sync_config username and password
+SYNC_USERNAME=$(read_yaml ":dde_sync_config" ":username")
+SYNC_PASSWORD=$(read_yaml ":dde_sync_config" ":password")
+
+# Copying database.yml.example again because formatting was changed for Ruby 3.2.0
 cp ${APP_DIR}/config/database.yml.example $APP_DIR/config/database.yml
 
-#Updates YAML file with new configurations
-echo $'\e[1;33m'Updating new configurations..$'\e[0m'
+# Updates YAML file with new configurations
+echo -e '\e[1;33mUpdating new configurations..\e[0m'
 sed -i -e "/^production:/,/database:/{/^\([[:space:]]*database: \).*/s//\1${PRODUCTION_DB}/}" \
-        -e "/^production:/,/username:/{/^\([[:space:]]*username: \).*/s//\1${DDE_DB_USERNAME}/}" \
-        -e "/^production:/,/password:/{/^\([[:space:]]*password: \).*/s//\1${DDE_DB_PASSWORD}/}" \
-        -e "/^:dde_sync_config:/,/:host:/{/^\([[:space:]]*:host: \).*/s//\1${SYNC_HOST}/}" \
-        -e "/^:dde_sync_config:/,/:port:/{/^\([[:space:]]*:port: \).*/s//\1${SYNC_PORT}/}" \
-        -e "/^:dde_sync_config:/,/:username:/{/^\([[:space:]]*:username: \).*/s//\1${SYNC_USERNAME}/}" \
-        -e "/^:dde_sync_config:/,/:password:/{/^\([[:space:]]*:password: \).*/s//\1${SYNC_PASSWORD}/}" \
-        ${APP_DIR}/config/database.yml
+    -e "/^production:/,/username:/{/^\([[:space:]]*username: \).*/s//\1${DDE_DB_USERNAME}/}" \
+    -e "/^production:/,/password:/{/^\([[:space:]]*password: \).*/s//\1${DDE_DB_PASSWORD}/}" \
+    -e "/^:dde_sync_config:/,/:host:/{/^\([[:space:]]*:host: \).*/s//\1${SYNC_HOST}/}" \
+    -e "/^:dde_sync_config:/,/:port:/{/^\([[:space:]]*:port: \).*/s//\1${SYNC_PORT}/}" \
+    -e "/^:dde_sync_config:/,/:username:/{/^\([[:space:]]*:username: \).*/s//\1${SYNC_USERNAME}/}" \
+    -e "/^:dde_sync_config:/,/:password:/{/^\([[:space:]]*:password: \).*/s//\1${SYNC_PASSWORD}/}" \
+    ${APP_DIR}/config/database.yml
 
-
-# Then Check if the service is running on port 8050
-if lsof -Pi :$port_number -sTCP:LISTEN -t >/dev/null ; then
+# Check if the service is running on port 8050
+if lsof -Pi :$port_number -sTCP:LISTEN -t >/dev/null; then
     # If the service is running, stop it
     echo "Stopping the service running on port $port_number..."
     sudo systemctl stop dde4.service
@@ -75,13 +79,12 @@ sudo fuser -k $port_number/tcp
 echo "Removing vendor folder and Gemfile.lock"
 sudo rm -rf vendor/bundle/ruby/2.5.3
 sudo rm -f Gemfile.lock
-sudo rm 
+
 # Run Bundle install
 echo "Running Bundle install ..."
 bundle install --local
 
-
-# Get the path of Puma, Ruby, and ruby version manager
+# Get the path of Puma, Ruby, and Ruby version manager
 puma_path="$(which puma)"
 ruby_path="$(which ruby)"
 
@@ -92,7 +95,6 @@ if [[ $ruby_version_manager == 1 ]]; then
 else
     new_exec_start="/bin/bash -lc 'rvm use 3.2.0 && bundle exec puma -C $APP_DIR/config/puma.rb'"
 fi
-
 
 # Create the Puma configuration file
 cat <<EOL > $APP_DIR/config/puma.rb
