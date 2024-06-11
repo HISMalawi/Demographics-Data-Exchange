@@ -1,9 +1,5 @@
 #!/bin/bash
 
-PRODUCTION_DB="dde4_production"
-SYNC_HOST="10.44.0.64"
-SYNC_PORT="9000"
-
 #Gets DDE directory entered or default 
 tput setaf 6; read -p "Enter DDE4 full path or press Enter to default to (/var/www/dde4): " APP_DIR
 if [ -z "$APP_DIR" ]
@@ -41,12 +37,16 @@ read_yaml() {
 }
 
 # Read the production database username and password
+PRODUCTION_DB=$(read_yaml "production" "database")
 DDE_DB_USERNAME=$(read_yaml "production" "username")
 DDE_DB_PASSWORD=$(read_yaml "production" "password")
 
 # Read the dde_sync_config username and password
 SYNC_USERNAME=$(read_yaml ":dde_sync_config" ":username")
 SYNC_PASSWORD=$(read_yaml ":dde_sync_config" ":password")
+SYNC_PROTOCOL=$(read_yaml ":dde_sync_config" ":protocol")
+SYNC_HOST=$(read_yaml ":dde_sync_config" ":host")
+SYNC_PORT=$(read_yaml ":dde_sync_config" ":port")
 
 # Copying database.yml.example again because formatting was changed for Ruby 3.2.0
 cp ${APP_DIR}/config/database.yml.example $APP_DIR/config/database.yml
@@ -56,6 +56,7 @@ echo -e '\e[1;33mUpdating new configurations..\e[0m'
 sed -i -e "/^production:/,/database:/{/^\([[:space:]]*database: \).*/s//\1${PRODUCTION_DB}/}" \
     -e "/^production:/,/username:/{/^\([[:space:]]*username: \).*/s//\1${DDE_DB_USERNAME}/}" \
     -e "/^production:/,/password:/{/^\([[:space:]]*password: \).*/s//\1${DDE_DB_PASSWORD}/}" \
+    -e "/^:dde_sync_config:/,/:protocol:/{/^\([[:space:]]*:protocol: \).*/s//\1${SYNC_PROTOCOL}/}" \
     -e "/^:dde_sync_config:/,/:host:/{/^\([[:space:]]*:host: \).*/s//\1${SYNC_HOST}/}" \
     -e "/^:dde_sync_config:/,/:port:/{/^\([[:space:]]*:port: \).*/s//\1${SYNC_PORT}/}" \
     -e "/^:dde_sync_config:/,/:username:/{/^\([[:space:]]*:username: \).*/s//\1${SYNC_USERNAME}/}" \
