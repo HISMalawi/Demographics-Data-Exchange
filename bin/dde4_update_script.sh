@@ -11,7 +11,6 @@ fi
 read -p "Enter server username (e.g., meduser): " username
 
 # Prompt the user for environment and port
-read -p "Enter the environment (e.g., development, production) [default: production]: " environment
 read -p "Enter the port number [default: 8050]: " port_number
 
 environment=${environment:-production}
