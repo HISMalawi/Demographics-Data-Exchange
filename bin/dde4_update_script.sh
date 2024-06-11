@@ -93,12 +93,12 @@ if [[ $ruby_version_manager == 1 ]]; then
     bundle_path="$(which bundle)"
     new_exec_start="/bin/bash -lc '$version_manager_path local 3.2.0 && $bundle_path exec puma -C $APP_DIR/config/puma.rb'"
 else
-    new_exec_start="/bin/bash -lc 'rvm use 3.2.0 && bundle exec puma -C $APP_DIR/config/puma.rb'"
+    new_exec_start="/bin/bash -lc 'rvm use ruby-3.2.0 && bundle exec puma -C $APP_DIR/config/puma.rb'"
 fi
 
 # Create the Puma configuration file
 cat <<EOL > $APP_DIR/config/puma.rb
-# Puma can serve each request in a thread from an internal thread pool.
+# Puma can serve each request in a thread from an internal thread pool..
 # The \`threads\` method setting takes two numbers: a minimum and maximum.
 # Any libraries that use thread pools should be configured to match
 # the maximum value specified for Puma. Default is set to 5 threads for minimum
@@ -147,6 +147,7 @@ After=network.target
 Type=simple
 User=$username
 WorkingDirectory=$APP_DIR
+
 Environment=RAILS_ENV=production
 ExecStart=$new_exec_start
 Restart=always
