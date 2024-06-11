@@ -7,14 +7,17 @@ then
     APP_DIR="/var/www/dde4"
 fi
 
-# Prompt user for the username
-read -p "Enter server username (e.g., meduser): " username
-
-# Prompt the user for environment and port
-read -p "Enter the port number [default: 8050]: " port_number
+username="$(whoami)"
 
 environment=${environment:-production}
-port_number=${port_number:-8050}
+
+# Check if the file exists and extract the port number
+if [ -f "$APP_DIR/config/server/production.rb" ]; then
+    port_number=$(grep  -rn 'port\s*ENV' "$APP_DIR/config/server/production.rb" | awk -F '[{}]' '{print $2}')
+elif [ -f "$APP_DIR/config/puma.rb" ]; then
+    port_number=$(grep  -rn 'port\s*ENV' "$APP_DIR/config/server/puma.rb" | awk -F '[{}]' '{print $2}')
+fi
+
 
 # Prompt user to select Ruby version manager to use
 echo -e "\nSELECT Ruby Version Manager to use"
@@ -62,14 +65,6 @@ sed -i -e "/^production:/,/database:/{/^\([[:space:]]*database: \).*/s//\1${PROD
     -e "/^:dde_sync_config:/,/:password:/{/^\([[:space:]]*:password: \).*/s//\1${SYNC_PASSWORD}/}" \
     ${APP_DIR}/config/database.yml
 
-# Check if the service is running on port 8050
-if lsof -Pi :$port_number -sTCP:LISTEN -t >/dev/null; then
-    # If the service is running, stop it
-    echo "Stopping the service running on port $port_number..."
-    sudo systemctl stop dde4.service
-else
-    echo "No service found running on port $port_number."
-fi
 
 # Kill the process using port 8050
 echo "Killing the process using port $port_number..."
@@ -96,6 +91,9 @@ else
     new_exec_start="/bin/bash -lc 'rvm use ruby-3.2.0 && bundle exec puma -C $APP_DIR/config/puma.rb'"
 fi
 
+# Calculate half of the total cores, rounding down
+cores=$(nproc)/2
+
 # Create the Puma configuration file
 cat <<EOL > $APP_DIR/config/puma.rb
 # Puma can serve each request in a thread from an internal thread pool..
@@ -109,7 +107,8 @@ threads threads_count, threads_count
 
 # Specifies the \`port\` that Puma will listen on to receive requests; default is 3000.
 #
-port        ENV.fetch("PORT") { ${port_number} }
+port ENV.fetch("PORT") { ${port_number} }
+
 
 # Specifies the \`environment\` that Puma will run in.
 #
@@ -121,7 +120,8 @@ environment ENV.fetch("RAILS_ENV") { "${environment}" }
 # Workers do not work on JRuby or Windows (both of which do not support
 # processes).
 #
-# workers ENV.fetch("WEB_CONCURRENCY") { 1 }
+
+workers ENV.fetch("WEB_CONCURRENCY") { $cores }
 
 # Use the \`preload_app!\` method when specifying a \`workers\` number.
 # This directive tells Puma to first boot the application and load code
