@@ -15,7 +15,7 @@ environment=${environment:-production}
 if [ -f "$APP_DIR/config/server/production.rb" ]; then
     port_number=$(grep  -rn 'port\s*ENV' "$APP_DIR/config/server/production.rb" | awk -F '[{}]' '{print $2}')
 elif [ -f "$APP_DIR/config/puma.rb" ]; then
-    port_number=$(grep  -rn 'port\s*ENV' "$APP_DIR/config/server/puma.rb" | awk -F '[{}]' '{print $2}')
+    port_number=$(grep  -rn 'port\s*ENV' "$APP_DIR/config/puma.rb" | awk -F '[{}]' '{print $2}')
 fi
 
 
