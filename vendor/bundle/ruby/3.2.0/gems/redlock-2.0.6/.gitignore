@@ -1,5 +1,0 @@
-*.gem
-coverage/
-.bundle/
-dump.rdb
-Gemfile.lock
