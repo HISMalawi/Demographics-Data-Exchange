@@ -1,6 +1,7 @@
 require 'rest-client'
+require 'yaml'
 
-sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"))[:dde_sync_config]
+sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"), aliases: true)[:dde_sync_config]
 
 @protocol = sync_configs[:protocol]
 @host = sync_configs[:host]
