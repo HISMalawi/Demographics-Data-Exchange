@@ -5,7 +5,6 @@ sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"), aliases
 
 @protocol = sync_configs[:protocol]
 @host = sync_configs[:host]
-@port = sync_configs[:port]
 @username = sync_configs[:username]
 @pwd = sync_configs[:password]
 @location = User.find_by_username(@username)['location_id'].to_i
@@ -28,13 +27,13 @@ def authorize
 end
 
 def authenticate
-    url = "#{@protocol}://#{@host}:#{@port}/v1/login?username=#{@username}&password=#{@pwd}"
+    url = "#{@protocol}://#{@host}/v1/login?username=#{@username}&password=#{@pwd}"
 
     token = JSON.parse(RestClient.post(url,headers={}))['access_token']
 end
 
 def token_valid(token)
-  url = "#{@protocol}://#{@host}:#{@port}/v1/verify_token"
+  url = "#{@protocol}://#{@host}/v1/verify_token"
 
   begin
     response = RestClient.post(url,{'token' => token}.to_json, {content_type: :json, accept: :json})
@@ -51,7 +50,7 @@ end
 
 def pull_new_records
   pull_seq = Config.find_by_config('pull_seq_new')['config_value'].to_i
-  url = "#{@protocol}://#{@host}:#{@port}/v1/person_changes_new?site_id=#{@location}&pull_seq=#{pull_seq}"
+  url = "#{@protocol}://#{@host}/v1/person_changes_new?site_id=#{@location}&pull_seq=#{pull_seq}"
 
   updates = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
 
@@ -79,7 +78,7 @@ end
 
 def pull_updated_records
   pull_seq = Config.find_by_config('pull_seq_update')['config_value'].to_i
-  url = "#{@protocol}://#{@host}:#{@port}/v1/person_changes_updates?site_id=#{@location}&pull_seq=#{pull_seq}"
+  url = "#{@protocol}://#{@host}/v1/person_changes_updates?site_id=#{@location}&pull_seq=#{pull_seq}"
 
   updates = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
 
@@ -109,7 +108,7 @@ end
 
 def pull_npids
   npid_seq = Config.find_by_config('npid_seq')['config_value'].to_i
-  url = "#{@protocol}://#{@host}:#{@port}/v1/pull_npids?site_id=#{@location}&npid_seq=#{npid_seq}"
+  url = "#{@protocol}://#{@host}/v1/pull_npids?site_id=#{@location}&npid_seq=#{npid_seq}"
 
   npids = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
 
@@ -128,7 +127,7 @@ end
 
 
 def push_records_new
-  url = "#{@protocol}://#{@host}:#{@port}/v1/push_changes_new"
+  url = "#{@protocol}://#{@host}/v1/push_changes_new"
 
 	push_seq = Config.find_by_config('push_seq_new')['config_value'].to_i
 
@@ -149,7 +148,7 @@ def push_records_new
 end
 
 def push_records_updates
-  url = "#{@protocol}://#{@host}:#{@port}/v1/push_changes_updates"
+  url = "#{@protocol}://#{@host}/v1/push_changes_updates"
 
   push_seq = Config.find_by_config('push_seq_update')['config_value'].to_i
 
@@ -205,7 +204,7 @@ def format_payload(person)
 end
 
 def push_footprints
-  url = "#{@protocol}://#{@host}:#{@port}/v1/push_footprints"
+  url = "#{@protocol}://#{@host}/v1/push_footprints"
 
   footprints = FootPrint.where(synced: false)
 
