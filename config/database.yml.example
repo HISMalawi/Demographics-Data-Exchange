@@ -59,8 +59,7 @@ production:
 
 :dde_sync_config:
   :protocol: https
-  :host: 10.44.0.48
-  :port: 3002
+  :host: ddedashboard.hismalawi.org
   :username: test
   :password: test
 
