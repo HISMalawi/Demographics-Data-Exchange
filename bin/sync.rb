@@ -217,7 +217,7 @@ end
 
 
 def main
-  if File.exists?("/tmp/dde_sync.lock")
+  if File.exist?("/tmp/dde_sync.lock")
     puts 'Another process running!'
     exit
   else
@@ -232,7 +232,7 @@ def main
    push_footprints
    pull_npids
   ensure
-    if File.exists?("/tmp/dde_sync.lock")
+    if File.exist?("/tmp/dde_sync.lock")
       FileUtils.rm "/tmp/dde_sync.lock"
     end
   end
