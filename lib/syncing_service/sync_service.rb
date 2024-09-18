@@ -1,6 +1,6 @@
 module SyncService
 
-config = YAML.load_file('config/database.yml')
+config = YAML.load_file('config/database.yml', aliases: true)
 @batch = config[:batch_size][:batch].to_i
 
 

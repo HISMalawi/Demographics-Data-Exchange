@@ -28,6 +28,27 @@ You should be using RVM.
 
 ### DDE Proxy
 
+The EASY way setup (Make sure there is a runnig Master)
+
+
+* Open your terminal
+
+* Clone DDE Application from github.
+  ```bash
+    git clone git@github.com:HISMalawi/Demographics-Data-Exchange.git dde4
+  ```
+  
+* Enter into the root of your application by typing 
+  ```bash
+    cd dde4
+  ```
+* Run the following command and Answer the questions asked.
+  ```bash
+    rails r bin/setup_dde_proxy_service.rb
+  ```
+
+The developer way:
+
 * Open your terminal
 
 * Clone DDE Application from github.
