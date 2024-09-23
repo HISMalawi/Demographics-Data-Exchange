@@ -19,6 +19,8 @@ It was built by Baobab Health Trust.
 
 * Sidekiq 7.2.2
 
+* Redis Server
+
 ##Dependancies
 
 You should be using RVM.
