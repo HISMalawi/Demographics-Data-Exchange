@@ -4,3 +4,12 @@
 - location_npid
 - npid_pool
 - email_notifications
+- sync
+
+:scheduler:
+  :schedule:
+    sync_job:
+      cron: "*/1 * * * *"      # Runs every 5 minutes
+      class: "SyncJob"         # The job class to execute
+      queue: default           # (Optional) Specify the queue
+      description: "Runs SyncJob every 5 minutes"
