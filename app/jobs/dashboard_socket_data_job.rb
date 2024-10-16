@@ -5,7 +5,7 @@ class DashboardSocketDataJob < ApplicationJob
     # Do something later
     npid_balance = DashboardStat.where(:name => "npid_balance")
     location_npid_balance = DashboardStat.where(:name => "location_npid_balance")
-    dashboard_stats = DashboardStat.where(:name => "dashboard_stats")
+    dashboard_stats = DashboardStat.find_or_create_by(name: "dashboard_stats")
 
     dash_data = {
       connected_state: DashboardService.connected_sites,
