@@ -23,6 +23,6 @@ class DashboardSocketDataJob < ApplicationJob
 
     dashboard_stats.update(value: dash_data)
 
-    ActionCable.server.broadcast('dashboard_channel', message: dash_data)
+    ActionCable.server.broadcast('dashboard_channel', {message: dash_data})
   end
 end
