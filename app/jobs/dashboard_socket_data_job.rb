@@ -5,7 +5,9 @@ class DashboardSocketDataJob < ApplicationJob
     # Do something later
     npid_balance = DashboardStat.where(:name => "npid_balance")
     location_npid_balance = DashboardStat.where(:name => "location_npid_balance")
-    dashboard_stats = DashboardStat.where(:name => "dashboard_stats")
+    dashboard_stats = DashboardStat.find_or_create_by(name: "dashboard_stats") do |stat|
+      stat.value = {}
+    end
 
     dash_data = {
       connected_state: DashboardService.connected_sites,
@@ -21,6 +23,6 @@ class DashboardSocketDataJob < ApplicationJob
 
     dashboard_stats.update(value: dash_data)
 
-    ActionCable.server.broadcast('dashboard_channel', message: dash_data)
+    ActionCable.server.broadcast('dashboard_channel', {message: dash_data})
   end
 end

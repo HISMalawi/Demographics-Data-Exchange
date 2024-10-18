@@ -16,11 +16,11 @@ class ApplicationController < ActionController::API
 	end
 
 	def update_socket_dashboard
-	   	DashboardSocketDataJob.perform_later('refresh_dashbaord')
+	   	DashboardSocketDataJob.perform_later
 	end
 
 	def update_location_npids
-	  LocationNpidJob.perform_later('refresh_location_npids')
+	  LocationNpidJob.perform_later
 	end
 end
 
