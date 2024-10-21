@@ -257,7 +257,7 @@ ruby_path="$(which ruby)"
 if [[ $ruby_version_manager == 1 ]]; then
     version_manager_path="$(which rbenv)"
     bundle_path="$(which bundle)"
-    new_exec_start="/bin/bash -lc '$version_manager_path local 3.2.0 && $bundle_path exec puma -C /var/www/dde4/config/puma.rb'"
+    new_exec_start="/bin/bash -lc '$version_manager_path local 3.2.0 && $bundle_path exec puma -C  $APP_DIR/config/puma.rb'"
     /bin/bash -lc "cd ${APP_DIR} &&  $version_manager_path local 3.2.0 && bundle install --local && RAILS_ENV=$MODE rails db:create db:migrate db:seed"
 else
     #Runs rails bundle install, creates database, migration and seed
