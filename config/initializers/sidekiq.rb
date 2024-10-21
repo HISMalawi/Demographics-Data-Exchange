@@ -1,8 +1,30 @@
-# config/initializers/sidekiq.rb
 require 'redis'
+require 'yaml'
 
-redis = Redis.new(url: 'redis://localhost:6379/0') # Start with db 0
+# Load sidekiq.yml config
+def load_sidekiq_config
+  YAML.load_file(Rails.root.join('config', 'sidekiq.yml'))
+end
 
+# Save the Redis DB choice to sidekiq.yml
+def store_db_choice(db)
+  config = load_sidekiq_config
+  config[:redis][:url] = "redis://localhost:6379/#{db}"
+  
+  File.open(Rails.root.join('config', 'sidekiq.yml'), 'w') do |f|
+    f.write(config.to_yaml)
+  end
+end
+
+# Read Redis DB choice from sidekiq.yml
+def read_db_choice
+  config = load_sidekiq_config
+  config[:redis][:url].match(/redis:\/\/localhost:6379\/(\d+)/)[1].to_i
+rescue
+  nil
+end
+
+# Find the first available Redis DB
 def find_free_redis_db(redis_client, max_db = 15)
   (0..max_db).each do |db|
     redis_client.select(db)
@@ -12,21 +34,20 @@ def find_free_redis_db(redis_client, max_db = 15)
   raise "No free Redis databases available."
 end
 
-free_db = find_free_redis_db(redis)
+redis = Redis.new(url: 'redis://localhost:6379/0')
+free_db = read_db_choice || find_free_redis_db(redis)
+
+# Store the selected DB back in the sidekiq.yml file
+store_db_choice(free_db)
 
 Sidekiq.configure_server do |config|
-    config.on(:startup) do
-      Sidekiq::Scheduler.reload_schedule!
-    end
-
-    config.redis = { db: free_db, url: "redis://localhost:6379/#{free_db}" }
+  config.redis = { url: "redis://localhost:6379/#{free_db}" }
 end
 
 Sidekiq.configure_client do |config|
-    config.redis = { db: free_db, url: "redis://localhost:6379/#{free_db}" }
+  config.redis = { url: "redis://localhost:6379/#{free_db}" }
 end
-  
+
 Rails.application.configure do
-    config.active_job.queue_adapter = :sidekiq
+  config.active_job.queue_adapter = :sidekiq
 end
-  
