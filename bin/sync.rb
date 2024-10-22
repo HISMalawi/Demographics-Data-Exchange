@@ -10,6 +10,13 @@ sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"), aliases
 @location = User.find_by_username(@username)['location_id'].to_i
 @token = ''
 
+@port  = sync_configs[:port]
+
+if @port.nil?
+  @base_url = "#{@protocol}://#{@host}/v1"
+else
+  @base_url = "#{@protocol}://#{@host}:#{@port}/v1"
+end
 
 def authorize
   if File.exist?("#{Rails.root}/tmp/token.json")
@@ -27,13 +34,13 @@ def authorize
 end
 
 def authenticate
-    url = "#{@protocol}://#{@host}/v1/login?username=#{@username}&password=#{@pwd}"
+  url = "#{@base_url}/login?username=#{@username}&password=#{@pwd}"
 
-    token = JSON.parse(RestClient.post(url,headers={}))['access_token']
+  token = JSON.parse(RestClient.post(url,headers={}))['access_token']
 end
 
 def token_valid(token)
-  url = "#{@protocol}://#{@host}/v1/verify_token"
+  url = "#{@base_url}/verify_token"
 
   begin
     response = RestClient.post(url,{'token' => token}.to_json, {content_type: :json, accept: :json})
@@ -42,43 +49,43 @@ def token_valid(token)
   end
 
   if response.code == 200
-  	return true
+    return true
   else
-  	return false
+    return false
   end
 end
 
 def pull_new_records
   pull_seq = Config.find_by_config('pull_seq_new')['config_value'].to_i
-  url = "#{@protocol}://#{@host}/v1/person_changes_new?site_id=#{@location}&pull_seq=#{pull_seq}"
+  url = "#{@base_url}/person_changes_new?site_id=#{@location}&pull_seq=#{pull_seq}"
 
   updates = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
 
   updates.each do |record|
-  	person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
+    person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
     pull_seq = record['id'].to_i
     record.delete('id')
     record.delete('created_at')
     record.delete('updated_at')
     ActiveRecord::Base.transaction do
-    	if person.blank?
+      if person.blank?
         PersonDetail.create!(record)
-    	else
+      else
           person.update(record)
           audit_record = JSON.parse(person.to_json)
           audit_record.delete('id')
           audit_record.delete('created_at')
           audit_record.delete('updated_at')
           PersonDetailsAudit.create!(audit_record)
-    	end
-  	  Config.where(config: 'pull_seq_new').update(config_value: pull_seq)
+      end
+      Config.where(config: 'pull_seq_new').update(config_value: pull_seq)
     end
   end
 end
 
 def pull_updated_records
   pull_seq = Config.find_by_config('pull_seq_update')['config_value'].to_i
-  url = "#{@protocol}://#{@host}/v1/person_changes_updates?site_id=#{@location}&pull_seq=#{pull_seq}"
+  url = "#{@base_url}/person_changes_updates?site_id=#{@location}&pull_seq=#{pull_seq}"
 
   updates = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
 
@@ -108,7 +115,7 @@ end
 
 def pull_npids
   npid_seq = Config.find_by_config('npid_seq')['config_value'].to_i
-  url = "#{@protocol}://#{@host}/v1/pull_npids?site_id=#{@location}&npid_seq=#{npid_seq}"
+  url = "#{@base_url}/pull_npids?site_id=#{@location}&npid_seq=#{npid_seq}"
 
   npids = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
 
@@ -125,11 +132,10 @@ def pull_npids
   end
 end
 
-
 def push_records_new
-  url = "#{@protocol}://#{@host}/v1/push_changes_new"
+  url = "#{@base_url}/push_changes_new"
 
-	push_seq = Config.find_by_config('push_seq_new')['config_value'].to_i
+  push_seq = Config.find_by_config('push_seq_new')['config_value'].to_i
 
   records_to_push = PersonDetail.unscoped.where('person_details.id > ? AND person_details.location_updated_at = ?', push_seq,@location).order(:id).limit(100)
 
@@ -204,7 +210,7 @@ def format_payload(person)
 end
 
 def push_footprints
-  url = "#{@protocol}://#{@host}/v1/push_footprints"
+  url = "#{@base_url}/push_footprints"
 
   footprints = FootPrint.where(synced: false)
 
@@ -213,7 +219,6 @@ def push_footprints
      foot.update(synced: true) if response.code == 201
   end
 end
-
 
 def main
   if File.exist?("/tmp/dde_sync.lock")
