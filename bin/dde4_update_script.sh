@@ -60,6 +60,9 @@ sed -i -e "/^production:/,/database:/{/^\([[:space:]]*database: \).*/s//\1${PROD
     ${APP_DIR}/config/database.yml
 
 
+cp ${APP_DIR}/config/sidekiq.yml.example $APP_DIR/config/sidekiq.yml
+cp ${APP_DIR}/config/schedule.yml.example $APP_DIR/config/schedule.yml
+
 # Kill the process using port 8050
 echo "Killing the process using port $port_number..."
 sudo fuser -k $port_number/tcp
