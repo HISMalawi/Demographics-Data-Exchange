@@ -5,7 +5,8 @@ ruby '3.2.0'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'multi_json'
-gem 'sidekiq'
+gem 'sidekiq', '~> 7.3.0'
+gem 'sidekiq-cron'
 gem 'activejob-uniqueness'
 gem 'activerecord-import'
 gem 'whenever', require: false
@@ -69,5 +70,3 @@ end
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
-
-gem 'sidekiq-scheduler'
