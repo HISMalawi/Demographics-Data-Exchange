@@ -4,3 +4,7 @@
 - location_npid
 - npid_pool
 - email_notifications
+- sync
+
+:redis:
+  url: 'redis://localhost:6379/%{redis_db}'
