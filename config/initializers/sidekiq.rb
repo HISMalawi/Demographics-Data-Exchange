@@ -36,11 +36,41 @@ def find_free_redis_db(redis_client, max_db = 15)
   raise "No free Redis databases available."
 end
 
+def store_master_schedule_config
+  schedule_file = Rails.root.join('config', 'schedule.yml')
+
+    if File.exist?(schedule_file)
+      config = YAML.load_file(schedule_file)
+
+      unless config.key?('dashboard_socket')
+        config['dashboard_socket'] = {
+            'cron' => '0 0 * * *',
+            'class' => 'DashboardSocketDataJob',
+            'queue' => 'default',
+            'description' => 'Refreshes dashboard details'
+          }
+
+           
+        File.open(Rails.root.join('config', 'schedule.yml'), 'w') do |f|
+          f.write(config.to_yaml)
+        end
+      end
+    else
+      Rails.logger.warn "Schedule file not found at #{schedule_file}"
+      {}
+    end
+end
+
 redis = Redis.new(url: 'redis://localhost:6379/0')
 free_db = read_db_choice || find_free_redis_db(redis)
 
 # Store the selected DB back in the sidekiq.yml file
 store_db_choice(free_db)
+
+if true #ENV['MASTER'] == 'true'
+  store_master_schedule_config
+end
+
 
 Sidekiq.configure_server do |config|
   config.redis = { url: "redis://localhost:6379/#{free_db}" }
