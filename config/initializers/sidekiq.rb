@@ -67,7 +67,7 @@ free_db = read_db_choice || find_free_redis_db(redis)
 # Store the selected DB back in the sidekiq.yml file
 store_db_choice(free_db)
 
-if true #ENV['MASTER'] == 'true'
+if ENV['MASTER'] == 'true'
   store_master_schedule_config
 end
 
