@@ -7,4 +7,4 @@
 - sync
 
 :redis:
-  url: 'redis://localhost:6379/%{redis_db}'
+  :url: 'redis://localhost:6379/%{redis_db}'
