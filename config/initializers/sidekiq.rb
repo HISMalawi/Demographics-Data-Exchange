@@ -67,10 +67,9 @@ free_db = read_db_choice || find_free_redis_db(redis)
 # Store the selected DB back in the sidekiq.yml file
 store_db_choice(free_db)
 
-if ENV['MASTER'] == 'true'
+if ActiveRecord::Base.connection.data_source_exists?('npids')
   store_master_schedule_config
 end
-
 
 Sidekiq.configure_server do |config|
   config.redis = { url: "redis://localhost:6379/#{free_db}" }
