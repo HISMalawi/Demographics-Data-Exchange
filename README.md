@@ -46,7 +46,7 @@ The EASY way setup (Make sure there is a running Master)
   ```
 * Run the following command and Answer the questions asked.
   ```bash
-    rails r bin/setup_dde_proxy_service.rb
+    ./bin/setup_dde_proxy_service.rb
   ```
 
 The developer way:
@@ -67,6 +67,8 @@ The developer way:
   ```bash
     cp config/database.yml.example config/database.yml
     cp config/secrets.yml.example config/secrets.yml
+    cp config/schedule.yml.example config/schedule.yml
+    cp config/sidekiq.yml.example config/sidekiq.yml
   ```
   
 * Configure your MySQL database in config/database.yml file respectively.
@@ -142,16 +144,6 @@ And users to the application
         ```
     3 -> Add the users to the dde_sync_config in the config/database.yml file
          Use the same process in 2 to create a user on the master and also a user on the master make sure they have the same attributes i.e username, password and location
-* Set sync cronjob 
-
-    ```bash
-    whenever --set 'environment=development' --update-crontab
-    ```
-* Setup cronjob to start DDE using
-  ```bash
-  crontab -e
-  ```
-
 
 ###Setting up DDE Master
 
@@ -169,4 +161,4 @@ This will create the npids table which you can populate with your preferred uniq
 
 Voila! you got it.
 
-Additions to this README are most welcome we want to make the process a painless as possible.
+Additions to this README are most welcome we want to make the process as painless as possible.
