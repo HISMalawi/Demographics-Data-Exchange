@@ -169,4 +169,4 @@ This will create the npids table which you can populate with your preferred uniq
 
 Voila! you got it.
 
-Additions to this README are most welcome we want to make the process a painless as possible.
+Additions to this README are most welcome we want to make the process as painless as possible.
