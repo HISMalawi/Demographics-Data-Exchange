@@ -1,10 +1,10 @@
 require 'swagger_helper'
 
-RSpec.describe 'api/v1/people_details', type: :request do
+RSpec.describe 'api/v1/sync', type: :request do
 
-  path '/v1/add_person' do
+  path '/v1/person_changes_new' do
 
-    post('create people_detail') do
+    get('pull_updates_new sync') do
       response(200, 'successful') do
 
         after do |example|
@@ -19,9 +19,9 @@ RSpec.describe 'api/v1/people_details', type: :request do
     end
   end
 
-  path '/v1/search_by_name_and_gender' do
+  path '/v1/person_changes_updates' do
 
-    post('search_by_name_and_gender people_detail') do
+    get('pull_updates sync') do
       response(200, 'successful') do
 
         after do |example|
@@ -36,9 +36,9 @@ RSpec.describe 'api/v1/people_details', type: :request do
     end
   end
 
-  path '/v1/search_by_npid' do
+  path '/v1/push_changes_new' do
 
-    post('search_by_npid people_detail') do
+    post('pushed_updates_new sync') do
       response(200, 'successful') do
 
         after do |example|
@@ -53,9 +53,9 @@ RSpec.describe 'api/v1/people_details', type: :request do
     end
   end
 
-  path '/v1/search_by_doc_id' do
+  path '/v1/push_changes_updates' do
 
-    post('search_by_doc_id people_detail') do
+    post('pushed_updates sync') do
       response(200, 'successful') do
 
         after do |example|
@@ -70,9 +70,9 @@ RSpec.describe 'api/v1/people_details', type: :request do
     end
   end
 
-  path '/v1/merge_people' do
+  path '/v1/push_footprints' do
 
-    post('merge_people people_detail') do
+    post('pushed_footprints sync') do
       response(200, 'successful') do
 
         after do |example|
@@ -87,46 +87,9 @@ RSpec.describe 'api/v1/people_details', type: :request do
     end
   end
 
-  path '/v1/update_person' do
+  path '/v1/pull_npids' do
 
-    post('update_person people_detail') do
-      response(200, 'successful') do
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
-        run_test!
-      end
-    end
-  end
-
-  path '/v1/void_person/{person_uuid}' do
-    # You'll want to customize the parameter types...
-    parameter name: 'person_uuid', in: :path, type: :string, description: 'person_uuid'
-
-    delete('void people_detail') do
-      response(200, 'successful') do
-        let(:person_uuid) { '123' }
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
-        run_test!
-      end
-    end
-  end
-
-  path '/v1/reassign_npid' do
-
-    post('reassign_npid people_detail') do
+    get('pull_npids sync') do
       response(200, 'successful') do
 
         after do |example|

@@ -3,9 +3,221 @@ openapi: 3.0.1
 info:
   title: API V1
   version: v1
-paths: {}
+paths:
+  "/api/v1/merge":
+    get:
+      summary: list merges
+      responses:
+        '200':
+          description: successful
+    post:
+      summary: create merge
+      responses:
+        '200':
+          description: successful
+  "/api/v1/merge/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: id
+      required: true
+      schema:
+        type: string
+    get:
+      summary: show merge
+      responses:
+        '200':
+          description: successful
+    patch:
+      summary: update merge
+      responses:
+        '200':
+          description: successful
+    put:
+      summary: update merge
+      responses:
+        '200':
+          description: successful
+    delete:
+      summary: delete merge
+      responses:
+        '200':
+          description: successful
+  "/v1/merge_people":
+    post:
+      summary: merge_people people_detail
+      responses:
+        '200':
+          description: successful
+  "/v1/rollback_merge":
+    post:
+      summary: rollback_merge merge
+      responses:
+        '200':
+          description: successful
+  "/v1/add_person":
+    post:
+      summary: create people_detail
+      responses:
+        '200':
+          description: successful
+  "/v1/search_by_name_and_gender":
+    post:
+      summary: search_by_name_and_gender people_detail
+      responses:
+        '200':
+          description: successful
+  "/v1/search_by_npid":
+    post:
+      summary: search_by_npid people_detail
+      responses:
+        '200':
+          description: successful
+  "/v1/search_by_doc_id":
+    post:
+      summary: search_by_doc_id people_detail
+      responses:
+        '200':
+          description: successful
+  "/v1/update_person":
+    post:
+      summary: update_person people_detail
+      responses:
+        '200':
+          description: successful
+  "/v1/void_person/{person_uuid}":
+    parameters:
+    - name: person_uuid
+      in: path
+      description: person_uuid
+      required: true
+      schema:
+        type: string
+    delete:
+      summary: void people_detail
+      responses:
+        '200':
+          description: successful
+  "/v1/reassign_npid":
+    post:
+      summary: reassign_npid people_detail
+      responses:
+        '200':
+          description: successful
+  "/v1/search/people":
+    post:
+      summary: get people_match
+      responses:
+        '200':
+          description: successful
+  "/v1/person_changes_new":
+    get:
+      summary: pull_updates_new sync
+      responses:
+        '200':
+          description: successful
+  "/v1/person_changes_updates":
+    get:
+      summary: pull_updates sync
+      responses:
+        '200':
+          description: successful
+  "/v1/push_changes_new":
+    post:
+      summary: pushed_updates_new sync
+      responses:
+        '200':
+          description: successful
+  "/v1/push_changes_updates":
+    post:
+      summary: pushed_updates sync
+      responses:
+        '200':
+          description: successful
+  "/v1/push_footprints":
+    post:
+      summary: pushed_footprints sync
+      responses:
+        '200':
+          description: successful
+  "/v1/pull_npids":
+    get:
+      summary: pull_npids sync
+      responses:
+        '200':
+          description: successful
+  "/api/v1/user":
+    get:
+      summary: list users
+      responses:
+        '200':
+          description: successful
+    post:
+      summary: create user
+      responses:
+        '200':
+          description: successful
+  "/api/v1/user/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: id
+      required: true
+      schema:
+        type: string
+    get:
+      summary: show user
+      responses:
+        '200':
+          description: successful
+    patch:
+      summary: update user
+      responses:
+        '200':
+          description: successful
+    put:
+      summary: update user
+      responses:
+        '200':
+          description: successful
+    delete:
+      summary: delete user
+      responses:
+        '200':
+          description: successful
+  "/v1/register":
+    post:
+      summary: register user
+      responses:
+        '200':
+          description: successful
+  "/v1/login":
+    post:
+      summary: login user
+      parameters: []
+      responses:
+        '200':
+          description: successful
+  "/v1/add_user":
+    post:
+      summary: add_user user
+      responses:
+        '200':
+          description: successful
+  "/v1/verify_token":
+    post:
+      summary: verify_token user
+      responses:
+        '200':
+          description: successful
+  "/":
+    get:
+      summary: list users
+      responses:
+        '200':
+          description: successful
 servers:
 - url: https://{defaultHost}
   variables:
     defaultHost:
-      default: localhost
+      default: www.example.com

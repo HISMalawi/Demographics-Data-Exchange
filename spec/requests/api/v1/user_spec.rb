@@ -1,10 +1,24 @@
 require 'swagger_helper'
 
-RSpec.describe 'api/v1/people_details', type: :request do
+RSpec.describe 'api/v1/user', type: :request do
 
-  path '/v1/add_person' do
+  path '/api/v1/user' do
 
-    post('create people_detail') do
+    get('list users') do
+      response(200, 'successful') do
+
+        after do |example|
+          example.metadata[:response][:content] = {
+            'application/json' => {
+              example: JSON.parse(response.body, symbolize_names: true)
+            }
+          }
+        end
+        run_test!
+      end
+    end
+
+    post('create user') do
       response(200, 'successful') do
 
         after do |example|
@@ -19,98 +33,58 @@ RSpec.describe 'api/v1/people_details', type: :request do
     end
   end
 
-  path '/v1/search_by_name_and_gender' do
-
-    post('search_by_name_and_gender people_detail') do
-      response(200, 'successful') do
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
-        run_test!
-      end
-    end
-  end
-
-  path '/v1/search_by_npid' do
-
-    post('search_by_npid people_detail') do
-      response(200, 'successful') do
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
-        run_test!
-      end
-    end
-  end
-
-  path '/v1/search_by_doc_id' do
-
-    post('search_by_doc_id people_detail') do
-      response(200, 'successful') do
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
-        run_test!
-      end
-    end
-  end
-
-  path '/v1/merge_people' do
-
-    post('merge_people people_detail') do
-      response(200, 'successful') do
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
-        run_test!
-      end
-    end
-  end
-
-  path '/v1/update_person' do
-
-    post('update_person people_detail') do
-      response(200, 'successful') do
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
-        run_test!
-      end
-    end
-  end
-
-  path '/v1/void_person/{person_uuid}' do
+  path '/api/v1/user/{id}' do
     # You'll want to customize the parameter types...
-    parameter name: 'person_uuid', in: :path, type: :string, description: 'person_uuid'
+    parameter name: 'id', in: :path, type: :string, description: 'id'
 
-    delete('void people_detail') do
+    get('show user') do
       response(200, 'successful') do
-        let(:person_uuid) { '123' }
+        let(:id) { '123' }
+
+        after do |example|
+          example.metadata[:response][:content] = {
+            'application/json' => {
+              example: JSON.parse(response.body, symbolize_names: true)
+            }
+          }
+        end
+        run_test!
+      end
+    end
+
+    patch('update user') do
+      response(200, 'successful') do
+        let(:id) { '123' }
+
+        after do |example|
+          example.metadata[:response][:content] = {
+            'application/json' => {
+              example: JSON.parse(response.body, symbolize_names: true)
+            }
+          }
+        end
+        run_test!
+      end
+    end
+
+    put('update user') do
+      response(200, 'successful') do
+        let(:id) { '123' }
+
+        after do |example|
+          example.metadata[:response][:content] = {
+            'application/json' => {
+              example: JSON.parse(response.body, symbolize_names: true)
+            }
+          }
+        end
+        run_test!
+      end
+    end
+
+    delete('delete user') do
+      response(200, 'successful') do
+        let(:id) { '123' }
 
         after do |example|
           example.metadata[:response][:content] = {
@@ -124,9 +98,85 @@ RSpec.describe 'api/v1/people_details', type: :request do
     end
   end
 
-  path '/v1/reassign_npid' do
+  path '/v1/register' do
 
-    post('reassign_npid people_detail') do
+    post('register user') do
+      response(200, 'successful') do
+
+        after do |example|
+          example.metadata[:response][:content] = {
+            'application/json' => {
+              example: JSON.parse(response.body, symbolize_names: true)
+            }
+          }
+        end
+        run_test!
+      end
+    end
+  end
+
+  path '/v1/login' do
+
+    post('login user') do
+      parameter name: :user, in: :body, schema: {
+        type: :object,
+        properties: {
+          username: { type: :string },
+          password: { type: :string },
+        },
+        required: %w[username password]
+      }
+      response(200, 'successful') do
+
+        after do |example|
+          example.metadata[:response][:content] = {
+            'application/json' => {
+              example: JSON.parse(response.body, symbolize_names: true)
+            }
+          }
+        end
+        run_test!
+      end
+    end
+  end
+
+  path '/v1/add_user' do
+
+    post('add_user user') do
+      response(200, 'successful') do
+
+        after do |example|
+          example.metadata[:response][:content] = {
+            'application/json' => {
+              example: JSON.parse(response.body, symbolize_names: true)
+            }
+          }
+        end
+        run_test!
+      end
+    end
+  end
+
+  path '/v1/verify_token' do
+
+    post('verify_token user') do
+      response(200, 'successful') do
+
+        after do |example|
+          example.metadata[:response][:content] = {
+            'application/json' => {
+              example: JSON.parse(response.body, symbolize_names: true)
+            }
+          }
+        end
+        run_test!
+      end
+    end
+  end
+
+  path '/' do
+
+    get('list users') do
       response(200, 'successful') do
 
         after do |example|
