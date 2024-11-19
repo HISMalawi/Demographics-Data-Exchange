@@ -1,12 +1,9 @@
 require 'swagger_helper'
 
 RSpec.describe 'api/v1/user', type: :request do
-
   path '/api/v1/user' do
-
     get('list users') do
       response(200, 'successful') do
-
         after do |example|
           example.metadata[:response][:content] = {
             'application/json' => {
@@ -20,7 +17,6 @@ RSpec.describe 'api/v1/user', type: :request do
 
     post('create user') do
       response(200, 'successful') do
-
         after do |example|
           example.metadata[:response][:content] = {
             'application/json' => {
@@ -99,10 +95,8 @@ RSpec.describe 'api/v1/user', type: :request do
   end
 
   path '/v1/register' do
-
     post('register user') do
       response(200, 'successful') do
-
         after do |example|
           example.metadata[:response][:content] = {
             'application/json' => {
@@ -116,18 +110,19 @@ RSpec.describe 'api/v1/user', type: :request do
   end
 
   path '/v1/login' do
-
-    post('login user') do
-      parameter name: :user, in: :body, schema: {
+    post('User Login') do
+      tags 'Authentication'
+      consumes 'application/json'
+      parameter name: :credentials, in: :body, schema: {
         type: :object,
         properties: {
           username: { type: :string },
-          password: { type: :string },
+          password: { type: :string }
         },
         required: %w[username password]
       }
-      response(200, 'successful') do
 
+      response(200, 'successful') do
         after do |example|
           example.metadata[:response][:content] = {
             'application/json' => {
@@ -141,10 +136,19 @@ RSpec.describe 'api/v1/user', type: :request do
   end
 
   path '/v1/add_user' do
-
     post('add_user user') do
-      response(200, 'successful') do
+      consumes 'application/json'
+      parameter name: :user, in: :body, schema: {
+        type: :object,
+        properties: {
+          username: { type: :string },
+          password: { type: :string },
+          location: { type: :integer }
+        },
+        required: %w[username password location]
+      }
 
+      response(200, 'successful') do
         after do |example|
           example.metadata[:response][:content] = {
             'application/json' => {
@@ -158,10 +162,8 @@ RSpec.describe 'api/v1/user', type: :request do
   end
 
   path '/v1/verify_token' do
-
     post('verify_token user') do
       response(200, 'successful') do
-
         after do |example|
           example.metadata[:response][:content] = {
             'application/json' => {
@@ -175,10 +177,8 @@ RSpec.describe 'api/v1/user', type: :request do
   end
 
   path '/' do
-
     get('list users') do
       response(200, 'successful') do
-
         after do |example|
           example.metadata[:response][:content] = {
             'application/json' => {
