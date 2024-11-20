@@ -35,29 +35,26 @@ cp ${APP_DIR}/config/database.yml $APP_DIR/config/database.backup.yml
 read_yaml() {
     local section=$1
     local key=$2
-    grep -A 10 "^${section}:" ${APP_DIR}/config/database.yml | grep "^  ${key}:" | awk '{print $2}'
+    grep -A 10 "^${section}:" ${APP_DIR}/config/database.yml.example | grep "^  ${key}:" | awk '{print $2}'
 }
 
 # Read the production database username and password
-PRODUCTION_DB=$(read_yaml "production" "database")
-DDE_DB_USERNAME=$(read_yaml "production" "username")
-DDE_DB_PASSWORD=$(read_yaml "production" "password")
+# PRODUCTION_DB=$(read_yaml "production" "database")
+# DDE_DB_USERNAME=$(read_yaml "production" "username")
+# DDE_DB_PASSWORD=$(read_yaml "production" "password")
 
 # Read the dde_sync_config username and password
-SYNC_USERNAME=$(read_yaml ":dde_sync_config" ":username")
-SYNC_PASSWORD=$(read_yaml ":dde_sync_config" ":password")
+# SYNC_USERNAME=$(read_yaml ":dde_sync_config" ":username")
+# SYNC_PASSWORD=$(read_yaml ":dde_sync_config" ":password")
+SYNC_PROTOCOL=$(read_yaml ":dde_sync_config" ":protocol")
+SYNC_HOST=$(read_yaml ":dde_sync_config" ":host")
 
-# Copying database.yml.example again because formatting was changed for Ruby 3.2.0
-cp ${APP_DIR}/config/database.yml.example $APP_DIR/config/database.yml
 
-# Updates YAML file with new configurations
-echo -e '\e[1;33mUpdating new configurations..\e[0m'
-sed -i -e "/^production:/,/database:/{/^\([[:space:]]*database: \).*/s//\1${PRODUCTION_DB}/}" \
-    -e "/^production:/,/username:/{/^\([[:space:]]*username: \).*/s//\1${DDE_DB_USERNAME}/}" \
-    -e "/^production:/,/password:/{/^\([[:space:]]*password: \).*/s//\1${DDE_DB_PASSWORD}/}" \
-    -e "/^:dde_sync_config:/,/:username:/{/^\([[:space:]]*:username: \).*/s//\1${SYNC_USERNAME}/}" \
-    -e "/^:dde_sync_config:/,/:password:/{/^\([[:space:]]*:password: \).*/s//\1${SYNC_PASSWORD}/}" \
-    ${APP_DIR}/config/database.yml
+# Update the current database.yml with extracted values
+sed -i -e "/^:dde_sync_config:/,/^[^ ]/{/^\([[:space:]]*:protocol: \).*/s//\1${SYNC_PROTOCOL}/}" \
+    -e "/^:dde_sync_config:/,/^[^ ]/{/^\([[:space:]]*:host: \).*/s//\1${SYNC_HOST}/}" \
+    -e "/^:dde_sync_config:/,/^[^ ]/{/^\([[:space:]]*:port: \).*/s/^/#/}" \
+    "${APP_DIR}/config/database.yml"
 
 
 cp ${APP_DIR}/config/sidekiq.yml.example $APP_DIR/config/sidekiq.yml
