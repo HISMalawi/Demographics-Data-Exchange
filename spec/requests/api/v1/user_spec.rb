@@ -137,6 +137,7 @@ RSpec.describe 'api/v1/user', type: :request do
 
   path '/v1/add_user' do
     post('add_user user') do
+      tags 'User Management'
       consumes 'application/json'
       parameter name: :user, in: :body, schema: {
         type: :object,
@@ -161,8 +162,11 @@ RSpec.describe 'api/v1/user', type: :request do
     end
   end
 
-  path '/v1/verify_token' do
+  path '/v1/verify_token/?token={token}' do
     post('verify_token user') do
+      tags 'Authentication'
+      consumes 'application/json'
+      parameter name: :token, in: :path, type: :string, description: 'token', required: true
       response(200, 'successful') do
         after do |example|
           example.metadata[:response][:content] = {

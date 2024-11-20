@@ -1,10 +1,10 @@
 require 'swagger_helper'
 
-RSpec.describe 'api/v1/merge', type: :request do
+RSpec.describe 'api/v1/npid', type: :request do
 
-  path '/api/v1/merge' do
+  path '/api/v1/npid' do
 
-    get('list merges') do
+    get('list npids') do
       response(200, 'successful') do
 
         after do |example|
@@ -18,7 +18,7 @@ RSpec.describe 'api/v1/merge', type: :request do
       end
     end
 
-    post('create merge') do
+    post('create npid') do
       response(200, 'successful') do
 
         after do |example|
@@ -33,11 +33,11 @@ RSpec.describe 'api/v1/merge', type: :request do
     end
   end
 
-  path '/api/v1/merge/{id}' do
+  path '/api/v1/npid/{id}' do
     # You'll want to customize the parameter types...
     parameter name: 'id', in: :path, type: :string, description: 'id'
 
-    get('show merge') do
+    get('show npid') do
       response(200, 'successful') do
         let(:id) { '123' }
 
@@ -52,7 +52,7 @@ RSpec.describe 'api/v1/merge', type: :request do
       end
     end
 
-    patch('update merge') do
+    patch('update npid') do
       response(200, 'successful') do
         let(:id) { '123' }
 
@@ -67,7 +67,7 @@ RSpec.describe 'api/v1/merge', type: :request do
       end
     end
 
-    put('update merge') do
+    put('update npid') do
       response(200, 'successful') do
         let(:id) { '123' }
 
@@ -82,7 +82,7 @@ RSpec.describe 'api/v1/merge', type: :request do
       end
     end
 
-    delete('delete merge') do
+    delete('delete npid') do
       response(200, 'successful') do
         let(:id) { '123' }
 
@@ -98,36 +98,19 @@ RSpec.describe 'api/v1/merge', type: :request do
     end
   end
 
-  path '/v1/merge_people' do
+  path '/v1/assign_npids' do
 
-    post('merge merge') do
-      response(200, 'successful') do
-
-        after do |example|
-          example.metadata[:response][:content] = {
-            'application/json' => {
-              example: JSON.parse(response.body, symbolize_names: true)
-            }
-          }
-        end
-        run_test!
-      end
-    end
-  end
-
-  path '/v1/rollback_merge' do
-
-    post('rollback_merge merge') do
-      tags 'Deduplication'
+    post('assign_npids npid') do
+      tags 'NPID Actions'
       consumes 'application/json'
-      parameter name: :roll_back, in: :body, schema: {
+      parameter name: :npid, in: :body , schema: {
         type: :object,
         properties: {
-          primary_person_doc_id: { type: :string },
-          secondary_person_doc_id: { type: :string }
-        },
-        required: %w[primary_person_doc_id secondary_person_doc_id]
-      }
+          limit: { type: :integer },
+          location_id: { type: :integer }
+      },
+      required: [ 'limit', 'location_id' ]
+    }
       response(200, 'successful') do
 
         after do |example|

@@ -4,6 +4,21 @@ info:
   title: API V1
   version: v1
 paths:
+  "/v1/location_npid_status/?location_id={location_id}":
+    get:
+      summary: Location NPID Status
+      tags:
+      - NPID Actions
+      parameters:
+      - name: location_id
+        in: path
+        description: location_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful
   "/api/v1/merge":
     get:
       summary: list merges
@@ -49,58 +64,293 @@ paths:
       responses:
         '200':
           description: successful
+      tags:
+      - Deduplication
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                primary_person_doc_id:
+                  type: string
+                secondary_person_doc_id:
+                  type: string
+              required:
+              - primary_person_doc_id
+              - secondary_person_doc_id
   "/v1/rollback_merge":
     post:
       summary: rollback_merge merge
+      tags:
+      - Deduplication
+      parameters: []
       responses:
         '200':
           description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                primary_person_doc_id:
+                  type: string
+                secondary_person_doc_id:
+                  type: string
+              required:
+              - primary_person_doc_id
+              - secondary_person_doc_id
+  "/api/v1/npid":
+    get:
+      summary: list npids
+      responses:
+        '200':
+          description: successful
+    post:
+      summary: create npid
+      responses:
+        '200':
+          description: successful
+  "/api/v1/npid/{id}":
+    parameters:
+    - name: id
+      in: path
+      description: id
+      required: true
+      schema:
+        type: string
+    get:
+      summary: show npid
+      responses:
+        '200':
+          description: successful
+    patch:
+      summary: update npid
+      responses:
+        '200':
+          description: successful
+    put:
+      summary: update npid
+      responses:
+        '200':
+          description: successful
+    delete:
+      summary: delete npid
+      responses:
+        '200':
+          description: successful
+  "/v1/assign_npids":
+    post:
+      summary: assign_npids npid
+      tags:
+      - NPID Actions
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                location_id:
+                  type: integer
+              required:
+              - limit
+              - location_id
   "/v1/add_person":
     post:
-      summary: create people_detail
+      summary: Create Person Details
+      tags:
+      - Person
+      parameters: []
       responses:
         '200':
           description: successful
-  "/v1/search_by_name_and_gender":
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                given_name:
+                  type: string
+                family_name:
+                  type: string
+                gender:
+                  type: string
+                birthdate:
+                  type: string
+                  format: date
+                birthdate_estimated:
+                  type: boolean
+                attributes:
+                  type: object
+                  properties:
+                    current_district:
+                      type: string
+                    current_traditional_authority:
+                      type: string
+                    current_village:
+                      type: string
+                    home_district:
+                      type: string
+                    home_village:
+                      type: string
+                    home_traditional_authority:
+                      type: string
+                    occupation:
+                      type: string
+              required:
+              - given_name
+              - family_name
+              - gender
+              - birthdate
+              - birthdate_estimated
+              - attributes
+              - home_district
+              - home_village
+              - home_traditional_authority
+  "/v1/search_by_name_and_gender?given_name={given_name}&family_name={family_name}&gender={gender}":
     post:
       summary: search_by_name_and_gender people_detail
+      tags:
+      - Person
+      parameters:
+      - name: given_name
+        in: path
+        description: given_name
+        required: true
+        schema:
+          type: string
+      - name: family_name
+        in: path
+        description: family_name
+        required: true
+        schema:
+          type: string
+      - name: gender
+        in: path
+        description: gender
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: successful
-  "/v1/search_by_npid":
+  "/v1/search_by_npid?npid={npid}":
     post:
       summary: search_by_npid people_detail
+      tags:
+      - Person
+      parameters:
+      - name: npid
+        in: path
+        description: npid
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: successful
-  "/v1/search_by_doc_id":
+  "/v1/search_by_doc_id?doc_id={doc_id}":
     post:
       summary: search_by_doc_id people_detail
+      tags:
+      - Person
+      parameters:
+      - name: doc_id
+        in: path
+        description: doc_id
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: successful
   "/v1/update_person":
     post:
       summary: update_person people_detail
+      tags:
+      - Person
+      parameters: []
       responses:
         '200':
           description: successful
-  "/v1/void_person/{person_uuid}":
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                given_name:
+                  type: string
+                family_name:
+                  type: string
+                gender:
+                  type: string
+                birthdate:
+                  type: string
+                  format: date
+                birthdate_estimated:
+                  type: boolean
+                attributes:
+                  type: object
+                  properties:
+                    current_district:
+                      type: string
+                    current_traditional_authority:
+                      type: string
+                    current_village:
+                      type: string
+                    home_district:
+                      type: string
+                    home_village:
+                      type: string
+                    home_traditional_authority:
+                      type: string
+                    occupation:
+                      type: string
+                npid:
+                  type: string
+                doc_id:
+                  type: string
+              required:
+              - doc_id
+  "/v1/void_person/{doc_id}?void_reason={void_reason}":
     parameters:
-    - name: person_uuid
+    - name: doc_id
       in: path
-      description: person_uuid
-      required: true
       schema:
-        type: string
+        doc_id:
+          type: string
+        void_reason:
+          type: string
+      required: true
     delete:
       summary: void people_detail
+      tags:
+      - Person
       responses:
         '200':
           description: successful
-  "/v1/reassign_npid":
+  "/v1/reassign_npid?doc_id={doc_id}":
     post:
       summary: reassign_npid people_detail
+      tags:
+      - Person
+      parameters:
+      - name: person
+        in: path
+        description: doc_id
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: successful
@@ -216,6 +466,8 @@ paths:
   "/v1/add_user":
     post:
       summary: add_user user
+      tags:
+      - User Management
       parameters: []
       responses:
         '200':
@@ -236,9 +488,18 @@ paths:
               - username
               - password
               - location
-  "/v1/verify_token":
+  "/v1/verify_token/?token={token}":
     post:
       summary: verify_token user
+      tags:
+      - Authentication
+      parameters:
+      - name: token
+        in: path
+        description: token
+        required: true
+        schema:
+          type: string
       responses:
         '200':
           description: successful
