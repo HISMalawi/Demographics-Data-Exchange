@@ -42,12 +42,12 @@ RSpec.describe 'api/v1/people_details', type: :request do
     end
   end
 
-  path '/v1/search_by_name_and_gender?given_name={given_name}&family_name={family_name}&gender={gender}' do
+  path '/v1/search_by_name_and_gender' do
     post('search_by_name_and_gender people_detail') do
       tags 'Person'
-      parameter name: :given_name, in: :path, type: :string, description: 'given_name', required: true
-      parameter name: :family_name, in: :path, type: :string, description: 'family_name', required: true
-      parameter name: :gender, in: :path, type: :string, description: 'gender', required: true
+      parameter name: :given_name, in: :query, type: :string, description: 'given_name', required: true
+      parameter name: :family_name, in: :query, type: :string, description: 'family_name', required: true
+      parameter name: :gender, in: :query, type: :string, description: 'gender', required: true
 
       response(200, 'successful') do
         after do |example|
@@ -62,10 +62,10 @@ RSpec.describe 'api/v1/people_details', type: :request do
     end
   end
 
-  path '/v1/search_by_npid?npid={npid}' do
+  path '/v1/search_by_npid' do
     post('search_by_npid people_detail') do
       tags 'Person'
-      parameter name: :npid, in: :path, type: :string, description: 'npid', required: true
+      parameter name: :npid, in: :query, type: :string, description: 'npid', required: true
       response(200, 'successful') do
         after do |example|
           example.metadata[:response][:content] = {
@@ -79,10 +79,10 @@ RSpec.describe 'api/v1/people_details', type: :request do
     end
   end
 
-  path '/v1/search_by_doc_id?doc_id={doc_id}' do
+  path '/v1/search_by_doc_id' do
     post('search_by_doc_id people_detail') do
       tags 'Person'
-      parameter name: :doc_id, in: :path, type: :string, description: 'doc_id', required: true
+      parameter name: :doc_id, in: :query, type: :string, description: 'doc_id', required: true
       response(200, 'successful') do
         after do |example|
           example.metadata[:response][:content] = {
@@ -108,7 +108,7 @@ RSpec.describe 'api/v1/people_details', type: :request do
         },
         required: %w[primary_person_doc_id secondary_person_doc_id]
       }
-      
+
       response(200, 'successful') do
         after do |example|
           example.metadata[:response][:content] = {
@@ -164,9 +164,9 @@ RSpec.describe 'api/v1/people_details', type: :request do
     end
   end
 
-  path '/v1/void_person/{doc_id}?void_reason={void_reason}' do
+  path '/v1/void_person/' do
     # You'll want to customize the parameter types...
-    parameter name: 'doc_id', in: :path, schema: {
+    parameter name: 'doc_id', in: :query, schema: {
       doc_id: { type: :string },
       void_reason: { type: :string }
     }
@@ -187,11 +187,11 @@ RSpec.describe 'api/v1/people_details', type: :request do
     end
   end
 
-  path '/v1/reassign_npid?doc_id={doc_id}' do
+  path '/v1/reassign_npid' do
     post('reassign_npid people_detail') do
       tags 'Person'
       consumes 'application/json'
-      parameter name: :person, in: :path, type: :string, description: 'doc_id', required: true
+      parameter name: :doc_id, in: :query, type: :string, description: 'doc_id', required: true
 
       response(200, 'successful') do
         after do |example|
