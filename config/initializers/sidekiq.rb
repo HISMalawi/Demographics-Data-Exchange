@@ -96,7 +96,13 @@ free_db = read_db_choice || find_free_redis_db(redis)
 # Store the selected DB back in the sidekiq.yml file
 store_db_choice(free_db)
 
-store_master_schedule_config
+begin
+  if ActiveRecord::Base.connected? && ActiveRecord::Base.connection.active?
+    store_master_schedule_config
+  end
+rescue ActiveRecord::NoDatabaseError, ActiveRecord::ConnectionNotEstablished
+  Rails.logger.info "Skipping database-dependent initializer as the database is not available."
+end
 
 Sidekiq.configure_server do |config|
   config.redis = { url: "redis://localhost:6379/#{free_db}" }
