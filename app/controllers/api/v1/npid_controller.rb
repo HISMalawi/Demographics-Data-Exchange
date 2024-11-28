@@ -6,6 +6,11 @@ class Api::V1::NpidController < ApplicationController
     render json: npids
   end
 
+  def allocate_npids
+    npids = NpidService.allocate_npids(params[:location_id], params[:count])
+    render json: npids
+  end
+
   private
   def update_npid_pool_balance
     NpidPoolJob.perform_later
