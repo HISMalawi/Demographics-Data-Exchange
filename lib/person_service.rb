@@ -72,10 +72,10 @@ module PersonService
     ActiveRecord::Base.transaction do
 
         unless npid.blank?
-          npid = location_npids.sample
-        else
           npid = LocationNpid.where("location_id = ?
-                AND assigned = FALSE AND npid = ? ",current_user.location_id, npid)
+            AND assigned = FALSE AND npid = ? ",current_user.location_id, npid).first
+        else
+          npid = location_npids.sample
         end
   
         uuid = params[:doc_id] || ActiveRecord::Base.connection.execute('SELECT uuid() as uuid').first[0]
