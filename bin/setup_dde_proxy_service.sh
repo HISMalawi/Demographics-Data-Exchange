@@ -379,7 +379,7 @@ rm ./${SERVICE_NAME}.service
 rm ./${ENV}.rb
 
 # Updates crontab for DDE sync cron job
-whenever --set "environment=${ENV}" --update-crontab
+# whenever --set "environment=${ENV}" --update-crontab
 
 add_program_users
 
