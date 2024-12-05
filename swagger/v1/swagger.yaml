@@ -3,9 +3,510 @@ openapi: 3.0.1
 info:
   title: API V1
   version: v1
-paths: {}
+paths:
+  "/v1/configs":
+    put:
+      summary: update config
+      tags:
+      - Configurations
+      parameters:
+      - name: config
+        in: query
+        description: config
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
+  "/v1/location_npid_status/":
+    get:
+      summary: Location NPID Status
+      tags:
+      - NPID Actions
+      parameters:
+      - name: location_id
+        in: query
+        description: location_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful
+  "/v1/rollback_merge":
+    post:
+      summary: rollback_merge merge
+      tags:
+      - Deduplication
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                primary_person_doc_id:
+                  type: string
+                secondary_person_doc_id:
+                  type: string
+              required:
+              - primary_person_doc_id
+              - secondary_person_doc_id
+  "/v1/assign_npids":
+    post:
+      summary: assign_npids npid
+      tags:
+      - NPID Actions
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                location_id:
+                  type: integer
+              required:
+              - limit
+              - location_id
+  "/v1/add_person":
+    post:
+      summary: Create Person Details
+      tags:
+      - Person
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                given_name:
+                  type: string
+                family_name:
+                  type: string
+                gender:
+                  type: string
+                birthdate:
+                  type: string
+                  format: date
+                birthdate_estimated:
+                  type: boolean
+                attributes:
+                  type: object
+                  properties:
+                    current_district:
+                      type: string
+                    current_traditional_authority:
+                      type: string
+                    current_village:
+                      type: string
+                    home_district:
+                      type: string
+                    home_village:
+                      type: string
+                    home_traditional_authority:
+                      type: string
+                    occupation:
+                      type: string
+              required:
+              - given_name
+              - family_name
+              - gender
+              - birthdate
+              - birthdate_estimated
+              - attributes
+              - home_district
+              - home_village
+              - home_traditional_authority
+  "/v1/search_by_name_and_gender":
+    post:
+      summary: search_by_name_and_gender people_detail
+      tags:
+      - Person
+      parameters:
+      - name: given_name
+        in: query
+        description: given_name
+        required: true
+        schema:
+          type: string
+      - name: family_name
+        in: query
+        description: family_name
+        required: true
+        schema:
+          type: string
+      - name: gender
+        in: query
+        description: gender
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
+  "/v1/search_by_npid":
+    post:
+      summary: search_by_npid people_detail
+      tags:
+      - Person
+      parameters:
+      - name: npid
+        in: query
+        description: npid
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
+  "/v1/search_by_doc_id":
+    post:
+      summary: search_by_doc_id people_detail
+      tags:
+      - Person
+      parameters:
+      - name: doc_id
+        in: query
+        description: doc_id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
+  "/v1/merge_people":
+    post:
+      summary: merge_people people_detail
+      tags:
+      - Deduplication
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                primary_person_doc_id:
+                  type: string
+                secondary_person_doc_id:
+                  type: string
+              required:
+              - primary_person_doc_id
+              - secondary_person_doc_id
+  "/v1/update_person":
+    post:
+      summary: update_person people_detail
+      tags:
+      - Person
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                given_name:
+                  type: string
+                family_name:
+                  type: string
+                gender:
+                  type: string
+                birthdate:
+                  type: string
+                  format: date
+                birthdate_estimated:
+                  type: boolean
+                attributes:
+                  type: object
+                  properties:
+                    current_district:
+                      type: string
+                    current_traditional_authority:
+                      type: string
+                    current_village:
+                      type: string
+                    home_district:
+                      type: string
+                    home_village:
+                      type: string
+                    home_traditional_authority:
+                      type: string
+                    occupation:
+                      type: string
+                npid:
+                  type: string
+                doc_id:
+                  type: string
+              required:
+              - doc_id
+  "/v1/void_person/":
+    parameters:
+    - name: doc_id
+      in: query
+      schema:
+        doc_id:
+          type: string
+        void_reason:
+          type: string
+    delete:
+      summary: void people_detail
+      tags:
+      - Person
+      responses:
+        '200':
+          description: successful
+  "/v1/reassign_npid":
+    post:
+      summary: reassign_npid people_detail
+      tags:
+      - Person
+      parameters:
+      - name: doc_id
+        in: query
+        description: doc_id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
+  "/v1/search/people":
+    post:
+      summary: get people_match
+      tags:
+      - Deduplication
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                given_name:
+                  type: string
+                family_name:
+                  type: string
+                birth_date:
+                  type: date
+                gender:
+                  type: string
+                ancestry_district:
+                  type: string
+                ancestry_traditional_authority:
+                  type: string
+                ancestry_village:
+                  type: string
+              required:
+              - given_name
+              - family
+              - birth_date
+              - gender
+              - ancestry_district
+              - ancestry_traditional_authority
+              - ancestry_village
+  "/v1/person_changes_new":
+    get:
+      summary: pull_updates_new sync
+      tags:
+      - Sychronization
+      parameters:
+      - name: location_id
+        in: query
+        description: location_id
+        required: true
+        schema:
+          type: integer
+      - name: pull_seq
+        in: query
+        description: pull_seq
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful
+  "/v1/person_changes_updates":
+    get:
+      summary: pull_updates sync
+      tags:
+      - Sychronization
+      parameters:
+      - name: location_id
+        in: query
+        description: location_id
+        required: true
+        schema:
+          type: integer
+      - name: pull_seq
+        in: query
+        description: pull_seq
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful
+  "/v1/push_changes_new":
+    post:
+      summary: pushed_updates_new sync
+      tags:
+      - Sychronization
+      parameters:
+      - name: location_id
+        in: query
+        description: location_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful
+  "/v1/push_changes_updates":
+    post:
+      summary: pushed_updates sync
+      tags:
+      - Sychronization
+      parameters:
+      - name: location_id
+        in: query
+        description: location_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful
+  "/v1/push_footprints":
+    post:
+      summary: pushed_footprints sync
+      tags:
+      - Sychronization
+      parameters:
+      - name: location_id
+        in: query
+        description: location_id
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful
+  "/v1/pull_npids":
+    get:
+      summary: pull_npids sync
+      tags:
+      - Sychronization
+      parameters:
+      - name: site_id
+        in: query
+        description: site_id
+        required: true
+        schema:
+          type: integer
+      - name: npid_seq
+        in: query
+        description: npid_seq
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: successful
+  "/v1/login":
+    post:
+      summary: User Login
+      tags:
+      - Authentication
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+              - username
+              - password
+  "/v1/add_user":
+    post:
+      summary: add_user user
+      tags:
+      - User Management
+      parameters: []
+      responses:
+        '200':
+          description: successful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+                location:
+                  type: integer
+              required:
+              - username
+              - password
+              - location
+  "/v1/verify_token/":
+    post:
+      summary: verify_token user
+      tags:
+      - Authentication
+      parameters:
+      - name: token
+        in: query
+        description: token
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: successful
 servers:
-- url: https://{defaultHost}
+- url: http://{defaultHost}
   variables:
     defaultHost:
-      default: localhost
+      default: localhost:3004
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+- bearerAuth: []

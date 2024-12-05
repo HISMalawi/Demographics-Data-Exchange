@@ -57,6 +57,9 @@ Rails.application.configure do
   # Highlight code that triggered database queries in logs.
   config.active_record.verbose_query_logs = true
 
+  # Disable Legacy connection handling
+  config.active_record.legacy_connection_handling = false
+
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true

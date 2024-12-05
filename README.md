@@ -11,18 +11,45 @@ It was built by Baobab Health Trust.
 
 ##Requirements
 
-* Ruby 2.5.3
+* Ruby 3.2.0
 
-* Rails 5.2.0
+* Rails 7.0.8
 
-* MySQL 5.7
+* MySQL 8
+
+* Sidekiq 7.2.2
+
+* Redis Server
 
 ##Dependancies
+
+We recommend using a ruby version manager eg. rvm or rbenv.
 
 
 ##Setting Up
 
 ### DDE Proxy
+
+The EASY way setup (Make sure there is a running Master)
+
+
+* Open your terminal
+
+* Clone DDE Application from github.
+  ```bash
+    git clone git@github.com:HISMalawi/Demographics-Data-Exchange.git dde4
+  ```
+  
+* Enter into the root of your application by typing 
+  ```bash
+    cd dde4
+  ```
+* Run the following command and Answer the questions asked.
+  ```bash
+    ./bin/setup_dde_proxy_service.rb
+  ```
+
+The developer way:
 
 * Open your terminal
 
@@ -40,6 +67,8 @@ It was built by Baobab Health Trust.
   ```bash
     cp config/database.yml.example config/database.yml
     cp config/secrets.yml.example config/secrets.yml
+    cp config/schedule.yml.example config/schedule.yml
+    cp config/sidekiq.yml.example config/sidekiq.yml
   ```
   
 * Configure your MySQL database in config/database.yml file respectively.
@@ -63,9 +92,31 @@ If existing runing on an existing database run
   ```
 * Run the following command in your terminal (Replace the PORT with the port dde will run on):
 
+  Create a service for DDE Proxy
   ```bash
-    /bin/bash -lc 'cd /var/www/dde4/ && rvm use 2.5.3 && rails s -p PORT -b 0.0.0.0 -d'
+   sudo vim /etc/systemd/system/dde4.service
   ```
+  Add the following content to the file
+  ```bash
+    [Unit]
+    Description=DDE4
+    After=network.target
+
+    [Service]
+    Type=simple
+    User=$USER
+
+    WorkingDirectory=/var/www/dde4
+    ExecStart=/bin/bash -lc 'CHANGE_TO_APPROPRIATE_RUBY_VERSION && bundle exec FULL_PUMA_PATH -C /var/www/dde4/config/puma.rb'
+    Restart=always
+    KillMode=process
+
+    [Install]
+    WantedBy=multi-user.target
+  ```
+  Notes:
+  - CHANGE_TO_APPROPRIATE_RUBY_VERSION: Change this to the appropriate ruby version eg. `rvm use 3.2.0 or rbenv local 3.2.0`
+  - FULL_PUMA_PATH: Change this to the full path to puma eg. `/var/www/dde4/bin/puma` you can get this by running `which puma`
 
 And users to the application
   Application Users:
@@ -80,7 +131,7 @@ And users to the application
         curl --location --request POST 'URL/v1/login?username=admin&password=DDE_ADMIN_PASSWORD'
         ```
 
-      b -> Create the users configured in the EMR-API and dde_sync_config using the following command replacing the (URL,TOKEN,PASSWORD, USERNAME AND LOCATION) for each user
+       b -> Create the users configured in the EMR-API and dde_sync_config using the following command replacing the (URL,TOKEN,PASSWORD, USERNAME AND LOCATION) for each user
            WHERE
             PASSWORD: password configured for the user in EMR-API
             USERNAME: username configured for the user in EMR-API
@@ -91,42 +142,23 @@ And users to the application
         ```bash
         curl --location --request POST 'URL/v1/add_user?username=USERNAME&password=PASSWORD&location=LOCATION' --header 'Authorization: TOKEN'
         ```
-* Run the following command:
-    ```bash
-    sudo sed -i 's/#TMPTIME=0/TMPTIME=0/g' /etc/default/rcS
-    ```
-* Set sync cronjob
-
-    ```bash
-    whenever --set 'environment=development' --update-crontab
-    ```
-* Setup cronjob to start DDE using
-  ```bash
-  crontab -e
-  ```
-  Add the following line to the crontab (Replace the PORT with the port dde will run on):
-  ```bash
-  @reboot /bin/bash -lc 'cd /var/www/dde4/ && rvm use 2.5.3 && rails s -p PORT -b 0.0.0.0 -d'
-  ```
-
+    3 -> Add the users to the dde_sync_config in the config/database.yml file
+         Use the same process in 2 to create a user on the master and also a user on the master make sure they have the same attributes i.e username, password and location
 
 ###Setting up DDE Master
 
-1. Initialize database by typing the following in the command line
-   ```bash
-     rake db:create db:migrate db:seed
-   ```
-2. Load MySQL national ids dump into DDE MySQL npids table.
+The process of setting up DDE Master is similar to setting up DDE Proxy. The only difference is that you will need to run to run you migration about with the key like in the example below.
 
-3. You can now start DDE master server.
-   ```bash
-    rails s -p <PORT_NUMBER> -b 0.0.0.0 -d
-   ```
-4. Setup cronjob to start DDE using
-  ```bash
-  crontab -e
-  ```
-5. Add the following line to the crontab (Replace the PORT with the port dde will run on):
-  ```bash
-  @reboot /bin/bash -lc 'cd /var/www/dde4/ && rvm use 2.5.3 && rails s -p PORT -b 0.0.0.0 -d'
-  ```
+```bash
+  MASTER=true rails db:create db:migrate db:seed
+```
+
+This will create the npids table which you can populate with your preferred unique identifiers. We recommend using the ones that were initially generated. Otherwise for testing purposes you can use the following command to generate fake npids.
+
+```bash
+  rails r bin/npids_faker.rb
+```
+
+Voila! you got it.
+
+Additions to this README are most welcome we want to make the process as painless as possible.

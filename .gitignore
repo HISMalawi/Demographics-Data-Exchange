@@ -21,6 +21,8 @@ log/*
 .idea/*
 .ruby-version
 vendor/plugins/htn/*
+/vendor/bundle
+/.bundle
 config/*.yml
 tmp/*
 last_sequence.txt
