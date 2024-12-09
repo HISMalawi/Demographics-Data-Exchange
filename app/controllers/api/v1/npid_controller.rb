@@ -7,7 +7,8 @@ class Api::V1::NpidController < ApplicationController
   end
 
   def allocate_npids
-    npids = NpidService.allocate_npids(params[:location_id], params[:count])
+    npids = NpidService.allocate_npids(location_id: params[:location_id], 
+                                          count: params[:count])
     render json: npids
   end
 

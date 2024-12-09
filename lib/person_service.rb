@@ -70,7 +70,7 @@ module PersonService
 
     ActiveRecord::Base.transaction do
 
-        if npid.exists?
+        if npid.present?
           npid = LocationNpid.where("location_id = ?
             AND assigned = FALSE AND npid = ? ",current_user.location_id, npid).first
         else
@@ -78,7 +78,7 @@ module PersonService
         end
   
         uuid = params[:doc_id] || ActiveRecord::Base.connection.execute('SELECT uuid() as uuid').first[0]
-        
+
         person = PersonDetail.create!(first_name: given_name,
                                       last_name: family_name,
                                       middle_name: middle_name,
