@@ -110,11 +110,11 @@ module NpidService
 
   def self.allocate_npids(location_id, count)
     ActiveRecord::Base.transaction do
-      allocated_npids = LocationNpid.where(location_id:).limit(count)
+      allocated_npids = LocationNpid.unallocated_and_unassigned(location_id:).limit(count)
 
       allocated_npids.update_all(allocated: true)
 
-      return { npids: allocated_npids}
+      { npids: allocated_npids}
     end 
   end
 

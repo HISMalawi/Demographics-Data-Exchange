@@ -1,4 +1,4 @@
 class LocationNpid < ApplicationRecord
-  # Set the default scope
-  default_scope { where(allocated: false, assigned: false) }
+  scope :unallocated_and_unassigned, -> { where(allocated: false, assigned: false)}
 end
+  
