@@ -119,7 +119,7 @@ module NpidService
   
       LocationNpid.where(id: allocated_npids.pluck(:id)).update_all(allocated: true)
   
-      { npids: allocated_npids.reload }
+      { npids: allocated_npids }
     end
   end
 
@@ -130,13 +130,11 @@ module NpidService
                                     .order(Arel.sql("RAND()"))
                                     .limit(count)
 
-      if allocated_npids.exists?
-        allocated_npids.update_all(allocated: true)
-      else
-        raise ActiveRecord::RecordNotFound, "No NPIDs available for allocation"
-      end
-  
-      { npids: allocated_npids.reload }
+      raise ActiveRecord::RecordNotFound, "No NPIDs available for allocation" if allocated_npids.blank?
+      
+      LocationNpid.where(id: allocated_npids.pluck(:id)).update_all(allocated: true)
+
+      { npids: allocated_npids.map { |npid| npid.attributes.merge(allocated: true) } }
     end
   end
   
