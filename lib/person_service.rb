@@ -42,6 +42,7 @@ module PersonService
     
     raise UnprocessableEntityException, 'No NPIDs to assign' if location_npids.blank?
 
+    npid                    = params[:npid] 
     given_name              = params[:given_name]
     family_name             = params[:family_name]
     middle_name             = params[:middle_name]
@@ -68,7 +69,15 @@ module PersonService
     person = nil
 
     ActiveRecord::Base.transaction do
-        npid = params[:npid] || location_npids.sample
+
+        if npid.present?
+          npid = LocationNpid.unscoped.where("location_id = ?
+            AND assigned = FALSE AND npid = ?  and allocated = ? ",
+            current_user.location_id, npid, true).first
+        else
+          npid = location_npids.sample
+        end
+  
         uuid = params[:doc_id] || ActiveRecord::Base.connection.execute('SELECT uuid() as uuid').first[0]
 
         person = PersonDetail.create!(first_name: given_name,

@@ -108,4 +108,18 @@ module NpidService
 
   end
 
+  def self.allocate_npids(location_id:, count:)
+    ActiveRecord::Base.transaction do
+      allocated_npids = LocationNpid.where(location_id: location_id)
+                                    .order(Arel.sql("RAND()"))
+                                    .limit(count)
+
+      raise ActiveRecord::RecordNotFound, "No NPIDs available for allocation" if allocated_npids.blank?
+      
+      LocationNpid.where(id: allocated_npids.pluck(:id)).update_all(allocated: true)
+
+      { npids: allocated_npids.map { |npid| npid.attributes.merge(allocated: true) } }
+    end
+  end
+  
 end
