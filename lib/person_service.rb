@@ -71,8 +71,9 @@ module PersonService
     ActiveRecord::Base.transaction do
 
         if npid.present?
-          npid = LocationNpid.where("location_id = ?
-            AND assigned = FALSE AND npid = ? ",current_user.location_id, npid).first
+          npid = LocationNpid.unscoped.where("location_id = ?
+            AND assigned = FALSE AND npid = ?  and allocated = ? ",
+            current_user.location_id, npid, true).first
         else
           npid = location_npids.sample
         end
