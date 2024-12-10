@@ -122,5 +122,22 @@ module NpidService
       { npids: allocated_npids.reload }
     end
   end
+
+  def self.allocate_npids(location_id:, count:)
+    ActiveRecord::Base.transaction do
+      allocated_npids = LocationNpid.unallocated_and_unassigned
+                                    .where(location_id: location_id)
+                                    .order(Arel.sql("RAND()"))
+                                    .limit(count)
+
+      if allocated_npids.exists?
+        allocated_npids.update_all(allocated: true)
+      else
+        raise ActiveRecord::RecordNotFound, "No NPIDs available for allocation"
+      end
+  
+      { npids: allocated_npids.reload }
+    end
+  end
   
 end
