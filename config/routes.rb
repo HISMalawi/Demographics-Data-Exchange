@@ -40,6 +40,7 @@ Rails.application.routes.draw do
 
   #npid controller routes
   post "v1/assign_npids", to: "api/v1/npid#assign_npids"
+  get  "v1/allocate_npids", to: "api/v1/npid#allocate_npids"
 
   #location controller routes
   post "v1/find_location", to: "api/v1/location#find"
