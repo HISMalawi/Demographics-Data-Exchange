@@ -14,12 +14,12 @@ sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"), aliases
 def authorize
   if File.exist?("#{Rails.root}/tmp/token.json")
     @token = JSON.parse(File.read("#{Rails.root}/tmp/token.json")).symbolize_keys[:token]
-    if token_valid(@token)
-      return @token
-    else
-      @token = authenticate
-      File.write("#{Rails.root}/tmp/token.json", {:token => @token}.to_json)
-    end
+    return @token if token_valid(@token)
+      
+    
+    @token = authenticate
+    File.write("#{Rails.root}/tmp/token.json", {:token => @token}.to_json)
+    
   else
     @token = authenticate
     File.write("#{Rails.root}/tmp/token.json", {:token => @token}.to_json)
@@ -27,9 +27,9 @@ def authorize
 end
 
 def authenticate
-    url = "#{@protocol}://#{@host}/v1/login?username=#{@username}&password=#{@pwd}"
+  url = "#{@protocol}://#{@host}/v1/login?username=#{@username}&password=#{@pwd}"
 
-    token = JSON.parse(RestClient.post(url,headers={}))['access_token']
+  JSON.parse(RestClient.post(url,{}))['access_token']
 end
 
 def token_valid(token)
@@ -37,41 +37,41 @@ def token_valid(token)
 
   begin
     response = RestClient.post(url,{'token' => token}.to_json, {content_type: :json, accept: :json})
-  rescue => e
+  rescue StandardError
     return false
   end
 
-  if response.code == 200
-  	return true
-  else
-  	return false
-  end
+  return true if response.code == 200
+  	 
+  
+  return false
+  
 end
 
 def pull_new_records
   pull_seq = Config.find_by_config('pull_seq_new')['config_value'].to_i
   url = "#{@protocol}://#{@host}/v1/person_changes_new?site_id=#{@location}&pull_seq=#{pull_seq}"
 
-  updates = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
+  updates = JSON.parse(RestClient.get(url,{Authorization: @token }))
 
   updates.each do |record|
-  	person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
+  	 person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
     pull_seq = record['id'].to_i
     record.delete('id')
     record.delete('created_at')
     record.delete('updated_at')
     ActiveRecord::Base.transaction do
-    	if person.blank?
+    	 if person.blank?
         PersonDetail.create!(record)
-    	else
-          person.update(record)
-          audit_record = JSON.parse(person.to_json)
-          audit_record.delete('id')
-          audit_record.delete('created_at')
-          audit_record.delete('updated_at')
-          PersonDetailsAudit.create!(audit_record)
-    	end
-  	  Config.where(config: 'pull_seq_new').update(config_value: pull_seq)
+     	else
+        person.update(record)
+        audit_record = JSON.parse(person.to_json)
+        audit_record.delete('id')
+        audit_record.delete('created_at')
+        audit_record.delete('updated_at')
+        PersonDetailsAudit.create!(audit_record)
+     	end
+  	   Config.where(config: 'pull_seq_new').update(config_value: pull_seq)
     end
   end
 end
@@ -80,7 +80,7 @@ def pull_updated_records
   pull_seq = Config.find_by_config('pull_seq_update')['config_value'].to_i
   url = "#{@protocol}://#{@host}/v1/person_changes_updates?site_id=#{@location}&pull_seq=#{pull_seq}"
 
-  updates = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
+  updates = JSON.parse(RestClient.get(url,{Authorization: @token }))
 
   updates.each do |record|
     person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
@@ -93,13 +93,13 @@ def pull_updated_records
       if person.blank?
         PersonDetail.create!(record)
       else
-          person.update(record)
-          audit_record = JSON.parse(person.to_json)
-          audit_record.delete('id')
-          audit_record.delete('created_at')
-          audit_record.delete('updated_at')
-          audit_record.delete('update_seq')
-          PersonDetailsAudit.create!(audit_record)
+        person.update(record)
+        audit_record = JSON.parse(person.to_json)
+        audit_record.delete('id')
+        audit_record.delete('created_at')
+        audit_record.delete('updated_at')
+        audit_record.delete('update_seq')
+        PersonDetailsAudit.create!(audit_record)
       end
       Config.where(config: 'pull_seq_update').update(config_value: pull_seq)
     end
@@ -110,17 +110,18 @@ def pull_npids
   npid_seq = Config.find_by_config('npid_seq')['config_value'].to_i
   url = "#{@protocol}://#{@host}/v1/pull_npids?site_id=#{@location}&npid_seq=#{npid_seq}"
 
-  npids = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
+  npids = JSON.parse(RestClient.get(url,{Authorization: @token }))
 
-  unless npids.blank?
-    npids.each do |npid|
-      next if LocationNpid.find_by_npid(npid['npid'])
-      ActiveRecord::Base.transaction do
-        LocationNpid.create!(location_id: npid['location_id'],
-                             npid: npid['npid'],
-                             assigned: npid['assigned'])
-        Config.where(config: 'npid_seq').update(config_value: npid['id'])
-      end
+  return if npids.blank?
+
+  npids.each do |npid|
+    next if LocationNpid.find_by_npid(npid['npid'])
+
+    ActiveRecord::Base.transaction do
+      LocationNpid.create!(location_id: npid['location_id'],
+                           npid: npid['npid'],
+                           assigned: npid['assigned'])
+      Config.where(config: 'npid_seq').update(config_value: npid['id'])
     end
   end
 end
@@ -129,20 +130,23 @@ end
 def push_records_new
   url = "#{@protocol}://#{@host}/v1/push_changes_new"
 
-	push_seq = Config.find_by_config('push_seq_new')['config_value'].to_i
-
-  records_to_push = PersonDetail.unscoped.where('person_details.id > ? AND person_details.location_updated_at = ?', push_seq,@location).order(:id).limit(100)
-
-  #PUSH UPDATES
-  records_to_push.each do | record |
-    begin
-      response = RestClient.post(url,format_payload(record), headers={Authorization: @token })
+	 push_seq = Config.find_by_config('push_seq_new')['config_value'].to_i
+  
+  PersonDetail.unscoped
+              .where('person_details.id > ? AND person_details.location_updated_at = ?', push_seq, @location)
+              .order(:id)
+              .in_batches(of: 100) do |batch|
+    #PUSH UPDATES
+    batch.each do | record |
+      
+      response = RestClient.post(url,format_payload(record), {Authorization: @token })
       redo if response.code != 201
       updated = Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response.code == 201
       redo if updated != true
-    rescue => e
-        File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
-        exit
+    rescue StandardError => e
+      File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
+      exit
+      
     end
   end
 end
@@ -152,25 +156,29 @@ def push_records_updates
 
   push_seq = Config.find_by_config('push_seq_update')['config_value'].to_i
 
-  records_to_push = PersonDetail.unscoped.joins(:person_details_audit).where('person_details.location_updated_at = ?
-      AND person_details_audits.id > ?',@location, push_seq).order('person_details_audits.id').limit(100).select('person_details.*,person_details_audits.id as update_seq')
-
-  #PUSH UPDATES
-  records_to_push.each do | record |
-    begin
-      response = RestClient.post(url,format_payload(record), headers={Authorization: @token })
+  PersonDetail.unscoped
+              .joins(:person_details_audit)
+              .where('person_details.location_updated_at = ? AND person_details_audits.id > ?', @location, push_seq)
+              .order('person_details_audits.id')
+              .select('person_details.*, person_details_audits.id as update_seq')
+              .in_batches(of: 100) do |batch|
+    # PUSH UPDATES
+    batch.each do |record|
+      response = RestClient.post(url, format_payload(record), {Authorization: @token })
       redo if response.code != 201
-      updated = Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i) if response.code == 201
+      if response.code == 201
+        updated = Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i)
+      end
       redo if updated != true
-    rescue => e
-        File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
-        exit
+    rescue StandardError => e
+      File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
+      exit
     end
   end
 end
 
 def format_payload(person)
-  payload =  {
+  {
               "id": person.id,
               "last_name": person.last_name,
               "first_name": person.first_name,
@@ -206,34 +214,30 @@ end
 def push_footprints
   url = "#{@protocol}://#{@host}/v1/push_footprints"
 
-  footprints = FootPrint.where(synced: false)
-
-  footprints.each do |foot|
-     response = RestClient.post(url,foot.as_json, headers={Authorization: @token })
-     foot.update(synced: true) if response.code == 201
+  FootPrint.where(synced: false).find_each do |foot|
+    response = RestClient.post(url,foot.as_json, { Authorization: @token })
+    foot.update(synced: true) if response.code == 201
   end
 end
 
 
 def main
-  if File.exist?("/tmp/dde_sync.lock")
+  if File.exist?('/tmp/dde_sync.lock')
     puts 'Another process running!'
     exit
   else
-    FileUtils.touch "/tmp/dde_sync.lock"
+    FileUtils.touch '/tmp/dde_sync.lock'
   end
   begin
-   authorize
-	 pull_new_records
-   pull_updated_records
-   push_records_new
-   push_records_updates
-   push_footprints
-   pull_npids
-  ensure
-    if File.exist?("/tmp/dde_sync.lock")
-      FileUtils.rm "/tmp/dde_sync.lock"
-    end
+    authorize
+ 	  pull_new_records
+    pull_updated_records
+    push_records_new
+    push_records_updates
+    push_footprints
+    pull_npids
+   ensure
+     FileUtils.rm '/tmp/dde_sync.lock' if File.exist?('/tmp/dde_sync.lock')
   end
 end
 
