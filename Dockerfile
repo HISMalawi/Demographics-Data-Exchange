@@ -13,12 +13,12 @@ WORKDIR /app
 
 # Copy Gemfile and install gems
 COPY Gemfile Gemfile.lock ./
-RUN bundle install --without development test
+RUN bundle install 
 
 # Copy the application code
 COPY . .
 
-# Precompile assets
+
 #RUN RAILS_ENV=production bundle exec rake assets:precompile
 
 # Expose the application port
