@@ -13,45 +13,42 @@ services:
 
   redis:
     image: redis:6.2.0
-    container_name: dde_redis
-    command: ["redis-server", "--bind", "redis"]
+    container_name: redis
     ports:
       - "6000:6379"
     volumes:
       - redis-data:/data
 
   dde4:
-    build:
-      context: .
+    build: .
     image: dde4
+    container_name: dde4
     ports:
-      - "8009:8050"
+      - "8050:8050"
     environment:
       WEB_CONCURRENCY: 6
       RAILS_MAX_THREADS: 5
       RAILS_MIN_THREADS: 1
       DATABASE_HOST: db
-      REDIS_URL: redis:redis:6379
+      REDIS_URL: redis://redis:6379/0
     depends_on:
       - db
       - redis
-      
     links:
       - db:db
     volumes:
-      - "./src:/var/www/dde4"
+      - "./src:/var/www/dde"
       - "./config/database.yml:/var/www/dde4/config/database.yml"
       - "./config/sidekiq.yml:/var/www/dde4/config/sidekiq.yml"
       - "./config/schedule.yml:/var/www/dde4/config/schedule.yml"
-  
 
   sidekiq:
-    build:
-      context: .
+    build: .
     image: dde4
+    container_name: sidekiq
     command: bundle exec sidekiq
     depends_on:
-    - redis
+      - redis
     environment:
       DATABASE_HOST: db
       REDIS_URL: redis://redis:6379/1
