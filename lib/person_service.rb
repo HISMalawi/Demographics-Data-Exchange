@@ -2,7 +2,10 @@ require "people_matching_service/bantu_soundex"
 # require "people_matching_service/elasticsearch_person_dao"
 # require "people_matching_service/dde_person_transformer"
 
+
 module PersonService
+  NPID_LENGTH = 6
+  NATIONAL_ID_LENGTH = 8
 
   def self.reassign_npid(params, current_user)
     person = PersonDetail.find_by_person_uuid(params[:doc_id])
@@ -42,6 +45,7 @@ module PersonService
     
     raise UnprocessableEntityException, 'No NPIDs to assign' if location_npids.blank?
 
+    national_id             = params[:national_id].presence
     npid                    = params[:npid] 
     given_name              = params[:given_name]
     family_name             = params[:family_name]
@@ -80,7 +84,8 @@ module PersonService
   
         uuid = params[:doc_id] || ActiveRecord::Base.connection.execute('SELECT uuid() as uuid').first[0]
 
-        person = PersonDetail.create!(first_name: given_name,
+        person = PersonDetail.create!(national_id: national_id,
+                                      first_name: given_name,
                                       last_name: family_name,
                                       middle_name: middle_name,
                                       gender: gender,
@@ -114,6 +119,7 @@ module PersonService
   def self.after_create_get_person_obj(person, params)
 
     person = {
+      national_id:  person.national_id,
       given_name:   person.first_name,
       family_name:  person.last_name,
       middle_name:  person.middle_name,
@@ -153,6 +159,7 @@ module PersonService
     person = PersonDetail.find_by_person_uuid(doc_id)
 
     updated_person = {
+                      national_id:           params[:national_id],
                       first_name:            params[:given_name],
                       last_name:             params[:family_name],
                       middle_name:           params[:middle_name],
@@ -228,6 +235,7 @@ module PersonService
     #This is an active record object
     if person_attributes.blank?
       return {
+        national_id:  person.national_id,
         given_name:   person.first_name,
         family_name:  person.last_name,
         middle_name:  person.middle_name,
@@ -341,7 +349,14 @@ module PersonService
         #npid, npid).joins("RIGHT JOIN person_attributes p
       #ON p.couchdb_person_id = people.couchdb_person_id").select("people.*")
       people = []
-      person = PersonDetail.where(["npid =?", npid])
+
+      if npid.length == NPID_LENGTH
+        # Fetch by npid
+        person = PersonDetail.where(["npid =?", npid])
+      elsif npid.length == NATIONAL_ID_LENGTH
+        # Fetch by national_id
+        person = PersonDetail.where(["national_id = ?", npid])
+      end
 
       # PersonAttribute.where(["value =?", npid]).each do |person_attribute|
       #   people << Person.find(person_attribute.person_id)
