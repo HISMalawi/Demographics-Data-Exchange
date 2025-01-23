@@ -10,6 +10,8 @@ services:
       - /opt/dde4/db_eight:/var/lib/mysql
     ports:
       - "3308:3306"
+    networks:
+      - dde_network
 
   redis:
     image: redis:6.2.0
@@ -18,13 +20,15 @@ services:
       - "6000:6379"
     volumes:
       - redis-data:/data
+    networks:
+      - dde_network
 
   dde4:
     build: .
     image: dde4
     container_name: dde4
     ports:
-      - "8050:8050"
+      - "8009:8050"
     environment:
       WEB_CONCURRENCY: 6
       RAILS_MAX_THREADS: 5
@@ -37,10 +41,12 @@ services:
     links:
       - db:db
     volumes:
-      - "./src:/var/www/dde"
+      - "./src:/var/www/dde4"
       - "./config/database.yml:/var/www/dde4/config/database.yml"
       - "./config/sidekiq.yml:/var/www/dde4/config/sidekiq.yml"
       - "./config/schedule.yml:/var/www/dde4/config/schedule.yml"
+    networks:
+      - dde_network
 
   sidekiq:
     build: .
@@ -52,6 +58,12 @@ services:
     environment:
       DATABASE_HOST: db
       REDIS_URL: redis://redis:6379/1
+    networks:
+      - dde_network
 
 volumes:
   redis-data:
+
+networks:
+  dde_network:
+    external: true
