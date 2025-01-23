@@ -45,7 +45,6 @@ module PersonService
     
     raise UnprocessableEntityException, 'No NPIDs to assign' if location_npids.blank?
 
-    national_id             = params[:national_id].presence
     npid                    = params[:npid] 
     given_name              = params[:given_name]
     family_name             = params[:family_name]
@@ -68,6 +67,7 @@ module PersonService
 
     art_number              = params[:identifiers][:art_number] rescue nil
     htn_number              = params[:identifiers][:htn_number] rescue nil
+    national_id             = params[:identifiers][:national_id].presence
 
 
     person = nil
@@ -119,7 +119,6 @@ module PersonService
   def self.after_create_get_person_obj(person, params)
 
     person = {
-      national_id:  person.national_id,
       given_name:   person.first_name,
       family_name:  person.last_name,
       middle_name:  person.middle_name,
@@ -138,8 +137,8 @@ module PersonService
       },
       identifiers: {
         art_number: params[:art_number],
-        htn_number: params[:htn_number]
-
+        htn_number: params[:htn_number],
+        national_id:  person.national_id,
       },
       npid: person.npid,
       doc_id: person.person_uuid
@@ -159,7 +158,6 @@ module PersonService
     person = PersonDetail.find_by_person_uuid(doc_id)
 
     updated_person = {
-                      national_id:           params[:national_id],
                       first_name:            params[:given_name],
                       last_name:             params[:family_name],
                       middle_name:           params[:middle_name],
@@ -170,6 +168,7 @@ module PersonService
                       birthdate_estimated:   params[:birthdate_estimated],
                       person_uuid:           doc_id,
                       npid:                  person.npid,
+                      national_id:           person.national_id,
 
                       #occupation:            (params[:attributes][:occupation] rescue nil),
                       #cellphone_number:      (params[:attributes][:cellphone_number] rescue nil),
@@ -235,7 +234,6 @@ module PersonService
     #This is an active record object
     if person_attributes.blank?
       return {
-        national_id:  person.national_id,
         given_name:   person.first_name,
         family_name:  person.last_name,
         middle_name:  person.middle_name,
@@ -256,6 +254,7 @@ module PersonService
         },
           # identifiers: self.get_identifiers(person),
           npid: person.npid,
+          national_id:  person.national_id,
           doc_id: person.person_uuid
         }
     else
