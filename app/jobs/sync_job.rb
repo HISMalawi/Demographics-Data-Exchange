@@ -232,6 +232,7 @@ class SyncJob < ApplicationJob
                 "birthdate_estimated": person.birthdate_estimated,
                 "person_uuid": person.person_uuid,
                 "npid": person.npid,
+                "national_id": person.national_id,
                 "date_registered": person.date_registered,
                 "last_edited": person.last_edited,
                 "location_created_at": person.location_created_at,
