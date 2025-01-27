@@ -7,12 +7,21 @@ class PersonDetail < ApplicationRecord
   validates :national_id, uniqueness: true, allow_blank: true
   validate :valid_national_id, if: -> { national_id.present? }
 
+  before_save :format_national_id
+
   private
 
+  # Convert national_id to uppercase before saving 
+  def format_national_id
+    self.national_id = national_id&.upcase
+  end 
+  
   # Custom validation for Malawi National ID
   def valid_national_id
-    unless national_id.match?(/\A(?!.*S)[A-Z0-9]{8}\z/)
-      errors.add(:national_id, "must be exactly 8 alphanumeric characters and cannot contain the letter 'S'")
+    if national_id.match?(/[SIOLU]/i) 
+      errors.add(:national_id, "cannot contain the letters 'S', 'I', 'O', 'L', or 'U' (case insensitive)")
+    elsif national_id.length != 8 || !national_id.match?(/\A[A-Z0-9]{8}\z/)
+      errors.add(:national_id, "must be exactly 8 alphanumeric characters")
     end
   end
 end
