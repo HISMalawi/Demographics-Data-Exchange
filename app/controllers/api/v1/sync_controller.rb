@@ -77,6 +77,7 @@ class Api::V1::SyncController < ApplicationController
                   :birthdate_estimated,
                   :person_uuid ,
                   :npid,
+                  :national_id,
                   :date_registered,
                   :last_edited,
                   :location_created_at,
