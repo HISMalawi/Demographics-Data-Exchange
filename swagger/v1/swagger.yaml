@@ -121,6 +121,11 @@ paths:
                       type: string
                     occupation:
                       type: string
+                identifiers:
+                  type: object
+                  properties: 
+                    national_id:
+                      type: string
               required:
               - given_name
               - family_name
@@ -131,6 +136,7 @@ paths:
               - home_district
               - home_village
               - home_traditional_authority
+              - identifierrs
   "/v1/search_by_name_and_gender":
     post:
       summary: search_by_name_and_gender people_detail
@@ -255,8 +261,10 @@ paths:
                       type: string
                 npid:
                   type: string
-                doc_id:
+                national_id: 
                   type: string
+                doc_id:
+                  type: string 
               required:
               - doc_id
   "/v1/void_person/":
