@@ -44,6 +44,8 @@ module DashboardService
       SELECT l.name location_name, ln.location_id,
       count(if(assigned = false,1,null)) unassigned,
       count(if(assigned = true,1,null)) assigned,
+      count(if(allocated = true OR assigned = true,1,null)) allocated,
+      count(if(allocated = false AND assigned = false,1,null)) unallocated,
       max(ln.updated_at) date_last_updated,
       ROUND(count(if(assigned = true,1,null))/(DATEDIFF(max(date(ln.updated_at)),min(date(ln.updated_at))))) avg_consumption_rate_per_day
       FROM location_npids ln

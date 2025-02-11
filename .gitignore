@@ -17,7 +17,8 @@ schema.rb
 mockups
 rerun.txt
 nbproject
-log/*
+/log/*
+!/log/.keep
 .idea/*
 .ruby-version
 vendor/plugins/htn/*
