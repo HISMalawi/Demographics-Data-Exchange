@@ -24,6 +24,12 @@ RSpec.describe 'api/v1/people_details', type: :request do
                 home_traditional_authority: { type: :string },
                 occupation: { type: :string }
               }
+          },
+          identifiers: {
+            type: :object,
+            properties: {
+              national_id: { type: :string }
+            }
           }
         },
         required: %w[given_name family_name gender birthdate birthdate_estimated attributes home_district home_village
@@ -147,6 +153,7 @@ RSpec.describe 'api/v1/people_details', type: :request do
               }
           },
           npid: { type: :string },
+          national_id: { type: :string },
           doc_id: { type: :string }
         },
         required: %w[doc_id]
