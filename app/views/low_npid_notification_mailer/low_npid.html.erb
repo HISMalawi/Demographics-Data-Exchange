@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+  <body>
+    <h1>Low NPIDs at <%= @site_details[:location_name] %></h1>
+    <p>
+      Please be notified that at the rate <%= @site_details[:location_name]%> 
+      is assigning NPIDs it is estimated the they will run out in 
+      <strong><%= @site_details[:unassigned]%></strong> days <br>
+    </p>
+    <p>Details:</p>
+      <table>
+        <th>Parameter</th>
+        <th>Value</th>
+        <tr>
+          <td>Unassigned NPIDs</td>
+          <td><%= @site_details[:unassigned]%></td>
+        </tr>
+        <tr>
+          <td>Average Consumption (Per/Day)</td>
+          <td><%= (@site_details[:avg_consumption_rate_per_day] || 0 )%></td>
+        </tr>
+        <tr>
+          <td>Number of days to run out</td>
+          <td><%=(@site_details[:days_remaining]) %></td>
+        </tr>
+      </table>
+    <p>
+      For more details, please follow this link: 
+      <a href='ddedashboard.hismalawi.org'> DDE Dashboard </a>
+    </p>
+    <p>Thank you </p>
+    <p>Demograghics Data Exchange</p>
+  </body>
+</html>
