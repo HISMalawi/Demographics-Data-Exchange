@@ -250,12 +250,23 @@ class SyncJob < ApplicationJob
   
   def push_footprints
     url = "#{@base_url}/push_footprints"
-  
-    footprints = FootPrint.where(synced: false)
-  
-    footprints.each do |foot|
-       response = RestClient.post(url,foot.as_json, headers={Authorization: @token })
-       foot.update(synced: true) if response.code == 201
+
+    FootPrint.where(synced: false).find_in_batches(batch_size: 500) do |batch|
+      responses = Parallel.map(batch, in_threads: 10) do |foot|
+        begin
+          response = RestClient.post(url, foot.as_json, { Authorization: @token })
+          foot.id if response.code == 201  # Collect successful IDs
+        rescue RestClient::ExceptionWithResponse => e
+          Rails.logger.error("Failed to sync footprint #{foot.id}: #{e.response}")
+          nil
+        rescue StandardError => e
+          Rails.logger.error("Unexpected error syncing footprint #{foot.id}: #{e.message}")
+          nil
+        end
+      end.compact
+
+      # Bulk update successful records
+      FootPrint.where(id: responses).update_all(synced: true) if responses.any?
     end
   end
 end
