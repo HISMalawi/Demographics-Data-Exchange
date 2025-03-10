@@ -7,7 +7,8 @@ then
     APP_DIR="/var/www/dde4"
 fi
 
-username="$(whoami)"
+#username="$(whoami)"
+username="emr-user"
 
 environment=${environment:-production}
 
@@ -77,7 +78,8 @@ bundle install --local
 # Get the path of Puma, Ruby, and Ruby version manager
 puma_path="$(which puma)"
 ruby_path="$(which ruby)"
-bundle_path="$(which bundle)"
+#bundle_path="$(which bundle)"
+bundle_path="/home/emr-user/.rbenv/shims/bundle"
 
 if [[ $ruby_version_manager == 1 ]]; then
     version_manager_path="$(which rbenv)"
@@ -86,7 +88,7 @@ else
     new_exec_start="/bin/bash -lc 'rvm use ruby-3.2.0 && $bundle_path exec $puma_path -C $APP_DIR/config/puma.rb'"
 fi
 
-sidekiq_exec_start="/bin/bash -lc '$bundle_path exec sidekiq -e production'"
+sidekiq_exec_start="/bin/bash -lc 'exec $bundle_path exec sidekiq -e production'"
 
 # Calculate half of the total cores, rounding down
 cores=$(nproc)/2
