@@ -86,7 +86,7 @@ else
     new_exec_start="/bin/bash -lc 'rvm use ruby-3.2.0 && $bundle_path exec $puma_path -C $APP_DIR/config/puma.rb'"
 fi
 
-sidekiq_exec_start="/bin/bash -lc 'exec $bundle_path exec sidekiq -e production'"
+sidekiq_exec_start="/bin/bash -lc '$bundle_path exec sidekiq -e production'"
 
 # Calculate half of the total cores, rounding down
 cores=$(nproc)/2
