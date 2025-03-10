@@ -45,13 +45,13 @@ read_yaml() {
 
 # Read the dde_sync_config username and password
 # SYNC_USERNAME=$(read_yaml ":dde_sync_config" ":username")
-SYNC_BATCHSIZE=$(read_yaml ":batch_size" ":batch")
+SYNC_BATCHSIZE=10_000
 SYNC_PROTOCOL=$(read_yaml ":dde_sync_config" ":protocol")
 SYNC_HOST=$(read_yaml ":dde_sync_config" ":host")
 
 
 # Update the current database.yml with extracted values
-sed -i -e "s/^:batch_size:[[:space:]]*[0-9_]\+/:batch_size:\n  :batch: ${SYNC_BATCHSIZE}/" \
+sed -i -e "s/^:batch_size:[[:space:]]*'[^']*'/:batch_size:\n  :batch: ${SYNC_BATCHSIZE}/" \
     -e "/^:dde_sync_config:/,/^[^ ]/{/^\([[:space:]]*:protocol: \).*/s//\1${SYNC_PROTOCOL}/}" \
     -e "/^:dde_sync_config:/,/^[^ ]/{/^\([[:space:]]*:host: \).*/s//\1${SYNC_HOST}/}" \
     -e "/^:dde_sync_config:/,/^[^ ]/{/^\([[:space:]]*:port: \).*/s/^/#/}" \
