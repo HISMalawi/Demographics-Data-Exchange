@@ -174,7 +174,7 @@ else
 fi
 
 echo 'Configure DDE Sidekiq service'
-SERVICE_FILE="/etc/systemd/system/dde_sidekiq_service.service"
+SERVICE_FILE="/etc/systemd/system/dde4_sidekiq.service"
 
 # Create the service file
 cat <<EOF | sudo tee $SERVICE_FILE > /dev/null
@@ -207,7 +207,7 @@ if systemctl is-active --quiet dde_sidekiq_service; then
     echo "✅ Sidekiq service is running successfully."
 else
     echo "❌ Sidekiq service failed to start. Check logs:"
-    sudo journalctl -u dde_sidekiq_service --no-pager --lines=20
+    sudo journalctl -u dde4_sidekiq --no-pager --lines=20
     exit 1
 fi
 
