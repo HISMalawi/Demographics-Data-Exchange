@@ -75,6 +75,8 @@ sudo rm -f Gemfile.lock
 echo "Running Bundle install ..."
 bundle install --local
 
+cd /var/www/dde4 && rails db:migrate
+
 # Get the path of Puma, Ruby, and Ruby version manager
 puma_path="/home/emr-user/.rbenv/shims/puma"
 ruby_path="$(which ruby)"
