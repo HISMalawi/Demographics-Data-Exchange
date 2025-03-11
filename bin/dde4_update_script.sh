@@ -76,13 +76,13 @@ echo "Running Bundle install ..."
 bundle install --local
 
 # Get the path of Puma, Ruby, and Ruby version manager
-puma_path="$(which puma)"
+puma_path="/home/emr-user/.rbenv/shims/puma"
 ruby_path="$(which ruby)"
 #bundle_path="$(which bundle)"
 bundle_path="/home/emr-user/.rbenv/shims/bundle"
 
 if [[ $ruby_version_manager == 1 ]]; then
-    version_manager_path="$(which rbenv)"
+    version_manager_path="/home/emr-user/.rbenv/bin/rbenv"
     new_exec_start="/bin/bash -lc '$version_manager_path local 3.2.0 && $bundle_path exec $puma_path -C $APP_DIR/config/puma.rb'"
 else
     new_exec_start="/bin/bash -lc 'rvm use ruby-3.2.0 && $bundle_path exec $puma_path -C $APP_DIR/config/puma.rb'"
