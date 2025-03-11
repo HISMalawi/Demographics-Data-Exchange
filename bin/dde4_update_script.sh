@@ -61,6 +61,8 @@ sed -i -e "s/^:batch_size:[[:space:]]*'[^']*'/:batch_size:\n  :batch: ${SYNC_BAT
 
 cp ${APP_DIR}/config/sidekiq.yml.example $APP_DIR/config/sidekiq.yml
 cp ${APP_DIR}/config/schedule.yml.example $APP_DIR/config/schedule.yml
+sudo chmod 777 $APP_DIR/config/sidekiq.yml
+sudo chmod 777 $APP_DIR/config/schedule.yml
 
 # Kill the process using port 8050
 echo "Killing the process using port $port_number..."
