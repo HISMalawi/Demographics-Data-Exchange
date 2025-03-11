@@ -166,9 +166,9 @@ sudo systemctl restart dde4.service
 
 # Check Puma service status
 if systemctl is-active --quiet dde4.service; then
-    echo "✅ Puma service is running successfully."
+    echo "✅ dde4 service is running successfully."
 else
-    echo "❌ Puma service failed to start. Check logs:"
+    echo "❌ dde4 service failed to start. Check logs:"
     sudo journalctl -u dde4.service --no-pager --lines=20
     exit 1
 fi
@@ -200,6 +200,7 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable dde4_sidekiq
 sudo systemctl start dde4_sidekiq
+sudo systemctl restart dde4_sidekiq
 
 # Check Sidekiq service status
 if systemctl is-active --quiet dde_sidekiq_service; then
