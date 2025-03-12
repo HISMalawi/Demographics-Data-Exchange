@@ -7,7 +7,8 @@ then
     APP_DIR="/var/www/dde4"
 fi
 
-username="$(whoami)"
+#username="$(whoami)"
+username="emr-user"
 
 environment=${environment:-production}
 
@@ -45,13 +46,14 @@ read_yaml() {
 
 # Read the dde_sync_config username and password
 # SYNC_USERNAME=$(read_yaml ":dde_sync_config" ":username")
-# SYNC_PASSWORD=$(read_yaml ":dde_sync_config" ":password")
+SYNC_BATCHSIZE=10_000
 SYNC_PROTOCOL=$(read_yaml ":dde_sync_config" ":protocol")
 SYNC_HOST=$(read_yaml ":dde_sync_config" ":host")
 
 
 # Update the current database.yml with extracted values
-sed -i -e "/^:dde_sync_config:/,/^[^ ]/{/^\([[:space:]]*:protocol: \).*/s//\1${SYNC_PROTOCOL}/}" \
+sed -i -e "s/^:batch_size:[[:space:]]*'[^']*'/:batch_size:\n  :batch: ${SYNC_BATCHSIZE}/" \
+    -e "/^:dde_sync_config:/,/^[^ ]/{/^\([[:space:]]*:protocol: \).*/s//\1${SYNC_PROTOCOL}/}" \
     -e "/^:dde_sync_config:/,/^[^ ]/{/^\([[:space:]]*:host: \).*/s//\1${SYNC_HOST}/}" \
     -e "/^:dde_sync_config:/,/^[^ ]/{/^\([[:space:]]*:port: \).*/s/^/#/}" \
     "${APP_DIR}/config/database.yml"
@@ -76,7 +78,8 @@ bundle install --local
 # Get the path of Puma, Ruby, and Ruby version manager
 puma_path="$(which puma)"
 ruby_path="$(which ruby)"
-bundle_path="$(which bundle)"
+#bundle_path="$(which bundle)"
+bundle_path="/home/emr-user/.rbenv/shims/bundle"
 
 if [[ $ruby_version_manager == 1 ]]; then
     version_manager_path="$(which rbenv)"
@@ -84,6 +87,8 @@ if [[ $ruby_version_manager == 1 ]]; then
 else
     new_exec_start="/bin/bash -lc 'rvm use ruby-3.2.0 && $bundle_path exec $puma_path -C $APP_DIR/config/puma.rb'"
 fi
+
+sidekiq_exec_start="/bin/bash -lc 'exec $bundle_path exec sidekiq -e production'"
 
 # Calculate half of the total cores, rounding down
 cores=$(nproc)/2
@@ -159,4 +164,51 @@ sudo systemctl daemon-reload
 echo "Restarting the service"
 sudo systemctl restart dde4.service
 
-echo "Finished setting up!!"
+# Check Puma service status
+if systemctl is-active --quiet dde4.service; then
+    echo "✅ Puma service is running successfully."
+else
+    echo "❌ Puma service failed to start. Check logs:"
+    sudo journalctl -u dde4.service --no-pager --lines=20
+    exit 1
+fi
+
+echo 'Configure DDE Sidekiq service'
+SERVICE_FILE="/etc/systemd/system/dde_sidekiq_service.service"
+
+# Create the service file
+cat <<EOF | sudo tee $SERVICE_FILE > /dev/null
+[Unit]
+Description=Sidekiq
+After=syslog.target network.target
+
+[Service]
+Type=simple
+WorkingDirectory=$APP_DIR
+Environment="RAILS_ENV=production"
+ExecStart=$sidekiq_exec_start
+User=$username
+UMask=0002
+RestartSec=1
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Reload systemd, enable and start the service
+sudo systemctl daemon-reload
+sudo systemctl enable dde_sidekiq_service
+sudo systemctl start dde_sidekiq_service
+
+# Check Sidekiq service status
+if systemctl is-active --quiet dde_sidekiq_service; then
+    echo "✅ Sidekiq service is running successfully."
+else
+    echo "❌ Sidekiq service failed to start. Check logs:"
+    sudo journalctl -u dde_sidekiq_service --no-pager --lines=20
+    exit 1
+fi
+
+echo "🎉 Finished setting up!"
+exit 0
