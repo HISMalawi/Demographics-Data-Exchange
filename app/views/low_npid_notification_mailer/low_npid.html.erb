@@ -1,37 +1,105 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 600px;
+        background: #ffffff;
+        padding: 20px;
+        margin: auto;
+        border-radius: 8px;
+        box-shadow: 0px 0px 10px rgba(255, 193, 7, 0.5);
+        border-left: 5px solid #ffc107;
+      }
+      h1 {
+        color: #ffc107;
+        font-size: 20px;
+      }
+      p {
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+      }
+      th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+      }
+      th {
+        background: #ffc107;
+        color: white;
+        font-weight: bold;
+      }
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      a {
+        color: #ffc107;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      .footer {
+        font-size: 12px;
+        color: #777;
+        text-align: center;
+        margin-top: 20px;
+      }
+    </style>
   </head>
   <body>
-    <h1>Low NPIDs at <%= @site_details[:location_name] %></h1>
-    <p>
-      Please be notified that at the rate <%= @site_details[:location_name]%> 
-      is assigning NPIDs it is estimated the they will run out in 
-      <strong><%= @site_details[:unassigned]%></strong> days <br>
-    </p>
-    <p>Details:</p>
+    <div class="container">
+      <h1>Notification: Low NPIDs at <%= @site_details[:location_name] %></h1>
+
+      <p>
+        Attention: <%= @site_details[:location_name] %> is running low on NPIDs. 
+        At the current consumption rate, the remaining NPIDs are expected to be depleted in 
+        <strong><%= @site_details[:days_remaining].round %></strong> days.
+      </p>
+
+      <p><strong>Current Status:</strong></p>
+
       <table>
-        <th>Parameter</th>
-        <th>Value</th>
+        <tr>
+          <th>Parameter</th>
+          <th>Value</th>
+        </tr>
         <tr>
           <td>Unassigned NPIDs</td>
-          <td><%= @site_details[:unassigned]%></td>
+          <td><%= @site_details[:unassigned] %></td>
         </tr>
         <tr>
-          <td>Average Consumption (Per/Day)</td>
-          <td><%= (@site_details[:avg_consumption_rate_per_day] || 0 )%></td>
+          <td>Average Consumption (Per Day)</td>
+          <td><%= @site_details[:avg_consumption_rate_per_day].round %></td>
         </tr>
         <tr>
-          <td>Number of days to run out</td>
-          <td><%=(@site_details[:days_remaining]) %></td>
+          <td>Estimated Days Remaining</td>
+          <td><%= @site_details[:days_remaining].round %></td>
         </tr>
       </table>
-    <p>
-      For more details, please follow this link: 
-      <a href='ddedashboard.hismalawi.org'> DDE Dashboard </a>
-    </p>
-    <p>Thank you </p>
-    <p>Demograghics Data Exchange</p>
+
+      <p>
+        Please take the necessary steps to replenish the NPIDs. 
+        For more details, visit: 
+        <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
+      </p>
+
+      <p>Thank you,</p>
+      <p><strong>Demographics Data Exchange</strong></p>
+
+      <div class="footer">
+        &copy; <%= Time.now.year %> Demographics Data Exchange. All rights reserved.
+      </div>
+    </div>
   </body>
 </html>
