@@ -10,22 +10,20 @@ class LowNpidNotificationMailer < ApplicationMailer
         if @mailing_list.blank?            
             @mailing_list = MailingList.joins(:roles).where('roles.role = ?', 'Admin').pluck(:email) 
             mail(to: @mailing_list,
-             subject: "Low NPIDs at #{npid_details[:location_name]}") if \
-             mail_not_sent
+             subject: "Low NPIDs at #{npid_details[:location_name]}")
         else
             mail(to: @mailing_list,
-            cc: MailingList.joins(:roles).where('roles.role = ?', 'Admin').pluck(:email),
-            subject: "Low NPIDs at #{npid_details[:location_name]}") if \
-            mail_not_sent
+            # cc: MailingList.joins(:roles).where('roles.role = ?', 'Admin').pluck(:email),
+            subject: "Low NPIDs at #{npid_details[:location_name]}") 
         end
     end
 
     private
 
     def mail_not_sent
-        MailingLog.where('location_id = ? AND notification_type = ? \
-            AND data(created_at) = ?', npid_details[:location_id], \
-            "#{mail.to} #{mail.subject}", Date.today).blank?
+        MailingLog.where('location_id = ? AND notification_type = ?  
+              AND created_at = ?', @site_details[:location_id],  
+              "#{mail.to} #{mail.subject}", Date.today).blank?
     end
 
     def log_mail
