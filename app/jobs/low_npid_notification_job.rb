@@ -2,32 +2,57 @@ class LowNpidNotificationJob < ApplicationJob
   queue_as :default
 
   def perform(*args)
-    # Do something later
-    
-    site = ActiveRecord::Base.connection.select_all("SELECT	
-          l.name location_name,
+    offset = 0
+    batch_size = 10
+  
+    loop do
+      # Fetch only sites that need email notifications
+      sites = ActiveRecord::Base.connection.select_all("
+        SELECT
+          l.name AS location_name,
           ln.location_id,
-          count(if(assigned = false, 1, null)) unassigned,
-          count(if(assigned = true, 1, null)) assigned,
-          (ROUND(count(if(assigned = true, 1, null))/(DATEDIFF(max(date(ln.updated_at)),
-           min(date(ln.updated_at)))))) avg_consumption_rate_per_day
-        FROM
+          COUNT(CASE WHEN assigned = false THEN 1 ELSE NULL END) AS unassigned,
+          COUNT(CASE WHEN assigned = true THEN 1 ELSE NULL END) AS assigned,
+          ROUND(
+            COUNT(CASE WHEN assigned = true THEN 1 ELSE NULL END) / 
+            NULLIF(DATEDIFF(MAX(ln.updated_at), MIN(ln.updated_at)), 0), 2
+          ) AS avg_consumption_rate_per_day,
+          CASE 
+            WHEN ROUND(
+              COUNT(CASE WHEN assigned = true THEN 1 ELSE NULL END) / 
+              NULLIF(DATEDIFF(MAX(ln.updated_at), MIN(ln.updated_at)), 0), 2
+            ) = 0 
+            THEN COUNT(CASE WHEN assigned = false THEN 1 ELSE NULL END)
+            ELSE COUNT(CASE WHEN assigned = false THEN 1 ELSE NULL END) / 
+                 ROUND(
+                   COUNT(CASE WHEN assigned = true THEN 1 ELSE NULL END) / 
+                   NULLIF(DATEDIFF(MAX(ln.updated_at), MIN(ln.updated_at)), 0), 2
+                 )
+          END AS days_remaining
+        FROM 
           location_npids ln
-        JOIN locations l
-          on ln.location_id = l.location_id
-        WHERE
-          ln.location_id = #{args[0]}
-        GROUP BY location_id;").first.symbolize_keys
-
-      if site[:avg_consumption_rate_per_day].to_i.zero?
-        site[:days_remaining] = site[:unassigned]
-      else
-        site[:days_remaining] = (site[:unassigned] / site[:avg_consumption_rate_per_day])
+        JOIN 
+          locations l ON ln.location_id = l.location_id
+        GROUP BY 
+          ln.location_id, l.name
+        HAVING 
+          days_remaining < 30 OR unassigned < 1000
+        ORDER BY 
+          days_remaining ASC  -- Prioritize urgent ones first
+        LIMIT #{batch_size} OFFSET #{offset}
+      ").map(&:symbolize_keys)
+  
+      # Stop if there are no more results
+      break if sites.empty?
+  
+      # Send notifications
+      sites.each do |site|
+        LowNpidNotificationMailer.low_npid(site).deliver_later
       end
-
-      if  site[:days_remaining].to_i < 30 || site[:unassigned].to_i < 1_000
-           #send notification
-           LowNpidNotificationMailer.low_npid(site).deliver_later
-      end
+  
+      # Move to the next batch
+      offset += batch_size
+    end
   end
+  
 end
