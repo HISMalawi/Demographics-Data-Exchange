@@ -15,7 +15,7 @@ class LastSyncedMailer < ApplicationMailer
              ) 
         else
             mail(to: @mailing_list,
-            cc: MailingList.joins(:roles).where('roles.role = ?', 'Admin').pluck(:email),
+            #cc: MailingList.joins(:roles).where('roles.role = ?', 'Admin').pluck(:email),
             subject: "Please check #{site_details["site_name"]} last synced more than 3 days ago"
             ) 
         end
