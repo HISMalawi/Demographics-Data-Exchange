@@ -87,7 +87,7 @@ rails_path="/home/emr-user/.rbenv/shims/rails"
 bundle_path="/home/emr-user/.rbenv/shims/bundle"
 
 echo "Run any penidng  migrations"
-cd /var/www/dde4 && $rails_path db:migrate
+cd /var/www/dde4 && RAILS_ENV=production $rails_path db:migrate
 
 if [[ $ruby_version_manager == 1 ]]; then
     version_manager_path="/home/emr-user/.rbenv/bin/rbenv"
