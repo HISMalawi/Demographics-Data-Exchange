@@ -91,12 +91,15 @@ module DashboardService
     site_activity = ActiveRecord::Base.connection.select_all("
       SELECT l.name site_name, 
       l.location_id,
+      d.name as district_name,
       max(fp.created_at) last_activity,
       l.last_seen last_seen,
       l.activated,
+      l.district_id,
       TIMESTAMPDIFF(DAY, max(fp.created_at), CURRENT_TIMESTAMP()) days_since_last_activity,
       TIMESTAMPDIFF(DAY, l.last_seen, CURRENT_TIMESTAMP()) days_since_last_seen
       FROM locations l
+      JOIN districts d ON d.district_id = l.district_id
       LEFT JOIN foot_prints fp
       ON fp.location_id = l.location_id
       WHERE l.ip_address is not null

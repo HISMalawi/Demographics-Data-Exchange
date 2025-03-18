@@ -5,6 +5,7 @@
     <style>
       body {
         font-family: Arial, sans-serif;
+        background-color: #e0e0e0;
         color: #333;
         margin: 0;
         padding: 20px;
@@ -15,8 +16,7 @@
         padding: 20px;
         margin: auto;
         border-radius: 8px;
-        box-shadow: 0px 0px 10px rgba(255, 193, 7, 0.5);
-        border-left: 5px solid #ffc107;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
       }
       h1 {
         color: #ffc107;
@@ -59,33 +59,31 @@
   </head>
   <body>
     <div class="container">
-      <h1>Notification: Low NPIDs at <%= @site_details[:location_name] %></h1>
+      <h1>Notification: Low NPID Levels in <%= @district_data[:name] %></h1>
 
       <p>
-        Attention: <%= @site_details[:location_name] %> is running low on NPIDs. 
-        At the current consumption rate, the remaining NPIDs are expected to be depleted in 
-        <strong><%= @site_details[:days_remaining].round %></strong> days.
+        Please be advised that <%= @district_data[:sites].count %> site<%= @district_data[:sites].count == 1 ? '' : 's' %> in this district is currently experiencing low NPID levels.
       </p>
-
+      
       <p><strong>Current Status:</strong></p>
-
+  
       <table>
         <tr>
-          <th>Parameter</th>
-          <th>Value</th>
+          <th>Site</th>
+          <th>Unassigned NPIDs</th>
+          <th>Average Consumption (Per Day)</th>
+          <th>Estimated Days Remaining</th>
         </tr>
-        <tr>
-          <td>Unassigned NPIDs</td>
-          <td><%= @site_details[:unassigned] %></td>
-        </tr>
-        <tr>
-          <td>Average Consumption (Per Day)</td>
-          <td><%= @site_details[:avg_consumption_rate_per_day].round %></td>
-        </tr>
-        <tr>
-          <td>Estimated Days Remaining</td>
-          <td><%= @site_details[:days_remaining].round %></td>
-        </tr>
+      
+        <% @district_data[:sites].each do |site| %> 
+          <tr>
+          <td><%= site[:location_name] %></td>
+          <td><%= site[:unassigned] %></td>
+          <td><%= site[:avg_consumption_rate_per_day].round %></td>
+          <td><%= site[:days_remaining].round %></td>
+          </tr>
+        <% end %>
+    
       </table>
 
       <p>

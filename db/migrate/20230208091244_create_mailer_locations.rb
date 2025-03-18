@@ -14,3 +14,15 @@ class CreateMailerLocations < ActiveRecord::Migration[5.2]
     end
   end
 end
+
+{
+  district_id: 2,
+  sites: {
+    sites_last_seen_greater_than_3_days: [
+     # The sites here
+    ],
+    sites_last_activity_greater_than_3_days:[
+         # The sites here
+    ]
+  }
+}

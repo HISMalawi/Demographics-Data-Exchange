@@ -59,32 +59,34 @@
   </head>
   <body>
     <div class="container">
-      <h1>We have not received data from <%= @site_details["site_name"] %> for more than 3 days</h1>
-      
-      <p>
-        Please be notified that this site has not synced for the past 
-        <strong><%= @site_details["days_since_last_activity"] %></strong> days.
-      </p>
+      <h1>Synchronization Issue Detected: not data received from <%= @district_data[:sites][:sites_last_activity_greater_than_3_days].count %> sites in <%= @district_data[:name] %> </h1>
+        <p>
+        Please be advised that the following sites have not synchronized 
+        with the master system for over <strong>three</strong> days.
+        </p>
 
-      <p><strong>Details:</strong></p>
+      <p><strong>Sites List:</strong></p>
 
       <table>
         <tr>
-          <th>Parameter</th>
-          <th>Value</th>
+          <th>Site Name</th>
+          <th>Date Time Last Synced With Master</th>
+          <th>Days Since Synced</th>
         </tr>
-        <tr>
-          <td>Date Time Last Synced With Master</td>
-          <td><%= @site_details["last_activity"].to_datetime.strftime('%d %b, %Y %H:%M:%S') %></td>
-        </tr>
-        <tr>
-          <td>Days Since Synced</td>
-          <td><%= @site_details["days_since_last_activity"] %></td>
-        </tr>
+        <%  @district_data[:sites][:sites_last_activity_greater_than_3_days].each do |site| %>
+          <tr>
+          <td><%= site["site_name"] %></td>
+          <td>
+            <%=  site["last_activity"].to_datetime.strftime('%d %b, %Y %H:%M:%S') %>
+          </td>
+          <td><%= site["days_since_last_activity"] %></td>
+          </tr>
+        <% end %>
       </table>
 
       <p>
-        For more details, please follow this link:  
+        Kindly take the appropriate measures to address and resolve the synchronization issues.
+        For more details, please visit:
         <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
       </p>
 

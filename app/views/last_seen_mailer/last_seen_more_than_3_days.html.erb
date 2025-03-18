@@ -59,31 +59,34 @@
   </head>
   <body>
     <div class="container">
-      <h1>Connectivity Issue Detected: No Data Received from <%= @site_details["site_name"] %></h1>
-      
-      <p>
-        Please note that this site has been offline for  
-        <strong><%= @site_details["days_since_last_seen"] %></strong> days, and no data has been received during this period.
+      <h1>Connectivity Issue Detected: No connectivity with <%= @district_data[:sites][:sites_last_seen_greater_than_3_days].count %> sites in <%= @district_data[:name] %>
+      </h1>
+      <p>  
+        Kindly be informed that these sites have been offline for  
+        <strong>three</strong> days, and no data has been received during this period.  
       </p>
 
-      <p><strong>Site Details:</strong></p>
-
+      <p><strong>Sites Details:</strong></p>
       <table>
         <tr>
-          <th>Parameter</th>
-          <th>Value</th>
+          <th>Site Name</th>
+          <th>Last Seen On Network</th>
+          <th>Days Since Last Seen</th>
         </tr>
-        <tr>
-          <td>Last Seen on Network</td>
-          <td><%= @site_details["last_seen"].to_datetime.strftime('%d %b, %Y %H:%M:%S') %></td>
-        </tr>
-        <tr>
-          <td>Days Since Last Sync</td>
-          <td><%= @site_details["days_since_last_seen"] %></td>
-        </tr>
+        <%  @district_data[:sites][:sites_last_seen_greater_than_3_days].each do |site| %>
+            <tr>
+            <td><%= site["site_name"] %></td>
+            <td>
+              <%= site["last_seen"].to_datetime.strftime('%d %b, %Y %H:%M:%S')  %>
+            </td>
+            <td><%= site["days_since_last_seen"] %></td>
+            </tr>
+
+          <% end %>
       </table>
 
       <p>
+        Kindly take the appropriate measures to address and resolve the connectivity issues.
         To check the latest status, please visit:  
         <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
       </p>
