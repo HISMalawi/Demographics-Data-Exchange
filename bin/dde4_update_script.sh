@@ -198,8 +198,8 @@ EOF
 
 # Reload systemd, enable and start the service
 sudo systemctl daemon-reload
-sudo systemctl enable dde_sidekiq_service
-sudo systemctl start dde_sidekiq_service
+sudo systemctl enable dde4_sidekiq
+sudo systemctl start dde4_sidekiq
 
 # Check Sidekiq service status
 if systemctl is-active --quiet dde_sidekiq_service; then
