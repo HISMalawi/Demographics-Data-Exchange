@@ -28,7 +28,6 @@ class LastSyncedMailer < ApplicationMailer
 
     def log_mail
       return unless mail.perform_deliveries
-
       MailingLog.create!(
         district_id: @district_data[:district_id],
         notification_type: "#{mail.to} #{mail.subject}"
