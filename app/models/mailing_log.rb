@@ -1,0 +1,2 @@
+class MailingLog < ApplicationRecord
+end

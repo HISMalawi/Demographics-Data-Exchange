@@ -25,4 +25,6 @@ class DashboardSocketDataJob < ApplicationJob
 
     ActionCable.server.broadcast('dashboard_channel', {message: dash_data})
   end
+
+  
 end

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #e0e0e0;
+        color: #333;
+        margin: 0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 600px;
+        background: #ffffff;
+        padding: 20px;
+        margin: auto;
+        border-radius: 8px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #ffc107;
+        font-size: 20px;
+      }
+      p {
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+      }
+      th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+      }
+      th {
+        background: #ffc107;
+        color: white;
+        font-weight: bold;
+      }
+      tr:nth-child(even) {
+        background-color: #f9f9f9;
+      }
+      a {
+        color: #ffc107;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      .footer {
+        font-size: 12px;
+        color: #777;
+        text-align: center;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Notification: Low NPID Levels in <%= @district_data[:name] %></h1>
+
+      <p>
+        Please be advised that <%= @district_data[:sites].count %> site<%= @district_data[:sites].count == 1 ? '' : 's' %> in this district is currently experiencing low NPID levels.
+      </p>
+      
+      <p><strong>Current Status:</strong></p>
+  
+      <table>
+        <tr>
+          <th>Site</th>
+          <th>Unassigned NPIDs</th>
+          <th>Average Consumption (Per Day)</th>
+          <th>Estimated Days Remaining</th>
+        </tr>
+      
+        <% @district_data[:sites].each do |site| %> 
+          <tr>
+          <td><%= site[:location_name] %></td>
+          <td><%= site[:unassigned] %></td>
+          <td><%= site[:avg_consumption_rate_per_day].round %></td>
+          <td><%= site[:days_remaining].round %></td>
+          </tr>
+        <% end %>
+    
+      </table>
+
+      <p>
+        Please take the necessary steps to replenish the NPIDs. 
+        For more details, visit: 
+        <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
+      </p>
+
+      <p>Thank you,</p>
+      <p><strong>Demographics Data Exchange</strong></p>
+
+      <div class="footer">
+        &copy; <%= Time.now.year %> Demographics Data Exchange. All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>
