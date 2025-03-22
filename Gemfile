@@ -4,19 +4,19 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '3.2.0'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'multi_json'
-gem 'sidekiq', '~> 7.3.0'
-gem 'sidekiq-cron'
-gem 'activejob-uniqueness'
+gem 'activejob-uniqueness', require: 'active_job/uniqueness/sidekiq_patch'
 gem 'activerecord-import'
-gem 'whenever', require: false
-gem 'parallel'
-gem 'rswag'
 gem 'bundler'
+gem 'kramdown'
+gem 'multi_json'
+gem 'parallel'
 gem 'rails', '~> 7.0.6'
 gem 'rake'
 gem 'rspec'
-gem 'kramdown'
+gem 'rswag'
+gem 'sidekiq', '~> 7.3.0'
+gem 'sidekiq-cron'
+gem 'whenever', require: false
 # Use mysql as the database for Active Record
 gem 'mysql2', '>= 0.4.4', '< 0.6.0'
 # Use Puma as the app server
