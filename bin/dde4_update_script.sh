@@ -61,6 +61,8 @@ sed -i -e "s/^:batch_size:[[:space:]]*'[^']*'/:batch_size:\n  :batch: ${SYNC_BAT
 
 cp ${APP_DIR}/config/sidekiq.yml.example $APP_DIR/config/sidekiq.yml
 cp ${APP_DIR}/config/schedule.yml.example $APP_DIR/config/schedule.yml
+sudo chmod 777 $APP_DIR/config/sidekiq.yml
+sudo chmod 777 $APP_DIR/config/schedule.yml
 
 # Kill the process using port 8050
 echo "Killing the process using port $port_number..."
@@ -73,22 +75,28 @@ sudo rm -f Gemfile.lock
 
 # Run Bundle install
 echo "Running Bundle install ..."
-bundle install --local
+$bundle_path install --local
+
+
 
 # Get the path of Puma, Ruby, and Ruby version manager
-puma_path="$(which puma)"
+puma_path="/home/emr-user/.rbenv/shims/puma"
 ruby_path="$(which ruby)"
+rails_path="/home/emr-user/.rbenv/shims/rails"
 #bundle_path="$(which bundle)"
 bundle_path="/home/emr-user/.rbenv/shims/bundle"
 
+echo "Run any penidng  migrations"
+cd /var/www/dde4 && RAILS_ENV=production $rails_path db:migrate
+
 if [[ $ruby_version_manager == 1 ]]; then
-    version_manager_path="$(which rbenv)"
+    version_manager_path="/home/emr-user/.rbenv/bin/rbenv"
     new_exec_start="/bin/bash -lc '$version_manager_path local 3.2.0 && $bundle_path exec $puma_path -C $APP_DIR/config/puma.rb'"
 else
     new_exec_start="/bin/bash -lc 'rvm use ruby-3.2.0 && $bundle_path exec $puma_path -C $APP_DIR/config/puma.rb'"
 fi
 
-sidekiq_exec_start="/bin/bash -lc 'exec $bundle_path exec sidekiq -e production'"
+sidekiq_exec_start="/bin/bash -lc '$bundle_path exec sidekiq -e production'"
 
 # Calculate half of the total cores, rounding down
 cores=$(nproc)/2
@@ -166,15 +174,15 @@ sudo systemctl restart dde4.service
 
 # Check Puma service status
 if systemctl is-active --quiet dde4.service; then
-    echo "✅ Puma service is running successfully."
+    echo "✅ dde4 service is running successfully."
 else
-    echo "❌ Puma service failed to start. Check logs:"
+    echo "❌ dde4 service failed to start. Check logs:"
     sudo journalctl -u dde4.service --no-pager --lines=20
     exit 1
 fi
 
 echo 'Configure DDE Sidekiq service'
-SERVICE_FILE="/etc/systemd/system/dde_sidekiq_service.service"
+SERVICE_FILE="/etc/systemd/system/dde4_sidekiq.service"
 
 # Create the service file
 cat <<EOF | sudo tee $SERVICE_FILE > /dev/null
@@ -200,13 +208,14 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable dde4_sidekiq
 sudo systemctl start dde4_sidekiq
+sudo systemctl restart dde4_sidekiq
 
 # Check Sidekiq service status
 if systemctl is-active --quiet dde_sidekiq_service; then
     echo "✅ Sidekiq service is running successfully."
 else
     echo "❌ Sidekiq service failed to start. Check logs:"
-    sudo journalctl -u dde_sidekiq_service --no-pager --lines=20
+    sudo journalctl -u dde4_sidekiq --no-pager --lines=20
     exit 1
 fi
 

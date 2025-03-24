@@ -67,7 +67,9 @@ module PersonService
 
     art_number              = params[:identifiers][:art_number] rescue nil
     htn_number              = params[:identifiers][:htn_number] rescue nil
-    national_id             = params[:identifiers][:national_id].presence
+    national_id             = params.dig(:identifiers, :national_id).presence
+
+  
 
 
     person = nil
