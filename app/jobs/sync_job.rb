@@ -186,8 +186,6 @@ class SyncJob < ApplicationJob
       redo if updated != true
     rescue => e
       File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
-        exit
-
     end
   end
 
@@ -208,8 +206,6 @@ class SyncJob < ApplicationJob
       redo if updated != true
     rescue => e
       File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
-        exit
-
     end
   end
 
