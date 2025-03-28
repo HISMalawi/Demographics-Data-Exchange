@@ -170,7 +170,7 @@ module PersonService
                       birthdate_estimated:   params[:birthdate_estimated],
                       person_uuid:           doc_id,
                       npid:                  person.npid,
-                      national_id:           person.national_id,
+                      national_id:           params.dig(:national_id) || person.national_id,
 
                       #occupation:            (params[:attributes][:occupation] rescue nil),
                       #cellphone_number:      (params[:attributes][:cellphone_number] rescue nil),
