@@ -30,7 +30,7 @@ class SyncJob < ApplicationJob
     @location = @user['location_id'].to_i
 
     @token = ''
-  
+
     start_syncing
   end
 
@@ -42,17 +42,17 @@ class SyncJob < ApplicationJob
       FileUtils.touch "/tmp/dde_sync.lock"
     end
     begin
-     authorize
-     pull_new_records
-     pull_updated_records
-     push_records_new
-     push_records_updates
-     push_footprints
-     pull_npids
-    ensure
-      if File.exist?("/tmp/dde_sync.lock")
-        FileUtils.rm "/tmp/dde_sync.lock"
-      end
+      authorize
+      pull_new_records
+      pull_updated_records
+      push_records_new
+      push_records_updates
+      push_footprints
+      pull_npids
+     ensure
+       if File.exist?("/tmp/dde_sync.lock")
+         FileUtils.rm "/tmp/dde_sync.lock"
+       end
     end
   end
 
@@ -70,35 +70,35 @@ class SyncJob < ApplicationJob
       File.write("#{Rails.root}/tmp/token.json", {:token => @token}.to_json)
     end
   end
-  
+
   def authenticate
-      url = "#{@base_url}/login?username=#{@username}&password=#{@pwd}"
-  
+    url = "#{@base_url}/login?username=#{@username}&password=#{@pwd}"
+
       token = JSON.parse(RestClient.post(url,headers={}))['access_token']
   end
-  
+
   def token_valid(token)
     url = "#{@base_url}/verify_token"
-  
+
     begin
       response = RestClient.post(url,{'token' => token}.to_json, {content_type: :json, accept: :json})
     rescue => e
       return false
     end
-  
+
     if response.code == 200
       return true
     else
       return false
     end
   end
-  
+
   def pull_new_records
     pull_seq = Config.find_by_config('pull_seq_new')['config_value'].to_i
     url = "#{@base_url}/person_changes_new?site_id=#{@location}&pull_seq=#{pull_seq}"
-  
+
     updates = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
-  
+
     updates.each do |record|
       person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
       pull_seq = record['id'].to_i
@@ -109,7 +109,7 @@ class SyncJob < ApplicationJob
         if person.blank?
           PersonDetail.create!(record)
         else
-            person.update(record)
+          person.update(record)
             audit_record = JSON.parse(person.to_json)
             audit_record.delete('id')
             audit_record.delete('created_at')
@@ -120,13 +120,13 @@ class SyncJob < ApplicationJob
       end
     end
   end
-  
+
   def pull_updated_records
     pull_seq = Config.find_by_config('pull_seq_update')['config_value'].to_i
     url = "#{@base_url}/person_changes_updates?site_id=#{@location}&pull_seq=#{pull_seq}"
-  
+
     updates = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
-  
+
     updates.each do |record|
       person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
       pull_seq = record['update_seq'].to_i
@@ -138,7 +138,7 @@ class SyncJob < ApplicationJob
         if person.blank?
           PersonDetail.create!(record)
         else
-            person.update(record)
+          person.update(record)
             audit_record = JSON.parse(person.to_json)
             audit_record.delete('id')
             audit_record.delete('created_at')
@@ -150,13 +150,13 @@ class SyncJob < ApplicationJob
       end
     end
   end
-  
+
   def pull_npids
     npid_seq = Config.find_by_config('npid_seq')['config_value'].to_i
     url = "#{@base_url}/pull_npids?site_id=#{@location}&npid_seq=#{npid_seq}"
-  
+
     npids = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
-  
+
     unless npids.blank?
       npids.each do |npid|
         next if LocationNpid.find_by_npid(npid['npid'])
@@ -169,50 +169,46 @@ class SyncJob < ApplicationJob
       end
     end
   end
-  
+
   def push_records_new
     url = "#{@base_url}/push_changes_new"
-  
+
     push_seq = Config.find_by_config('push_seq_new')['config_value'].to_i
-  
+
     records_to_push = PersonDetail.unscoped.where('person_details.id > ? AND person_details.location_updated_at = ?', push_seq,@location).order(:id).limit(100)
-  
+
     #PUSH UPDATES
     records_to_push.each do | record |
-      begin
-        response = RestClient.post(url,format_payload(record), headers={Authorization: @token })
-        redo if response.code != 201
-        updated = Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response.code == 201
-        redo if updated != true
-      rescue => e
-          File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
-          exit
-      end
+
+      response = RestClient.post(url,format_payload(record), headers={Authorization: @token })
+      redo if response.code != 201
+      updated = Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response.code == 201
+      redo if updated != true
+    rescue => e
+      File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
     end
   end
-  
+
   def push_records_updates
     url = "#{@base_url}/push_changes_updates"
-  
+
     push_seq = Config.find_by_config('push_seq_update')['config_value'].to_i
-  
+
     records_to_push = PersonDetail.unscoped.joins(:person_details_audit).where('person_details.location_updated_at = ?
         AND person_details_audits.id > ?',@location, push_seq).order('person_details_audits.id').limit(100).select('person_details.*,person_details_audits.id as update_seq')
-  
+
     #PUSH UPDATES
     records_to_push.each do | record |
-      begin
-        response = RestClient.post(url,format_payload(record), headers={Authorization: @token })
-        redo if response.code != 201
-        updated = Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i) if response.code == 201
-        redo if updated != true
-      rescue => e
-          File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
-          exit
-      end
+
+      response = RestClient.post(url,format_payload(record), headers={Authorization: @token })
+      redo if response.code != 201
+      updated = Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i) if response.code == 201
+      redo if updated != true
+    rescue => e
+      File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
     end
   end
-  
+
   def format_payload(person)
     payload =  {
                 "id": person.id,
@@ -247,26 +243,25 @@ class SyncJob < ApplicationJob
                 "update_seq": (person.update_seq rescue nil)
               }
   end
-  
+
   def push_footprints
     url = "#{@base_url}/push_footprints"
 
     FootPrint.where(synced: false).find_in_batches(batch_size: 500) do |batch|
       responses = Parallel.map(batch, in_threads: 10) do |foot|
-        begin
-          response = RestClient.post(url, foot.as_json, { Authorization: @token })
-          foot.id if response.code == 201  # Collect successful IDs
-        rescue RestClient::ExceptionWithResponse => e
-          Rails.logger.error("Failed to sync footprint #{foot.id}: #{e.response}")
-          nil
-        rescue StandardError => e
-          Rails.logger.error("Unexpected error syncing footprint #{foot.id}: #{e.message}")
-          nil
-        end
+
+        response = RestClient.post(url, foot.as_json, { Authorization: @token })
+        foot.foot_print_id if response.code == 201  # Collect successful IDs
+      rescue RestClient::ExceptionWithResponse => e
+        Rails.logger.error("Failed to sync footprint #{foot.foot_print_id}: #{e.response}")
+        nil
+      rescue StandardError => e
+        Rails.logger.error("Unexpected error syncing footprint #{foot.foot_print_id}: #{e.message}")
+        nil
       end.compact
 
       # Bulk update successful records
-      FootPrint.where(id: responses).update_all(synced: true) if responses.any?
+      FootPrint.where(foot_print_id: responses).update_all(synced: true) if responses.any?
     end
   end
 end

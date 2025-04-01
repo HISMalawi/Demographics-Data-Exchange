@@ -211,7 +211,7 @@ sudo systemctl start dde4_sidekiq
 sudo systemctl restart dde4_sidekiq
 
 # Check Sidekiq service status
-if systemctl is-active --quiet dde_sidekiq_service; then
+if systemctl is-active --quiet dde4_sidekiq; then
     echo "✅ Sidekiq service is running successfully."
 else
     echo "❌ Sidekiq service failed to start. Check logs:"
