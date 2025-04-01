@@ -50,6 +50,15 @@ def store_master_schedule_config
         config['dashboard_socket'] = DASHBOARD_SOCKET_CONFIGS
       end
 
+      unless config.key?('low_npid_notification')
+        config['low_npid_notification'] = LOW_NPID_NOFICATION_CONFIGS
+      end
+
+      unless config.key?('last_seen_last_synced')
+        config['last_seen_last_synced'] = LAST_SEEN_LAST_SYNCED_CONFIGS
+      end
+
+
       if config.key?('dde4_sync')
          config.delete('dde4_sync')
       end
@@ -65,6 +74,14 @@ def store_master_schedule_config
 
       if config.key?('dashboard_socket')
         config.delete('dashboard_socket')
+      end
+
+      if config.key?('last_seen_last_synced')
+        config.delete('last_seen_last_synced')
+      end
+
+      if config.key?('low_npid_notification')
+        config.delete('low_npid_notification')
       end
 
       File.open(schedule_file, 'w') do |f|
@@ -86,8 +103,25 @@ def cron_config(cron_time, job_class_name, queue_name, description)
     }
 end
 
-DDE4_SYNC_CONFIGS = cron_config('*/5 * * * *', 'SyncJob','sync','Syncs data demographics and NPIDs with master')
-DASHBOARD_SOCKET_CONFIGS = cron_config('0 0 * * *','DashboardSocketDataJob','default', 'Refreshes dashboard details')
+DDE4_SYNC_CONFIGS = cron_config('*/5 * * * *', 
+                                'SyncJob',
+                                'sync',
+                                'Syncs data demographics and NPIDs with master')
+
+DASHBOARD_SOCKET_CONFIGS = cron_config('0 0 * * *',
+                                       'DashboardSocketDataJob',
+                                       'default',
+                                       'Refreshes dashboard details')
+
+LOW_NPID_NOFICATION_CONFIGS = cron_config('30 7 * * *',
+                                          'LowNpidNotificationJob',
+                                          'low_npid_notification', 
+                                          'Sends low NPIDs email nofications')
+
+LAST_SEEN_LAST_SYNCED_CONFIGS = cron_config('30 7  * * *', 
+                                            'LastSeenLastSyncedJob',
+                                            'last_seen_last_synced',
+                                            'Sends last seen and last sync email notifications')
 
 
 redis = Redis.new(url: 'redis://localhost:6379/0')
@@ -97,7 +131,7 @@ free_db = read_db_choice || find_free_redis_db(redis)
 store_db_choice(free_db)
 
 begin
-  if ActiveRecord::Base.connected? && ActiveRecord::Base.connection.active?
+  if ActiveRecord::Base.connection.active?
     store_master_schedule_config
   end
 rescue ActiveRecord::NoDatabaseError, ActiveRecord::ConnectionNotEstablished
@@ -107,7 +141,6 @@ end
 Sidekiq.configure_server do |config|
   config.redis = { url: "redis://localhost:6379/#{free_db}" }
 end
-
 Sidekiq.configure_client do |config|
   config.redis = { url: "redis://localhost:6379/#{free_db}" }
 end

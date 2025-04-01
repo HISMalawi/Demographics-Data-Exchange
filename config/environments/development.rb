@@ -31,7 +31,24 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.raise_delivery_errors = true
+
+  config.action_mailer.delivery_method = :smtp 
+
+  smtp_settings = YAML.load_file(Rails.root.join('config', 'smtp_settings.yml'))
+                      .deep_symbolize_keys[:smtp_settings][Rails.env.to_sym]
+  
+  config.action_mailer.smtp_settings  = {
+      address:  smtp_settings[:address],
+      port: smtp_settings[:port],
+      domain: smtp_settings[:domain],
+      user_name: smtp_settings[:user_name],
+      password: smtp_settings[:password],
+      authentication: :login,
+      enable_starttls_auto: smtp_settings[:enable_starttls_auto],
+      open_timeout: 30, 
+      read_timeout: 60  
+  }
 
   config.action_mailer.perform_caching = false
 

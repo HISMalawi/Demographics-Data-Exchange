@@ -6,6 +6,7 @@ Sidekiq::Web.use ActionDispatch::Cookies
 Sidekiq::Web.use ActionDispatch::Session::CookieStore, key: "_interslice_session"
 
 Rails.application.routes.draw do
+  resources :mailing_lists
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
   mount Sidekiq::Web => '/v1/sidekiq'
@@ -93,5 +94,5 @@ Rails.application.routes.draw do
   #config routes
   put 'v1/configs', to: 'api/v1/configs#update'
 
-  root to: "api/v1/user#index"
+  root to: redirect('/api-docs/')
 end
