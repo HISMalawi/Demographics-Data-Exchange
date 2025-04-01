@@ -113,12 +113,12 @@ DASHBOARD_SOCKET_CONFIGS = cron_config('0 0 * * *',
                                        'default',
                                        'Refreshes dashboard details')
 
-LOW_NPID_NOFICATION_CONFIGS = cron_config('0 0 * * *',
+LOW_NPID_NOFICATION_CONFIGS = cron_config('30 7 * * *',
                                           'LowNpidNotificationJob',
                                           'low_npid_notification', 
                                           'Sends low NPIDs email nofications')
 
-LAST_SEEN_LAST_SYNCED_CONFIGS = cron_config('*/100 * * * *', 
+LAST_SEEN_LAST_SYNCED_CONFIGS = cron_config('30 7  * * *', 
                                             'LastSeenLastSyncedJob',
                                             'last_seen_last_synced',
                                             'Sends last seen and last sync email notifications')
