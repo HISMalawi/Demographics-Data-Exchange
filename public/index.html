@@ -1,0 +1,2642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DDE4.0 API Documentation</title>
+    <style>
+        ol li {
+            padding: 5px;
+        }
+
+        *, *::after, *::before {
+            box-sizing: inherit;
+        }
+
+        .content .sectionbody .dlist dt, .content .verseblock-content, .content dl code, .content p > tt, .content ul code, p code {
+            background-color: #f9f9f9;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        code, pre {
+            font-size: 12px;
+        }
+
+        .field-name, code, pre {
+            font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+        }
+
+        code {
+            border-radius: 3px;
+            margin: 0;
+        }
+
+        .breadcrumb li, .btn, .btn-link, .meta li, code {
+            white-space: nowrap;
+        }
+
+        code, tt {
+            font-family: Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 12px;
+        }
+
+        code, kbd, pre, samp {
+            font-family: monospace, monospace;
+            font-size: 1em;
+        }
+
+        *, *::after, *::before {
+            box-sizing: inherit;
+        }
+
+        pre {
+            background-color: #fafafb;
+            border: 1px solid #cacaca;
+            border-radius: 3px;
+            line-height: 1.4em;
+            margin: 2em 0;
+            overflow: auto;
+            padding: 10px;
+        }
+
+        code, pre {
+            font-size: 12px;
+        }
+
+        .input {
+            border-collapse: collapse;
+            border-color: #ccc;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .input td, .input th {
+            padding: 8px;
+            border: 1px solid #ccc;
+            padding-left: 15px;
+        }
+
+        .subheading {
+            font-size: 18px;
+        }
+
+        .json-field {
+            color: blue;
+            font-weight: bold;
+        }
+
+        .top-anchor {
+            float: right;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        .required {
+            color: red;
+        }
+
+        .alert {
+            background-color: #d8ebf8;
+            border: 1px solid #97c1da;
+            color: #264c72;
+        }
+
+        .alert, .warning {
+            border-radius: 3px;
+            font-weight: 400;
+            margin-bottom: 20px;
+            padding: 15px 15px 0;
+            position: relative;
+        }
+
+        table {
+            page-break-inside: auto
+        }
+
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto
+        }
+
+    </style>
+</head>
+<body>
+<a id="top"></a>
+<table id="doc"
+       style="border-collapse: collapse; margin: auto; width: 80%; color: #333; margin-top: 30px; font-size: 15px;">
+    <tr>
+        <th style="font-weight: normal; font-size: 24px; text-align: left; border-bottom: 1px solid #ccc;">
+            DDE2.0 API Documentation
+        </th>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <th align="left" style="padding-left: 25px; font-size: 18px; font-weight: normal;">
+            REST API v1
+        </th>
+    </tr>
+    <tr>
+        <td>
+            <ol>
+                <li>
+                    <a href="#authentice">Authenticate DDE User</a>
+                </li>
+                <li>
+                    <a href="#add_user">Add DDE2.0 User</a>
+                </li>
+                <li>
+                    <a href="#authenticated">Check if Token Authenticated</a>
+                </li>
+                <li>
+                    <a href="#search_by_id">Search by Identifier</a>
+                </li>
+                <li>
+                    <a href="#search_by_name">Search Patient by Name and Gender</a>
+                </li>
+                <li>
+                    <a href="#search_by_doc_id">Search by Doc Id</a>
+                </li>
+                <li>
+                    <a href="#advanced_search">Advanced Patient Search</a>
+                </li>
+                <li>
+                    <a href="#mark_as_duplicate">Mark Record as Duplicate</a>
+                </li>
+                <li>
+                    <a href="#add_patient">Add New Patient</a>
+                </li>
+                <li>
+                    <a href="#update_patient">Update Existing Patient</a>
+                </li>
+                <li>
+                    <a href="#merge_records">Merge Patient Records</a>
+                </li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td style="font-size: 24px;">
+            <a id="authentice"></a>
+            Authenticate DDE User <a href="#top" class="top-anchor">top</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            To work with the API, you first need to be authenticated. Authenticate the user identified by given
+            credentials on:
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <pre>
+<code>
+    POST /v1/login
+</code>
+            </pre>
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Input
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table class="input">
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        username
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The username for the DDE user that was registered to work
+                        with the API.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        password
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The password for the DDE user that was registered to work
+                        with the API.
+                    </td>
+                </tr>
+            </table>
+            The interface expects a JSON Object as input. For example:
+        <pre>
+    {
+        <b class="json-field">"username"</b>: "username",
+        <b class="json-field">"password"</b>: "password"
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Response
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Successful login response:
+        <pre>
+    <b>Status</b>: Success
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"access_token"</b>: "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE1Mjk3Njc0MjV9.EDR8G6J94Qko5CDeblXkKidzNye2IE706z9T4p_bwTo",
+        <b class="json-field">"message"</b>: "Login Successful"
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Rejected login response:
+        <pre>
+    <b>Status</b>: Unauthorized
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"error"</b>: {
+            <b class="json-field">"user_authentication"</b>: ["Invalid credentials"]
+        }
+    }
+    </pre>
+        </td>
+    </tr>
+    <!--tr>
+        <td>
+            In cases where the format of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 400 Bad Request
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 400,
+        <b class="json-field">"message"</b>: "Bad Request",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"token"</b>: null
+        }
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In cases where the data encoding of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 415 Unsupported Media Type
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 415,
+        <b class="json-field">"message"</b>: "Unsupported Media Type",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"token"</b>: null
+        }
+    }
+    </pre>
+        </td>
+    </tr-->
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td style="font-size: 24px;">
+            <a id="add_user"></a>
+            Add DDE User <a href="#top" class="top-anchor">top</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In order to access resources on the API, you need to add a user that is associated with your application.
+            Each application is expected to add a unique username which is used for tracking resource access. Add a new
+            user that can work with the API on:
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <pre>
+<code>
+    POST /v1/add_user
+</code>
+            </pre>
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Input
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table class="input">
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        username
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The username for the DDE user account to be registered to
+                        work with the API.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        password
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The password for the DDE2.0 user account registered to work
+                        with the API.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        location
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The couch doc_id for a location
+                        to work with the API.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        email
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        The email of the user registered to work with the
+                        API.
+                    </td>
+                </tr>
+                <!--tr>
+                    <td>
+                        token
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The token sent back to authorize login to the API.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        description
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        An optional description of the application that will be connected to the API.
+                    </td>
+                </tr-->
+            </table>
+            The interface expects a JSON Object as input. For example:
+        <pre>
+    {
+        <b class="json-field">"username"</b>: "username",
+        <b class="json-field">"password"</b>: "password",
+        <b class="json-field">"location"</b>: "02de66146ab4e2f6dfbe22dccc0130bd",
+        <b class="json-field">"email"</b>: "example@email.com"
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Response
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Successful user addition response:
+        <pre>
+    <b>Status</b>: Created
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 200,
+        <b class="json-field">"message"</b>: "User created successfully"
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Unauthenticated access attempts responses:
+        <pre>
+    <b>Status</b>: Unauthorized
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    # Invalid token
+    {
+        <b class="json-field">"message"</b>: "Signature verification raised"
+    }
+    <hr style="border-bottom: none; border-top: 2px solid #ccc;"/>
+    # Expired token
+    {
+        <b class="json-field">"message"</b>: Signature has expired"
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In cases where the format of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 400 Bad Request
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 400,
+        <b class="json-field">"message"</b>: "Bad Request",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"token"</b>: null
+        }
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <!--tr>
+        <td>
+            In cases where the data encoding of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 415 Unsupported Media Type
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 415,
+        <b class="json-field">"message"</b>: "Unsupported Media Type",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"token"</b>: null
+        }
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr-->
+    <tr>
+        <td style="font-size: 24px;">
+            <a id="authenticated"></a>
+            Check if Token Authenticated <a href="#top" class="top-anchor">top</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In order to verify if the token an application is holding is still active, one can check if it is still
+            authenticated on:
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <pre>
+<code>
+    POST v1/verify_token
+</code>
+            </pre>
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Input
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table class="input">
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        token
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The token to be verified if it is still authenticated.
+                    </td>
+                </tr>
+            </table>The interface expects a JSON Object as input. For example:
+        <pre>
+    {
+        <b class="json-field">"token"</b>: "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE1Mjk5MTYzOTF9.BdtOvPXRdYqaM5zfd4NnAYlI4WyXlbgeBlvSLJsGtfs"
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Response
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Authenticated token response:
+        <pre>
+    <b>Status</b>: Success
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 200,
+        <b class="json-field">"message"</b>: "Successful"
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Unauthorized token response:
+        <pre>
+    <b>Status</b>: Unauthorized
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 401,
+        <b class="json-field">"message"</b>: "Failed"
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td style="font-size: 24px;">
+            <a id="search_by_id"></a>
+            Search by Identifier <a href="#top" class="top-anchor">top</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Search for a person record by any identifier on:
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <pre>
+<code>
+    POST /v1/search_by_npid
+</code>
+            </pre>
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Input
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table class="input">
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        npid
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. Identifier to be used for searching for a person.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        doc_id
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        The doc id for that person if it exist.
+                    </td>
+                </tr>
+            </table>
+            The interface expects a patient identifier as part of the URL. For example:
+        <pre>
+            {
+                <b class="json-field">"npid"</b>: CP8JLX,
+                <b class="json-field">"doc_id"</b>: "9bfae848bb2f2de6739954f2b11ee7e0"
+            }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Response
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Response for matches found:
+        <pre>
+    <b>Status</b>: Success
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    [{"given_name":"John","family_name":"Doe","middle_name":"","gender":"Male","birthdate":"1982-12-19","birthdate_estimated":false,
+    "attributes":{"occupation":"Farmer","cellphone_number":null,"current_district":"Mzuzu","current_traditional_authority":"Traditional Authority 2",
+    "current_village":"Village2","home_district":"Zomba","home_traditional_authority":"Malemia","home_village":"Masamba"},
+    "identifiers":[{"HTN number":"HTN 001"}],"npid":"CP8JLX","doc_id":"9bfae848bb2f2de6739954f2b11ee7e0"}]
+   <!--  {
+        <b class="json-field">"status"</b>: 200,
+        <b class="json-field">"message"</b>: "One or more matches found",
+        <b class="json-field">"error"</b>: false,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"matches"</b>: <b>integer</b>,
+            <b class="json-field">"hits"</b>: <b>array</b>
+        }
+    } -->
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Response for no matches found:
+        <pre>
+    <b>Status</b>: No Content
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    []
+    </pre>
+        </td>
+    </tr>
+    <!--tr>
+        <td>
+            Unauthorized token response:
+        <pre>
+    <b>Status</b>: 401 Unauthorized
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 401,
+        <b class="json-field">"message"</b>: "Unauthorized",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"matches"</b>: 0,
+            <b class="json-field">"hits"</b>: []
+        }
+    }
+    </pre>
+        </td>
+    </tr-->
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td style="font-size: 24px;">
+            <a id="search_by_name"></a>
+            Search Patient by Name and Gender <a href="#top" class="top-anchor">top</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Search for a person on the API by first name, last name and gender on:
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <pre>
+<code>
+    POST /v1/search_by_name_and_gender
+</code>
+            </pre>
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Input
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table class="input">
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        given_name
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The first name of the patient being searched for.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        family_name
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The last name of the patient being searched for.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        gender
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The gender of the patient being searched for. Expected results
+                        are [ Male / Female ]. Any other entries are regarded as invalid.
+                    </td>
+                </tr>
+            </table>
+            The interface expects a JSON Object as input. For example:
+        <pre>
+    {
+        <b class="json-field">"given_name"</b>: "John",
+        <b class="json-field">"family_name"</b>: "Doe",
+        <b class="json-field">"gender"</b>: "Male"
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Response
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Matches found response:
+        <pre>
+    <b>Status</b>: Success
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    [{"given_name":"John","family_name":"Doe","middle_name":"","gender":"Male","birthdate":"1982-12-19","birthdate_estimated":false,
+    "attributes":{"occupation":"Farmer","cellphone_number":null,"current_district":"Mzuzu","current_traditional_authority":"Traditional Authority 2",
+    "current_village":"Village2","home_district":"Zomba","home_traditional_authority":"Malemia","home_village":"Masamba"},
+    "identifiers":[{"HTN number":"HTN 001"}],"npid":"CP8JLX","doc_id":"9bfae848bb2f2de6739954f2b11ee7e0"}]
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            No matches found response:
+        <pre>
+    <b>Status</b>: No Content
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    []
+    </pre>
+        </td>
+    </tr>
+    <!--tr>
+        <td>
+            Unauthenticated access attempts response:
+        <pre>
+    <b>Status</b>: 401 Unauthorized
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 401,
+        <b class="json-field">"message"</b>: "Unauthorized",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"matches"</b>: 0,
+            <b class="json-field">"hits"</b>: []
+        }
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In cases where the format of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 400 Bad Request
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 400,
+        <b class="json-field">"message"</b>: "Bad Request",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"matches"</b>: 0,
+            <b class="json-field">"hits"</b>: []
+        }
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In cases where the data encoding of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 415 Unsupported Media Type
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 415,
+        <b class="json-field">"message"</b>: "Unsupported Media Type",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"matches"</b>: 0,
+            <b class="json-field">"hits"</b>: []
+        }
+    }
+    </pre>
+        </td>
+    </tr-->
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td style="font-size: 24px;">
+            <a id="search_by_doc_id"></a>
+            Search by Doc Id <a href="#top" class="top-anchor">top</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Search for a patient record by doc id on:
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <pre>
+<code>
+    POST /v1/search_by_doc_id
+</code>
+            </pre>
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Input
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table class="input">
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        doc_id
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. Doc id to be used for searching for a patient.
+                    </td>
+                </tr>
+            </table>
+            The interface expects a JSON Object as input. For example:
+        <pre>
+        {
+            <b class="json-field">"doc_id"</b>: "9bfae848bb2f2de6739954f2b11ee7e0"
+        }
+        </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Response
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Response for matches found:
+        <pre>
+    <b>Status</b>: Success
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    [{"given_name":"John","family_name":"Doe","middle_name":"","gender":"Male","birthdate":"1982-12-19","birthdate_estimated":false,
+    "attributes":{"occupation":"Farmer","cellphone_number":null,"current_district":"Mzuzu","current_traditional_authority":"Traditional Authority 2",
+    "current_village":"Village2","home_district":"Zomba","home_traditional_authority":"Malemia","home_village":"Masamba"},
+    "identifiers":[{"HTN number":"HTN 001"}],"npid":"CP8JLX","doc_id":"9bfae848bb2f2de6739954f2b11ee7e0"}]
+   <!--  {
+        <b class="json-field">"status"</b>: 200,
+        <b class="json-field">"message"</b>: "One or more matches found",
+        <b class="json-field">"error"</b>: false,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"matches"</b>: <b>integer</b>,
+            <b class="json-field">"hits"</b>: <b>array</b>
+        }
+    } -->
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Response for no matches found:
+        <pre>
+    <b>Status</b>: No Content
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    []
+    </pre>
+        </td>
+    </tr>
+    <!--tr>
+        <td>
+            Unauthorized token response:
+        <pre>
+    <b>Status</b>: 401 Unauthorized
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 401,
+        <b class="json-field">"message"</b>: "Unauthorized",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"matches"</b>: 0,
+            <b class="json-field">"hits"</b>: []
+        }
+    }
+    </pre>
+        </td>
+    </tr-->
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td style="font-size: 24px;">
+            <a id="advanced_search"></a>
+            Advanced Patient Search <a href="#top" class="top-anchor">top</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Search for a patient on the API by first name, last name, birthdate, home district and gender on:
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <pre>
+<code>
+    POST /v1/advanced_patient_search
+</code>
+            </pre>
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Input
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table class="input">
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        given_name
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The first name of the patient being searched for.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        family_name
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The last name of the patient being searched for.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        gender
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The gender of the patient being searched for. Expected results
+                        are [ Male / Female ]. Any other entries are regarded as invalid.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        birthdate
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. A valid birthdate of the patient being searched for in the
+                        format "YYYY-MM-DD". Any other format will be rejected.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        home_district
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The home district of the patient being searched for.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        token
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The token sent back to authorize login to the API.
+                    </td>
+                </tr>
+            </table>
+            The interface expects a JSON Object as input. For example:
+        <pre>
+    {
+        <b class="json-field">"given_name"</b>: "Mary",
+        <b class="json-field">"family_name"</b>: "Banda",
+        <b class="json-field">"gender"</b>: "Female",
+        <b class="json-field">"birthdate"</b>: "1970-04-09",
+        <b class="json-field">"home_district"</b>: "Dowa",
+        <b class="json-field">"token"</b>: "fdc2d5b14f7711e7af26d07e358088a6"
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Response
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Matches found response:
+        <pre>
+    <b>Status</b>: 200 Success
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 200,
+        <b class="json-field">"message"</b>: "Success",
+        <b class="json-field">"error"</b>: false,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"matches"</b>: <b>integer</b>,
+            <b class="json-field">"hits"</b>: <b>array</b>
+        }
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            No matches found response:
+        <pre>
+    <b>Status</b>: 204 No Content
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {}
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Unauthenticated access attempts response:
+        <pre>
+    <b>Status</b>: 401 Unauthorized
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 401,
+        <b class="json-field">"message"</b>: "Unauthorized",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"matches"</b>: 0,
+            <b class="json-field">"hits"</b>: []
+        }
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In cases where the format of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 400 Bad Request
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 400,
+        <b class="json-field">"message"</b>: "Bad Request",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"matches"</b>: 0,
+            <b class="json-field">"hits"</b>: []
+        }
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In cases where the data encoding of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 415 Unsupported Media Type
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 415,
+        <b class="json-field">"message"</b>: "Unsupported Media Type",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {
+            <b class="json-field">"matches"</b>: 0,
+            <b class="json-field">"hits"</b>: []
+        }
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td style="font-size: 24px;">
+            <a id="mark_as_duplicate"></a>
+            Mark Record as Duplicate <a href="#top" class="top-anchor">top</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In cases where a patient record has been verified to be a duplicate, void the selected record on:
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <pre>
+<code>
+    DELETE /v1/void_patient/:npid/:token
+</code>
+            </pre>
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Input
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table class="input">
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        npid
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The primary identifier for the record to be voided. Only
+                        records with a valid primary identifier will be voided. Confirmation of the voiding is expected
+                        to be handled by the client application.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        token
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The token to be verified if it is still authenticated.
+                    </td>
+                </tr>
+            </table>
+            The interface expects the primary patient identifier and the active token as part of the URL. For example:
+        <pre>
+    DELETE /v1/void_patient/XXYYZZ/fdc2d5b14f7711e7af26d07e358088a6
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Response
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Record void success response:
+        <pre>
+    <b>Status</b>: 200 Success
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 200,
+        <b class="json-field">"message"</b>: "Success",
+        <b class="json-field">"error"</b>: false,
+        <b class="json-field">"data"</b>: {}
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Record void not successful response:
+        <pre>
+    <b>Status</b>: 400 Bad Request
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 400,
+        <b class="json-field">"message"</b>: "Bad Request",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {}
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Unauthorized token response:
+        <pre>
+    <b>Status</b>: 401 Unauthorized
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 401,
+        <b class="json-field">"message"</b>: "Unauthorized",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {}
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td style="font-size: 24px;">
+            <a id="add_patient"></a>
+            Add New Patient <a href="#top" class="top-anchor">top</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Add a new patient record on:
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <pre>
+<code>
+    PUT /v1/add_person
+</code>
+            </pre>
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Input
+        </td>
+    </tr>
+    <tr>
+      <td>
+        <table class="input">
+          <tr>
+            <th>
+              Name
+            </th>
+            <th>
+              Type
+            </th>
+            <th>
+              Description
+            </th>
+          </tr>
+          <tr>
+            <td>
+              given_name
+            </td>
+            <td>
+              string
+            </td>
+            <td>
+              <b class="required">Required</b>. First name of a patient
+            </td>
+          </tr>
+          <tr>
+            <td>
+              family_name
+            </td>
+            <td>
+              string
+            </td>
+            <td>
+              <b class="required">Required</b>. The last name of the patient.
+            </td>
+          </tr>
+          <tr>
+                    <td>
+                        middle_name
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        An optional middle name of the patient if available.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        gender
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The gender of the patient being searched for. Expected results
+                        are [ Male / Female ]. Any other entries are regarded as invalid.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        birthdate
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b> The date of birth of the patient.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        birthdate_estimated
+                    </td>
+                    <td>
+                        boolean
+                    </td>
+                    <td>
+                        <b class="required">Required</b> An indication of whether the date of birth of the patient is
+                        definite or estimated. Expected values are [ true / false ]; Any other values are regarded as
+                        invalid.
+                    </td>
+                </tr>
+                <tr>
+                    <td valign="top">
+                        attributes
+                    </td>
+                    <td valign="top">
+                        object
+                    </td>
+                    <td>
+                        An hash of attributes for the patient. This is a key/value pair of any extra patient
+                        attributes that may be necessary to keep. 
+                        <table class="input">
+                            <tr>
+                                <th>
+                                    Name
+                                </th>
+                                <th>
+                                    Type
+                                </th>
+                                <th>
+                                    Description
+                                </th>
+                            </tr>
+                            <tr>
+                                <td>
+                                    occupation
+                                </td>
+                                <td>
+                                    string
+                                </td>
+                                <td>
+                                    The primary identifier for the record to be voided. Only
+                                    records with a valid primary identifier will be voided. Confirmation of the voiding is expected
+                                    to be handled by the client application.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    cellphone_number
+                                </td>
+                                <td>
+                                    string
+                                </td>
+                                <td>
+                                    The token to be verified if it is still authenticated.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    current_village
+                                </td>
+                                <td>
+                                    string
+                                </td>
+                                <td>
+                                    <b class="required">Required</b>. The current village of the patient.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    current_traditional_authority
+                                </td>
+                                <td>
+                                    string
+                                </td>
+                                <td>
+                                    <b class="required">Required</b>. The current traditional authority of the patient.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    current_district
+                                </td>
+                                <td>
+                                    string
+                                </td>
+                                <td>
+                                    <b class="required">Required</b>. The current district of the patient.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    home_village
+                                </td>
+                                <td>
+                                    string
+                                </td>
+                                <td>
+                                    <b class="required">Required</b>. The home village of the patient.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    home_traditional_authority
+                                </td>
+                                <td>
+                                    string
+                                </td>
+                                <td>
+                                    <b class="required">Required</b>. The home traditional authority of the patient.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    home_district
+                                </td>
+                                <td>
+                                    string
+                                </td>
+                                <td>
+                                    <b class="required">Required</b> The home district of the patient.
+                                </td>
+                            </tr>
+                        </table>
+                        However, these should be kept to a minimum as much as
+                        possible so as to reduce the volume of data shared across multiple sites in the ecosystem. For
+                        example:
+                        <pre>
+    <b class="json-field">"attributes"</b>: {
+        <b class="json-field">"occupation"</b>: "Farmer",
+        <b class="json-field">"cellphone_number"</b>: "09999999999",
+        <b class="json-field">"current_village"</b>: "Village",
+        <b class="json-field">"current_traditional_authority"</b>: "Traditional Authority",
+        <b class="json-field">"current_district"</b>: "District",
+        <b class="json-field">"home_village"</b>: "Village",
+        <b class="json-field">"home_traditional_authority"</b>: "Traditional Authority",
+        <b class="json-field">"home_district"</b>: "District",
+    }
+                        </pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td valign="top">
+                        identifiers
+                    </td>
+                    <td valign="top">
+                        object
+                    </td>
+                    <td>
+                        An optional hash of identifiers for the patient. This is a key/pair value of patient identifiers
+                        where the type of an identifier is associated with the value. For example:
+                        <pre>
+    <b class="json-field">"identifiers"</b>: {
+        <b class="json-field">"art_number"</b>: "ARV-10290",
+        <b class="json-field">"htn_number"</b>: "HTN-1-2017-LHT"
+    }
+                        </pre>
+                    </td>
+                </tr>
+            </table>
+            The interface expects a JSON Object as input. For example:
+        <pre>
+    {
+        <b class="json-field">"family_name"</b>: "Mary",
+        <b class="json-field">"given_name"</b>: "Banda",
+        <b class="json-field">"middle_name"</b>: "N/A",
+        <b class="json-field">"gender"</b>: "Female",
+        <b class="json-field">"attributes"</b>: {
+           <b class="json-field">"occupation"</b>: "House Wife",
+           <b class="json-field">"cellphone_number"</b>: "09999999999",
+           <b class="json-field">"current_village"</b>: "Location",
+           <b class="json-field">"current_traditional_authority"</b>: "Area",
+           <b class="json-field">"current_district"</b>: "District",
+           <b class="json-field">"home_village"</b>: "Village",
+           <b class="json-field">"home_traditional_authority"</b>: "Traditional Authority",
+           <b class="json-field">"home_district"</b>: "District"
+        },
+        <b class="json-field">"birthdate"</b>: "1970-04-09",
+        <b class="json-field">"identifiers"</b>: {
+            <b class="json-field">"ART Number"</b>: "ARV-10290",
+            <b class="json-field">"HTN Number"</b>: "HTN-1-2017-LHT"
+        },
+        <b class="json-field">"birthdate_estimated"</b>: "false"
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Response
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Successful patient addition response:
+        <pre>
+    <b>Status</b>: Created
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {"given_name":"John","family_name":"Doe","middle_name":"","gender":"Male","birthdate":"1970-04-09","birthdate_estimated":false,
+    "attributes":{"occupation":"Farmer","cellphone_number":"0999999999","current_district":"District","current_traditional_authority":"Area",
+    "current_village":"Location","home_district":"District","home_traditional_authority":"Traditional Authority","home_village":"Village"},
+    "identifiers":["htn_number":"HTN-1-2017-LHT","art_number":"ARV-10290"],"npid":"CP8JLX","doc_id":"9bfae848bb2f2de6739954f2b11ee7e0"}
+    </pre>
+        </td>
+    </tr>
+    <!--tr>
+        <td>
+            In cases where there are possible duplicates, the response sent back for verification is:
+        <pre>
+    <b>Status</b>: 409 Conflict
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 409,
+        <b class="json-field">"message"</b>: "Possible Conflict",
+        <b class="json-field">"error"</b>: false,
+        <b class="json-field">"return_path"</b>: string,
+            <b class="json-field">"data"</b>: [
+            {
+                <b class="json-field">"npid"</b>: string,
+                <b class="json-field">"names"</b>: {
+                <b class="json-field">"family_name"</b>: string,
+                <b class="json-field">"given_name"</b>: string,
+                <b class="json-field">"middle_name"</b>: string
+                },
+                <b class="json-field">"gender"</b>: string,
+                <b class="json-field">"attributes"</b>: {
+                    <b class="json-field">"occupation"</b>: string,
+                    <b class="json-field">"cell_phone_number"</b>: string
+                },
+                <b class="json-field">"birthdate"</b>: string,
+                <b class="json-field">"patient"</b>: {
+                    <b class="json-field">"identifiers"</b>: {}
+                },
+                <b class="json-field">"birthdate_estimated"</b>: boolean,
+                <b class="json-field">"addresses"</b>: {
+                    <b class="json-field">"current_residence"</b>: string,
+                    <b class="json-field">"current_village"</b>: string,
+                    <b class="json-field">"current_ta"</b>: string,
+                    <b class="json-field">"current_district"</b>: string,
+                    <b class="json-field">"home_village"</b>: string,
+                    <b class="json-field">"home_ta"</b>: string,
+                    <b class="json-field">"home_district"</b>: string
+                }
+            },
+            {
+                <b class="json-field">"npid"</b>: string,
+                <b class="json-field">"names"</b>: {
+                    <b class="json-field">"family_name"</b>: string,
+                    <b class="json-field">"given_name"</b>: string,
+                    <b class="json-field">"middle_name"</b>: string
+                },
+                <b class="json-field">"gender"</b>: string,
+                <b class="json-field">"attributes"</b>: {
+                    <b class="json-field">"occupation"</b>: string,
+                    <b class="json-field">"cell_phone_number"</b>: string
+                },
+                <b class="json-field">"birthdate"</b>: string,
+                <b class="json-field">"patient"</b>: {
+                    <b class="json-field">"identifiers"</b>: {}
+                },
+                <b class="json-field">"birthdate_estimated"</b>: boolean,
+                <b class="json-field">"addresses"</b>: {
+                    <b class="json-field">"current_residence"</b>: string,
+                    <b class="json-field">"current_village"</b>: string,
+                    <b class="json-field">"current_ta"</b>: string,
+                    <b class="json-field">"current_district"</b>: string,
+                    <b class="json-field">"home_village"</b>: string,
+                    <b class="json-field">"home_ta"</b>: string,
+                    <b class="json-field">"home_district"</b>: string
+                }
+            }
+            ]
+            }
+    </pre>
+            <div class="alert">
+                <b>Note:</b> When this kind of result is received, the user is supposed to be provided with a way to
+                select a record for
+                local saving on the client side if it already exists or confirm the need to create the record as a new
+                entry altogether. The
+                confirmation will have to be sent on the path in the <b>"return_path"</b> attribute of the result sent
+                back to the client application. the return path will be generated dynamically and will use "PUT". For
+                example:
+                <pre>
+    PUT /return_path
+                </pre>
+                <br/>
+                <br/>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Unauthenticated access attempts response:
+        <pre>
+    <b>Status</b>: 401 Unauthorized
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 401,
+        <b class="json-field">"message"</b>: "Unauthorized",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {}
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In cases where the format of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 400 Bad Request
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 400,
+        <b class="json-field">"message"</b>: "Bad Request",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {}
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In cases where the data encoding of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 415 Unsupported Media Type
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 415,
+        <b class="json-field">"message"</b>: "Unsupported Media Type",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {}
+    }
+    </pre>
+        </td>
+    </tr-->
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td style="font-size: 24px;">
+            <a id="update_patient"></a>
+            Update Existing Patient <a href="#top" class="top-anchor">top</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Update an existing patient record on:
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <pre>
+<code>
+    POST /v1/update_person
+</code>
+            </pre>
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Input
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table class="input">
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        npid
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. A valid identifier for the patient to be used for mapping to
+                        the exact patient when updating the record.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        given_name
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. First name of a patient
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        family_name
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The last name of the patient.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        middle_name
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        An optional middle name of the patient if available.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        gender
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The gender of the patient being searched for. Expected results
+                        are [ Male / Female ]. Any other entries are regarded as invalid.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        birthdate
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b> The date of birth of the patient.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        birthdate_estimated
+                    </td>
+                    <td>
+                        boolean
+                    </td>
+                    <td>
+                        <b class="required">Required</b> An indication of whether the date of birth of the patient is
+                        definite or estimated. Expected values are [ true / false ]; Any other values are regarded as
+                        invalid.
+                    </td>
+                </tr>
+                <tr>
+                    <td valign="top">
+                        attributes
+                    </td>
+                    <td valign="top">
+                        object
+                    </td>
+                    <td>
+                        An optional hash of attributes for the patient. This is a key/value pair of any extra patient
+                        attributes that may be necessary to keep. However, these should be kept to a minimum as much as
+                        possible so as to reduce the volume of data shared across multiple sites in the ecosystem. For
+                        example:
+                        <pre>
+    <b class="json-field">"attributes"</b>: {
+        <b class="json-field">"occupation"</b>: "House Wife",
+        <b class="json-field">"cell_phone_number"</b>: "09999999999"
+    }
+                        </pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        current_residence
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        An optional current residence of the patient.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        current_village
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        An optional current village of the patient.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        current_ta
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        An optional current traditional authority of the patient.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        current_district
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        An optional current district of the patient.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        home_village
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        An optional home village of the patient.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        home_ta
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        An optional home traditional authority of the patient.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        home_district
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b> The home district of the patient.
+                    </td>
+                </tr>
+                <tr>
+                    <td valign="top">
+                        identifiers
+                    </td>
+                    <td valign="top">
+                        object
+                    </td>
+                    <td>
+                        An optional hash of identifiers for the patient. This is a key/pair value of patient identifiers
+                        where the type of an identifier is associated with the value. For example:
+                        <pre>
+    <b class="json-field">"identifiers"</b>: {
+        <b class="json-field">"ART Number"</b>: "ARV-10290",
+        <b class="json-field">"HTN Number"</b>: "HTN-1-2017-LHT"
+    }
+                        </pre>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        token
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The token sent back to authorize login to the API.
+                    </td>
+                </tr>
+            </table>
+            The interface expects a JSON Object as input. For example:
+        <pre>
+    {
+        <b class="json-field">"npid"</b>: "XXYYZZ",
+        <b class="json-field">"family_name"</b>: "Mary",
+        <b class="json-field">"given_name"</b>: "Banda",
+        <b class="json-field">"middle_name"</b>: "N/A",
+        <b class="json-field">"gender"</b>: "Female",
+        <b class="json-field">"attributes"</b>: {
+           <b class="json-field">"occupation"</b>: "House Wife",
+           <b class="json-field">"cell_phone_number"</b>: "09999999999"
+        },
+        <b class="json-field">"birthdate"</b>: "1970-04-09",
+        <b class="json-field">"identifiers"</b>: {
+            <b class="json-field">"ART Number"</b>: "ARV-10290",
+            <b class="json-field">"HTN Number"</b>: "HTN-1-2017-LHT"
+        },
+        <b class="json-field">"birthdate_estimated"</b>: false,
+        <b class="json-field">"current_residence"</b>: "Street",
+        <b class="json-field">"current_village"</b>: "Location",
+        <b class="json-field">"current_ta"</b>: "Area",
+        <b class="json-field">"current_district"</b>: "District",
+        <b class="json-field">"home_village"</b>: "Village",
+        <b class="json-field">"home_ta"</b>: "Traditional Authority",
+        <b class="json-field">"home_district"</b>: "District",
+        <b class="json-field">"token"</b>: "fdc2d5b14f7711e7af26d07e358088a6"
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Response
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Successful patient update response:
+        <pre>
+    <b>Status</b>: 200 Success
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 200,
+        <b class="json-field">"message"</b>: "Success",
+        <b class="json-field">"error"</b>: false,
+        <b class="json-field">"data"</b>: {
+              <b class="json-field">"npid"</b>: string,
+              <b class="json-field">"names"</b>: {
+                <b class="json-field">"family_name"</b>: string,
+                <b class="json-field">"given_name"</b>: string,
+                <b class="json-field">"middle_name"</b>: string
+              },
+              <b class="json-field">"gender"</b>: string,
+              <b class="json-field">"attributes"</b>: {
+                <b class="json-field">"occupation"</b>: string,
+                <b class="json-field">"cell_phone_number"</b>: string
+              },
+              <b class="json-field">"birthdate"</b>: string,
+              <b class="json-field">"patient"</b>: {
+                <b class="json-field">"identifiers"</b>: {}
+              },
+              <b class="json-field">"birthdate_estimated"</b>: boolean,
+              <b class="json-field">"addresses"</b>: {
+                <b class="json-field">"current_residence"</b>: string,
+                <b class="json-field">"current_village"</b>: string,
+                <b class="json-field">"current_ta"</b>: string,
+                <b class="json-field">"current_district"</b>: string,
+                <b class="json-field">"home_village"</b>: string,
+                <b class="json-field">"home_ta"</b>: string,
+                <b class="json-field">"home_district"</b>: string
+            }
+        }
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Failed patient data update response:
+        <pre>
+    <b>Status</b>: 204 No Content
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {}
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Unauthenticated access attempts response:
+        <pre>
+    <b>Status</b>: 401 Unauthorized
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 401,
+        <b class="json-field">"message"</b>: "Unauthorized",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {}
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In cases where the format of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 400 Bad Request
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 400,
+        <b class="json-field">"message"</b>: "Bad Request",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {}
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In cases where the data encoding of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 415 Unsupported Media Type
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 415,
+        <b class="json-field">"message"</b>: "Unsupported Media Type",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {}
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td style="font-size: 24px;">
+            <a id="merge_records"></a>
+            Merge Patient Records <a href="#top" class="top-anchor">top</a>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Merge two patient records into one on:
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <pre>
+<code>
+    POST /v1/merge_records
+</code>
+            </pre>
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Input
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <table class="input">
+                <tr>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Type
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                </tr>
+                <tr>
+                    <td>
+                        primary_record
+                    </td>
+                    <td>
+                        object
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. An object of the primary record to be merged with a secondary object. The primary identifier will be of the resultant record will from this object.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        secondary_record
+                    </td>
+                    <td>
+                        object
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. An object of the secondary record to be merged with a primary object. The identifier of this object will be added as an old identifier.
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        token
+                    </td>
+                    <td>
+                        string
+                    </td>
+                    <td>
+                        <b class="required">Required</b>. The token sent back to authorize login to the API.
+                    </td>
+                </tr>
+            </table>
+            The interface expects a JSON Object as input. For example:
+        <pre>
+    {
+        <b class="json-field">"primary_record"</b>: {
+            <b class="json-field">"npid"</b>: "XXYYZZ",
+            <b class="json-field">"family_name"</b>: "Mary",
+            <b class="json-field">"given_name"</b>: "Banda",
+            <b class="json-field">"middle_name"</b>: "N/A",
+            <b class="json-field">"gender"</b>: "Female",
+            <b class="json-field">"attributes"</b>: {
+               <b class="json-field">"occupation"</b>: "House Wife",
+               <b class="json-field">"cell_phone_number"</b>: "09999999999"
+            },
+            <b class="json-field">"birthdate"</b>: "1970-04-09",
+            <b class="json-field">"identifiers"</b>: {
+                <b class="json-field">"ART Number"</b>: "ARV-10290",
+                <b class="json-field">"HTN Number"</b>: "HTN-1-2017-LHT"
+            },
+            <b class="json-field">"birthdate_estimated"</b>: false,
+            <b class="json-field">"current_residence"</b>: "Street",
+            <b class="json-field">"current_village"</b>: "Location",
+            <b class="json-field">"current_ta"</b>: "Area",
+            <b class="json-field">"current_district"</b>: "District",
+            <b class="json-field">"home_village"</b>: "Village",
+            <b class="json-field">"home_ta"</b>: "Traditional Authority",
+            <b class="json-field">"home_district"</b>: "District"
+        },
+        <b class="json-field">"secondary_record"</b>: {
+            <b class="json-field">"npid"</b>: "ZZYYXX",
+            <b class="json-field">"family_name"</b>: "Mary",
+            <b class="json-field">"given_name"</b>: "Banda",
+            <b class="json-field">"middle_name"</b>: "N/A",
+            <b class="json-field">"gender"</b>: "Female",
+            <b class="json-field">"attributes"</b>: {
+               <b class="json-field">"occupation"</b>: "House Wife",
+               <b class="json-field">"cell_phone_number"</b>: "09999999999"
+            },
+            <b class="json-field">"birthdate"</b>: "1970-04-09",
+            <b class="json-field">"identifiers"</b>: {
+                <b class="json-field">"ART Number"</b>: "ARV-10290",
+                <b class="json-field">"HTN Number"</b>: "HTN-1-2017-LHT"
+            },
+            <b class="json-field">"birthdate_estimated"</b>: false,
+            <b class="json-field">"current_residence"</b>: "Street",
+            <b class="json-field">"current_village"</b>: "Location",
+            <b class="json-field">"current_ta"</b>: "Area",
+            <b class="json-field">"current_district"</b>: "District",
+            <b class="json-field">"home_village"</b>: "Village",
+            <b class="json-field">"home_ta"</b>: "Traditional Authority",
+            <b class="json-field">"home_district"</b>: "District"
+        },
+        <b class="json-field">"token"</b>: "fdc2d5b14f7711e7af26d07e358088a6"
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td class="subheading">
+            Response
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Successful patient update response:
+        <pre>
+    <b>Status</b>: 200 Success
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 200,
+        <b class="json-field">"message"</b>: "Success",
+        <b class="json-field">"error"</b>: false,
+        <b class="json-field">"data"</b>: {
+              <b class="json-field">"npid"</b>: string,
+              <b class="json-field">"names"</b>: {
+                <b class="json-field">"family_name"</b>: string,
+                <b class="json-field">"given_name"</b>: string,
+                <b class="json-field">"middle_name"</b>: string
+              },
+              <b class="json-field">"gender"</b>: string,
+              <b class="json-field">"attributes"</b>: {
+                <b class="json-field">"occupation"</b>: string,
+                <b class="json-field">"cell_phone_number"</b>: string
+              },
+              <b class="json-field">"birthdate"</b>: string,
+              <b class="json-field">"patient"</b>: {
+                <b class="json-field">"identifiers"</b>: {}
+              },
+              <b class="json-field">"birthdate_estimated"</b>: boolean,
+              <b class="json-field">"addresses"</b>: {
+                <b class="json-field">"current_residence"</b>: string,
+                <b class="json-field">"current_village"</b>: string,
+                <b class="json-field">"current_ta"</b>: string,
+                <b class="json-field">"current_district"</b>: string,
+                <b class="json-field">"home_village"</b>: string,
+                <b class="json-field">"home_ta"</b>: string,
+                <b class="json-field">"home_district"</b>: string
+            }
+        }
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Failed patient data update response:
+        <pre>
+    <b>Status</b>: 204 No Content
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {}
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Unauthenticated access attempts response:
+        <pre>
+    <b>Status</b>: 401 Unauthorized
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 401,
+        <b class="json-field">"message"</b>: "Unauthorized",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {}
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In cases where the format of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 400 Bad Request
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 400,
+        <b class="json-field">"message"</b>: "Bad Request",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {}
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            In cases where the data encoding of the input is invalid, the following response is sent back:
+        <pre>
+    <b>Status</b>: 415 Unsupported Media Type
+    <hr style="border-bottom: none; border-top: 1px solid #ccc;"/>
+    {
+        <b class="json-field">"status"</b>: 415,
+        <b class="json-field">"message"</b>: "Unsupported Media Type",
+        <b class="json-field">"error"</b>: true,
+        <b class="json-field">"data"</b>: {}
+    }
+    </pre>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td>
+            &nbsp;
+        </td>
+    </tr>
+</table>
+<div></div>
+</body>
+</html>

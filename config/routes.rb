@@ -94,5 +94,5 @@ Rails.application.routes.draw do
   #config routes
   put 'v1/configs', to: 'api/v1/configs#update'
 
-  root to: "api/v1/user#index"
+  root to: redirect('/api-docs/')
 end
