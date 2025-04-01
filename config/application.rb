@@ -38,8 +38,7 @@ module DemographicsDataExchange
     #autoloads lib folder during development
     config.autoload_paths << Rails.root.join("lib")
 
-    #ActiveJob queue adapter activate for master
-    #config.active_job.queue_adapter = :sidekiq
+    config.active_job.queue_adapter = :sidekiq
 
     #Action Cable
     config.action_cable.mount_path = '/v1/cable'
