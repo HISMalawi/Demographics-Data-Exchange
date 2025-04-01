@@ -10,7 +10,6 @@ module Api
       before_action :validate_pull_source, only: %i[pull_updates_new pull_updates pull_npids]
       before_action :validate_push_source, only: %i[pushed_updates_new pushed_updates]
       before_action :validate_foot_print_source, only: [:pushed_footprints]
-      after_action  :send_mail, only: %i[pushed_updates_new pushed_updates]
 
       def pull_updates_new
         records_changed = SyncService.person_changes_new(update_params)
