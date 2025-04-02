@@ -10,6 +10,14 @@ class ApplicationController < ActionController::API
 
   include ExceptionHandler
 
+   # [...]
+	private
+	def authenticate_request
+		@current_user = AuthorizeApiRequest.call(request.headers).result
+		User.current = @current_user
+		render json: { error: 'Not Authorized' }, status: 401 unless @current_user
+	end
+	
 	def update_socket_dashboard
 	   	DashboardSocketDataJob.perform_later
 	end
