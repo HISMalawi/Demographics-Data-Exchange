@@ -5,6 +5,12 @@ class LowNpidNotificationJob < ApplicationJob
     # Fetch all sites at once to ensure complete grouping
     sites = fetch_all_sites
   
+    # Ensure BigDecimal values are converted to Float
+    sites.each do |site|
+      site[:avg_consumption_rate_per_day] = site[:avg_consumption_rate_per_day].to_f if site[:avg_consumption_rate_per_day].is_a?(BigDecimal)
+      site[:days_remaining] = site[:days_remaining].to_f if site[:days_remaining].is_a?(BigDecimal)
+    end
+
     # Group sites by district
     grouped_sites = sites.group_by { |site| site[:district_id] }
   
