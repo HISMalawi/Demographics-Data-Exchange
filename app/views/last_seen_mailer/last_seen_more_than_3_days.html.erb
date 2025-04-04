@@ -1,102 +1,147 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #e0e0e0;
-        color: #333;
-        margin: 0;
-        padding: 20px;
-      }
-      .container {
-        max-width: 600px;
-        background: #ffffff;
-        padding: 20px;
-        margin: auto;
-        border-radius: 8px;
-        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-      }
-      h1 {
-        color: #6c757d;
-        font-size: 20px;
-      }
-      p {
-        font-size: 14px;
-        line-height: 1.6;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-      }
-      th, td {
-        border: 1px solid #ddd;
-        padding: 10px;
-        text-align: left;
-      }
-      th {
-        background: #6c757d;
-        color: white;
-        font-weight: bold;
-      }
-      tr:nth-child(even) {
-        background-color: #f9f9f9;
-      }
-      a {
-        color: #5a6268;
-        text-decoration: none;
-        font-weight: bold;
-      }
-      .footer {
-        font-size: 12px;
-        color: #777;
-        text-align: center;
-        margin-top: 20px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1>Connectivity Issue Detected: No connectivity with <%= @district_data[:sites][:sites_last_seen_greater_than_3_days].count %> sites in <%= @district_data[:name] %>
-      </h1>
-      <p>  
-        Kindly be informed that these sites have been offline for  
-        <strong>three</strong> days, and no data has been received during this period.  
-      </p>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #e0e0e0;
+      font-family: Arial, sans-serif;
+      color: #333333;
+    }
 
-      <p><strong>Sites Details:</strong></p>
-      <table>
-        <tr>
-          <th>Site Name</th>
-          <th>Last Seen On Network</th>
-          <th>Days Since Last Seen</th>
-        </tr>
-        <%  @district_data[:sites][:sites_last_seen_greater_than_3_days].each do |site| %>
-            <tr>
-            <td><%= site["site_name"] %></td>
-            <td>
-              <%= site["last_seen"].to_datetime.strftime('%d %b, %Y %H:%M:%S')  %>
-            </td>
-            <td><%= site["days_since_last_seen"] %></td>
+    .container {
+      width: 600px;
+      max-width: 600px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 20px;
+      border: 1px solid #dddddd;
+      border-radius: 8px;
+    }
+
+    .title {
+      color: #6c757d;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .intro {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .district-heading {
+      font-size: 16px;
+      background-color: #f0f0f0;
+      padding: 8px;
+      border-left: 4px solid #6c757d;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 25px;
+    }
+
+    th {
+      background-color: #6c757d;
+      color: #ffffff;
+      padding: 8px;
+      text-align: left;
+      font-size: 13px;
+      border: 1px solid #dddddd;
+    }
+
+    td {
+      border: 1px solid #dddddd;
+      padding: 8px;
+      font-size: 13px;
+    }
+
+    .even-row {
+      background-color: #ffffff;
+    }
+
+    .odd-row {
+      background-color: #f9f9f9;
+    }
+
+    .footer-text {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .signature {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .copyright {
+      font-size: 12px;
+      color: #777777;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">
+      DDE Sites Connectivity Summary
+    </h1>
+
+    <p class="intro">
+      Below is the list of districts and their respective sites that have been offline for more than <strong>3 days</strong>.
+    </p>
+
+    <% @district_data.each do |district| %>
+      <h2 class="district-heading">
+        <%= district[:name] %> (<%= district[:sites].count %> site<%= 's' if district[:sites].count != 1 %>)
+      </h2>
+
+      <table role="presentation" cellpadding="0" cellspacing="0">
+        <thead>
+          <tr>
+            <th>Site Name</th>
+            <th>Days Since Last Seen</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% district[:sites].each_with_index do |site, i| %>
+            <tr class="<%= i.even? ? 'even-row' : 'odd-row' %>">
+              <td><%= site['site_name'] %></td>
+              <td><%= site['days_since_last_seen'] %></td>
             </tr>
-
           <% end %>
+        </tbody>
       </table>
+    <% end %>
 
-      <p>
-        Kindly take the appropriate measures to address and resolve the connectivity issues.
-        To check the latest status, please visit:  
-        <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
-      </p>
+    <p class="footer-text">
+      Please address the connectivity issues with the respective facilities. For real-time status, visit:
+      <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
+    </p>
 
-      <p>Best regards,</p>
-      <p><strong>Demographics Data Exchange</strong></p>
+    <p class="signature">
+      Best regards,<br><strong>Demographics Data Exchange</strong>
+    </p>
 
-      <div class="footer">
-        &copy; <%= Time.now.year %> Demographics Data Exchange. All rights reserved.
-      </div>
+    <div class="copyright">
+      &copy; <%= Time.now.year %> Demographics Data Exchange. All rights reserved.
     </div>
-  </body>
+  </div>
+</body>
 </html>
