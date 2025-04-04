@@ -6,52 +6,47 @@ class LastSeenLastSyncedJob < ApplicationJob
   queue_as :last_seen_last_synced
 
   def perform(*args)
-    begin 
-      # Do something later
+    begin
       sites = DashboardService.site_activities
-
-      grouped_sites = {}
+      last_activity_grouped = {}
+      last_seen_grouped = {}
 
       sites.each do |site|
         district_id = site['district_id']
         name = site['district_name']
-        
-        # Initialize district hash if not already present
-        grouped_sites[district_id] ||= {
-          district_id: district_id,
-          name: name,
-          sites: {
-            sites_last_seen_greater_than_3_days: [],
-            sites_last_activity_greater_than_3_days: []
-          }
-        }
 
-        # Add site to respective category
-        if site['days_since_last_activity'].to_i > 3
-          grouped_sites[district_id][:sites][:sites_last_activity_greater_than_3_days] << site
+        if site['days_since_last_activity'].to_i > 3 && site['days_since_last_seen'].to_i == 0
+          last_activity_grouped[district_id] ||= {
+            district_id: district_id,
+            name: name,
+            sites_last_activity_greater_than_3_days_sites: 0,
+            sites: []
+          }
+
+          last_activity_grouped[district_id][:sites_last_activity_greater_than_3_days_sites] += 1
+          last_activity_grouped[district_id][:sites] << site
         end
 
         if site['days_since_last_seen'].to_i > 3
-          grouped_sites[district_id][:sites][:sites_last_seen_greater_than_3_days] << site
+          last_seen_grouped[district_id] ||= {
+            district_id: district_id,
+            name: name,
+            sites_last_seen_greater_than_3_days_sites: 0,
+            sites: []
+          }
+
+          last_seen_grouped[district_id][:sites_last_seen_greater_than_3_days_sites] += 1
+          last_seen_grouped[district_id][:sites] << site
         end
       end
 
-      # Send emails for each district
-      grouped_sites.each_value do |district_data|
-        if district_data[:sites][:sites_last_activity_greater_than_3_days].any?
-          LastSyncedMailer.last_synced_more_than_3_days(district_data).deliver_later
-        end
+      # Send separate summary emails
+   
+      LastSyncedMailer.last_synced_more_than_3_days(last_activity_grouped.values).deliver_now if last_activity_grouped.any?
+      LastSeenMailer.last_seen_more_than_3_days(last_seen_grouped.values).deliver_now if last_seen_grouped.any?
 
-        if district_data[:sites][:sites_last_seen_greater_than_3_days].any?
-          LastSeenMailer.last_seen_more_than_3_days(district_data).deliver_later
-        end
-      end
-  
     ensure
       ActiveRecord::Base.connection_pool.release_connection
     end
-
-    
-
   end
 end

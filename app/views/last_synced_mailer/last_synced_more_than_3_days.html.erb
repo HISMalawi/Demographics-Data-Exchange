@@ -1,101 +1,147 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f4;
-        color: #333;
-        margin: 0;
-        padding: 20px;
-      }
-      .container {
-        max-width: 600px;
-        background: #ffffff;
-        padding: 20px;
-        margin: auto;
-        border-radius: 8px;
-        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-      }
-      h1 {
-        color: #d9534f;
-        font-size: 20px;
-      }
-      p {
-        font-size: 14px;
-        line-height: 1.6;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-      }
-      th, td {
-        border: 1px solid #ddd;
-        padding: 10px;
-        text-align: left;
-      }
-      th {
-        background: #d9534f;
-        color: white;
-        font-weight: bold;
-      }
-      tr:nth-child(even) {
-        background-color: #f9f9f9;
-      }
-      a {
-        color: #0275d8;
-        text-decoration: none;
-        font-weight: bold;
-      }
-      .footer {
-        font-size: 12px;
-        color: #777;
-        text-align: center;
-        margin-top: 20px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1>Synchronization Issue Detected: not data received from <%= @district_data[:sites][:sites_last_activity_greater_than_3_days].count %> sites in <%= @district_data[:name] %> </h1>
-        <p>
-        Please be advised that the following sites have not synchronized 
-        with the master system for over <strong>three</strong> days.
-        </p>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa; /* Light background for balance */
+      font-family: Arial, sans-serif;
+      color: #333333; /* Default dark text */
+    }
 
-      <p><strong>Sites List:</strong></p>
+    .container {
+      width: 600px;
+      max-width: 600px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 20px;
+      border: 1px solid #dddddd;
+      border-radius: 8px;
+    }
 
-      <table>
-        <tr>
-          <th>Site Name</th>
-          <th>Date Time Last Synced With Master</th>
-          <th>Days Since Synced</th>
-        </tr>
-        <%  @district_data[:sites][:sites_last_activity_greater_than_3_days].each do |site| %>
+    .title {
+      color: #721c24; /* Dark red for title */
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .intro {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .district-heading {
+      font-size: 16px;
+      background-color: #f5c6cb; /* Subtle light red for the heading */
+      padding: 8px;
+      border-left: 4px solid #721c24; /* Dark red accent */
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 25px;
+    }
+
+    th {
+      background-color: #f8d7da; /* Light red for table header */
+      color: #721c24; /* Dark red for header text */
+      padding: 8px;
+      text-align: left;
+      font-size: 13px;
+      border: 1px solid #dddddd;
+    }
+
+    td {
+      border: 1px solid #dddddd;
+      padding: 8px;
+      font-size: 13px;
+    }
+
+    .even-row {
+      background-color: #ffffff;
+    }
+
+    .odd-row {
+      background-color: #f9f9f9; /* Slight grey for alternating rows */
+    }
+
+    .footer-text {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .signature {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .copyright {
+      font-size: 12px;
+      color: #777777;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">
+      Summary of DDE Sites Not Syncing
+    </h1>
+
+    <p class="intro">
+      Below is the list of districts and their respective sites that have not been syncing data for more than <strong>3 days</strong>.
+    </p>
+
+    <% @district_data.each do |district| %>
+      <h2 class="district-heading">
+        <%= district[:name] %> (<%= district[:sites].count %> site<%= 's' if district[:sites].count != 1 %>)
+      </h2>
+
+      <table role="presentation" cellpadding="0" cellspacing="0">
+        <thead>
           <tr>
-          <td><%= site["site_name"] %></td>
-          <td>
-            <%=  site["last_activity"].to_datetime.strftime('%d %b, %Y %H:%M:%S') %>
-          </td>
-          <td><%= site["days_since_last_activity"] %></td>
+            <th>Site Name</th>
+            <th>Days Since Last Activity</th>
           </tr>
-        <% end %>
+        </thead>
+        <tbody>
+          <% district[:sites].each_with_index do |site, i| %>
+            <tr class="<%= i.even? ? 'even-row' : 'odd-row' %>">
+              <td><%= site['site_name'] %></td>
+              <td><%= site['days_since_last_activity'] %></td>
+            </tr>
+          <% end %>
+        </tbody>
       </table>
+    <% end %>
 
-      <p>
-        Kindly take the appropriate measures to address and resolve the synchronization issues.
-        For more details, please visit:
-        <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
-      </p>
+    <p class="footer-text">
+      Please address the connectivity issues with the respective facilities. For real-time status, visit:
+      <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
+    </p>
 
-      <p>Thank you,</p>
-      <p><strong>Demographics Data Exchange</strong></p>
+    <p class="signature">
+      Best regards,<br><strong>Demographics Data Exchange</strong>
+    </p>
 
-      <div class="footer">
-        &copy; <%= Time.now.year %> Demographics Data Exchange. All rights reserved.
-      </div>
+    <div class="copyright">
+      &copy; <%= Time.now.year %> Demographics Data Exchange. All rights reserved.
     </div>
-  </body>
+  </div>
+</body>
 </html>

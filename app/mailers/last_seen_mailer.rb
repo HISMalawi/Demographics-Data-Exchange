@@ -4,19 +4,15 @@
 class LastSeenMailer < ApplicationMailer
   after_action :log_mail
 
-  def last_seen_more_than_3_days(district_data)
+  def last_seen_more_than_3_days(grouped_districts)
    
-    @district_data = district_data
-    @mailing_list = MailingList.joins(:mailer_districts).where(
-                  'mailer_districts.district_id = ?', 
-                  district_data[:district_id]).pluck(:email)
-
-    if @mailing_list.blank?
-      @mailing_list = MailingList.joins(:roles).where('roles.role = ?', 'Admin').pluck(:email)
-    end
-
+    @district_data = grouped_districts
+    @mailing_list = MailingList.pluck(:email)
+    
+    @admin_list = MailingList.joins(:roles).where('roles.role = ?', 'Admin').pluck(:email)
+    
     if mail_not_sent
-      mail(to: @mailing_list, subject: "Please check #{district_data[:name]} last seen more than 3 days ago")
+      mail(to: @mailing_list, cc: @admin_list, subject: "Summary Of DDE Sites Not Reachable")
     end
   end
 
@@ -24,7 +20,6 @@ class LastSeenMailer < ApplicationMailer
 
   def mail_not_sent
     MailingLog.where(
-      district_id: @district_data[:district_id],
       notification_type:  "#{mail.to} #{mail.subject}",
       created_at: Time.zone.today.beginning_of_day..Time.zone.today.end_of_day
     )
@@ -34,7 +29,6 @@ class LastSeenMailer < ApplicationMailer
     return unless mail.perform_deliveries
  
      MailingLog.create!(
-      district_id: @district_data[:district_id],
       notification_type: "#{mail.to} #{mail.subject}"
      )
   end
