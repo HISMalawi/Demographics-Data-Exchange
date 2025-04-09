@@ -2,136 +2,205 @@
 <html>
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    body {
-      margin: 0;
-      padding: 20px;
-      background-color: #f8f9fa; /* Light background for balance */
-      font-family: Arial, sans-serif;
-      color: #333333; /* Default dark text */
-    }
-
+  body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #f5f5f5;
+    font-family: Arial, sans-serif;
+    color: #333;
+    font-size: 18px;
+  }
+  
+  .container {
+    max-width: 100%;
+    padding: 40px 15%;
+    box-sizing: border-box;
+    background: #ffffff;
+    min-height: 100vh;
+    border-left: 6px solid #d9534f; /* subtle danger accent */
+  }
+  
+  .title {
+    color: #c9302c; /* dark red */
+    font-size: 26px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .intro {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: #a94442; /* professional alert red */
+  }
+  
+  #districtSearch {
+    width: 100%;
+    padding: 12px;
+    margin: 20px 0;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+  
+  .district-heading {
+    font-size: 20px;
+    background-color: #f9eaea; /* light red background */
+    padding: 12px;
+    border-left: 4px solid #d43f3a;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #333;
+  }
+  
+  .toggle-icon {
+    margin-left: 10px;
+    font-size: 14px;
+    transition: transform 0.3s ease;
+  }
+  
+  .rotate {
+    transform: rotate(90deg);
+  }
+  
+  .site-table {
+    display: none;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+    background-color: #fff;
+  }
+  
+  th {
+    background-color: #d9534f; /* strong red */
+    color: #ffffff;
+    padding: 10px;
+    text-align: left;
+    font-size: 15px;
+    border: 1px solid #e6e6e6;
+  }
+  
+  td {
+    border: 1px solid #e6e6e6;
+    padding: 10px;
+    font-size: 15px;
+  }
+  
+  .even-row {
+    background-color: #ffffff;
+  }
+  
+  .odd-row {
+    background-color: #fdf2f2; /* soft red tint */
+  }
+  
+  .footer-text,
+  .signature {
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    color: #666;
+  }
+  
+  a {
+    color: #c9302c;
+    text-decoration: none;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+  
+  .copyright {
+    font-size: 13px;
+    color: #999;
+    text-align: center;
+    margin-top: 30px;
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
     .container {
-      width: 600px;
-      max-width: 600px;
-      margin: 0 auto;
-      background: #ffffff;
-      padding: 20px;
-      border: 1px solid #dddddd;
-      border-radius: 8px;
+      padding: 20px 5%;
     }
-
+  
     .title {
-      color: #721c24; /* Dark red for title */
-      font-size: 20px;
-      font-weight: bold;
-      margin-bottom: 15px;
+      font-size: 24px;
     }
-
-    .intro {
-      font-size: 14px;
-      line-height: 1.6;
-      margin-bottom: 15px;
-    }
-
-    .district-heading {
-      font-size: 16px;
-      background-color: #f5c6cb; /* Subtle light red for the heading */
-      padding: 8px;
-      border-left: 4px solid #721c24; /* Dark red accent */
-      margin-top: 20px;
-      margin-bottom: 10px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 25px;
-    }
-
-    th {
-      background-color: #f8d7da; /* Light red for table header */
-      color: #721c24; /* Dark red for header text */
-      padding: 8px;
-      text-align: left;
-      font-size: 13px;
-      border: 1px solid #dddddd;
-    }
-
-    td {
-      border: 1px solid #dddddd;
-      padding: 8px;
-      font-size: 13px;
-    }
-
-    .even-row {
-      background-color: #ffffff;
-    }
-
-    .odd-row {
-      background-color: #f9f9f9; /* Slight grey for alternating rows */
-    }
-
-    .footer-text {
-      font-size: 14px;
-      line-height: 1.6;
-      margin-bottom: 15px;
-    }
-
+  
+    .intro,
+    .footer-text,
     .signature {
+      font-size: 16px;
+    }
+  
+    .district-heading {
+      font-size: 18px;
+    }
+  
+    th, td {
       font-size: 14px;
-      line-height: 1.6;
-      margin-bottom: 15px;
+      padding: 8px;
     }
-
-    .copyright {
-      font-size: 12px;
-      color: #777777;
-      text-align: center;
-      margin-top: 20px;
+  
+    #districtSearch {
+      font-size: 15px;
     }
-
-    a {
-      color: #0066cc;
-      text-decoration: none;
-    }
+  }
+  
   </style>
 </head>
 <body>
   <div class="container">
-    <h1 class="title">
-      Summary of DDE Sites Not Syncing
-    </h1>
+    <h1 class="title">DDE Sites Synchronization Issues Summary</h1>
 
-    <p class="intro">
-      Below is the list of districts and their respective sites that have not been syncing data for more than <strong>3 days</strong>.
-    </p>
+   <p class="intro">
+    <%= @last_synced_data[:total_sites_with_issue] %> site<%= 's' if @last_synced_data[:total_sites_with_issue] != 1 %> have synchronization issues
+    Below is the list of districts and their respective sites that have not been syncing for more than <strong>3 days</strong>.
+  </p>
 
-    <% @district_data.each do |district| %>
-      <h2 class="district-heading">
-        <%= district[:name] %> (<%= district[:sites].count %> site<%= 's' if district[:sites].count != 1 %>)
-      </h2>
+    <input type="text" id="districtSearch" placeholder="Search district by name..." onkeyup="filterDistricts()" />
 
-      <table role="presentation" cellpadding="0" cellspacing="0">
-        <thead>
-          <tr>
-            <th>Site Name</th>
-            <th>Days Since Last Activity</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% district[:sites].each_with_index do |site, i| %>
-            <tr class="<%= i.even? ? 'even-row' : 'odd-row' %>">
-              <td><%= site['site_name'] %></td>
-              <td><%= site['days_since_last_activity'] %></td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+    <% @last_synced_data[:districts].each do |district| %>
+      <div class="district-section" data-district="<%= district[:name].downcase %>">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span><%= district[:name] %> (<%= district[:sites].count %> site<%= 's' if district[:sites].count != 1 %>)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Synced</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% district[:sites].each_with_index do |site, i| %>
+                <tr class="<%= i.even? ? 'even-row' : 'odd-row' %>">
+                  <td><%= site['site_name'] %></td>
+                  <td><%= site['days_since_last_activity'] %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
     <% end %>
 
     <p class="footer-text">
-      Please address the connectivity issues with the respective facilities. For real-time status, visit:
+      Please address the synchronization issues with the respective facilities. For real-time status, visit:
       <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
     </p>
 
@@ -143,5 +212,35 @@
       &copy; <%= Time.now.year %> Demographics Data Exchange. All rights reserved.
     </div>
   </div>
+
+  <script>
+    function toggleSection(header) {
+      const icon = header.querySelector(".toggle-icon");
+      const section = header.nextElementSibling;
+
+      if (section.style.display === "none" || section.style.display === "") {
+        section.style.display = "block";
+        icon.classList.add("rotate");
+      } else {
+        section.style.display = "none";
+        icon.classList.remove("rotate");
+      }
+    }
+
+    function filterDistricts() {
+      const input = document.getElementById("districtSearch").value.toLowerCase();
+      const sections = document.querySelectorAll(".district-section");
+
+      sections.forEach(section => {
+        const name = section.getAttribute("data-district");
+        section.style.display = name.includes(input) ? "block" : "none";
+      });
+    }
+
+    // Collapse all by default
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".site-table").forEach(table => table.style.display = "none");
+    });
+  </script>
 </body>
 </html>

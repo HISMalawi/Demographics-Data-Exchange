@@ -1,14 +1,40 @@
 class LastSyncedMailer < ApplicationMailer
     after_action :log_mail
 
-    def last_synced_more_than_3_days(grouped_districts)
-      @district_data = grouped_districts
+    def summary_of_last_synced(last_synced)
+      @last_synced_data = last_synced
       @mailing_list = MailingList.pluck(:email)
-      
-      @admin_list = MailingList.joins(:roles).where('roles.role = ?', 'Admin').pluck(:email)
-      
-      if mail_not_sent
-        mail(to: @mailing_list, cc: @admin_list, subject: "Summary of DDE Sites Not Syncing")
+      @admin_list = MailingList.joins(:roles)
+                              .where(roles: { role: 'Admin' })
+                              .pluck(:email)
+
+      begin
+        # Use the mailer's view context
+        html = render_to_string(
+          template: 'last_synced_mailer/last_synced_more_than_3_days',
+          locals: { last_synced_data: @last_synced_data },
+          layout: false
+        )
+        Rails.logger.debug "Rendered HTML: '#{html}'"
+  
+        filename = "last_synced_more_than_3_days_#{Date.today.strftime('%Y%m%d')}.html"
+        attachments[filename] = {
+          mime_type: 'text/html',
+          content: html.force_encoding('UTF-8')
+        }      
+  
+        if @mailing_list.present? || @admin_list.present?
+          mail(
+            to: @mailing_list,
+            cc: @admin_list,
+            subject: 'Summary Of DDE Sites Syncing'
+          ) 
+        else
+          Rails.logger.warn 'Email not sent: No recipients'
+        end
+      rescue StandardError => e
+        Rails.logger.error "Error: #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
       end
     end
 

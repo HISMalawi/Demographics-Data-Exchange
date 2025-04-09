@@ -20,7 +20,8 @@ class LowNpidNotificationJob < ApplicationJob
         name: district_sites.first[:district_name],
         sites: district_sites
       }
-  
+
+
       LowNpidNotificationMailer.low_npid(district_data).deliver_later
     end
   end
