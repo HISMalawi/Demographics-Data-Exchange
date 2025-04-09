@@ -101,4 +101,9 @@ module SyncService
     footprint = FootPrint.create(footprint_record) if footprint.blank?
     footprint
   end
+
+  def self.save_errors(error)
+    error.delete(:id)
+    SyncError.create!(error) unless SyncError.find_by_uuid(error[:id])
+  end
 end

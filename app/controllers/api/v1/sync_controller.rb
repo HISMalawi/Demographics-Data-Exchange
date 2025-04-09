@@ -55,6 +55,15 @@ module Api
         end
       end
 
+      def pushed_errors
+        error = SyncService.save_errors(error_params)
+        if error.errors.any?
+          render json: { msg: 'Something went wrong' }, status: :internal_server_error
+        else
+          render json: error, status: :created
+        end
+      end
+
       private
 
       def update_params
@@ -143,6 +152,10 @@ module Api
         { user_id: params[:user_id],person_uuid: params[:person_uuid],encounter_datetime: params[:encounter_datetime],
           program_id: params[:program_id], location_id: params[:location_id], uuid: params[:uuid],
           app_date_created: params[:created_at], app_date_updated: params[:updated_at] }
+      end
+      
+      def error_params
+        params.permit(:site_id, :incident_time, :error, :synced, :uuid, :created_at, :updated_at)
       end
 
       def send_mail
