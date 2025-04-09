@@ -104,6 +104,6 @@ module SyncService
 
   def self.save_errors(error)
     error.delete(:id)
-    SyncError.create!(error) unless SyncError.find_by_uuid(error[:id])
+    SyncError.create!(error) unless SyncError.find_by_uuid(error[:uuid])
   end
 end
