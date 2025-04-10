@@ -51,7 +51,7 @@ class SyncJob < ApplicationJob
       pull_npids
       push_errors
     rescue StandardError => e
-      SyncError.create!(site_id: @location, incident_time: Time.now, error: e.message)
+      log_error(e.message)
     ensure
       if File.exist?("/tmp/dde_sync.lock")
         FileUtils.rm "/tmp/dde_sync.lock"
@@ -110,6 +110,10 @@ class SyncJob < ApplicationJob
         record.delete('updated_at')
         ActiveRecord::Base.transaction do
           if person.blank?
+            if PersonDetail.exists?(npid: record['npid'])
+              log_error("Duplicate NPID detected (#{record['npid']}) for incoming UUID #{record['person_uuid']}")
+              next
+            end
             PersonDetail.create!(record)
           else
             person.update(record)
@@ -123,7 +127,7 @@ class SyncJob < ApplicationJob
         end
       end
     rescue StandardError => e
-      SyncError.create!(site_id: @location, incident_time: Time.now, error: e.message)
+      log_error(e.message)
     end
   end
 
@@ -143,6 +147,10 @@ class SyncJob < ApplicationJob
         record.delete('update_seq')
         ActiveRecord::Base.transaction do
           if person.blank?
+            if PersonDetail.exists?(npid: record['npid'])
+              log_error("Duplicate NPID detected (#{record['npid']}) for incoming UUID #{record['person_uuid']}")
+              next
+            end
             PersonDetail.create!(record)
           else
             person.update(record)
@@ -157,7 +165,7 @@ class SyncJob < ApplicationJob
         end
       end
     rescue StandardError => e
-      SyncError.create!(site_id: @location, incident_time: Time.now, error: e.message)
+      log_error(e.message)
     end
   end
 
@@ -180,7 +188,7 @@ class SyncJob < ApplicationJob
         end
       end
     rescue StandardError => e
-      SyncError.create!(site_id: @location, incident_time: Time.now, error: e.message)
+      log_error(e.message)
     end
   end
 
@@ -198,8 +206,8 @@ class SyncJob < ApplicationJob
       redo if response.code != 201
       updated = Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response.code == 201
       redo if updated != true
-    rescue => e
-      SyncError.create!(site_id: @location, incident_time: Time.now, error: e.message)
+    rescue StandardError => e
+      log_error(e.message)
     end
   end
 
@@ -219,7 +227,7 @@ class SyncJob < ApplicationJob
       updated = Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i) if response.code == 201
       redo if updated != true
     rescue => e
-      SyncError.create!(site_id: @location, incident_time: Time.now, error: e.message)
+      log_error(e.message)
     end
   end
 
@@ -268,11 +276,11 @@ class SyncJob < ApplicationJob
         foot.foot_print_id if response.code == 201  # Collect successful IDs
       rescue RestClient::ExceptionWithResponse => e
         Rails.logger.error("Failed to sync footprint #{foot.foot_print_id}: #{e.response}")
-        SyncError.create!(site_id: @location, incident_time: Time.now, error: e.message)
+        log_error(e.message)
         nil
       rescue StandardError => e
         Rails.logger.error("Unexpected error syncing footprint #{foot.foot_print_id}: #{e.message}")
-        SyncError.create!(site_id: @location, incident_time: Time.now, error: e.message)
+        log_error(e.message)
         nil
       end.compact
 
@@ -291,17 +299,23 @@ class SyncJob < ApplicationJob
         error.id if response.code == 201 # Collect successful IDs
       rescue RestClient::ExceptionWithResponse => e
         Rails.logger.error("Failed to sync footprint #{error.id}: #{e.response}")
-        SyncError.create!(site_id: @location, incident_time: Time.now, error: e.message)
+        log_error(e.message)
         nil
       rescue StandardError => e
         Rails.logger.error("Unexpected error syncing footprint #{error.id}: #{e.message}")
-        SyncError.create!(site_id: @location, incident_time: Time.now, error: e.message)
+        log_error(e.message)
         nil
       end.compact
 
       # Bulk update successful records
       SyncError.where(id: responses).update_all(synced: true) if responses.any?
     end
+  end
+
+  private
+
+  def log_error(error)
+    SyncError.create!(site_id: @location, incident_time: Time.now, error: error.to_s)
   end
 end
 
