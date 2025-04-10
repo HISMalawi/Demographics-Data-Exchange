@@ -4,19 +4,40 @@
 class LastSeenMailer < ApplicationMailer
   after_action :log_mail
 
-  def last_seen_more_than_3_days(district_data)
-   
-    @district_data = district_data
-    @mailing_list = MailingList.joins(:mailer_districts).where(
-                  'mailer_districts.district_id = ?', 
-                  district_data[:district_id]).pluck(:email)
+  def summary_of_last_seen(last_seen)
+    @last_seen_data = last_seen
+    @mailing_list = MailingList.pluck(:email)
+    @admin_list = MailingList.joins(:roles)
+                            .where(roles: { role: 'Admin' })
+                            .pluck(:email)
 
-    if @mailing_list.blank?
-      @mailing_list = MailingList.joins(:roles).where('roles.role = ?', 'Admin').pluck(:email)
-    end
+    begin
+      # Use the mailer's view context
+      html = render_to_string(
+        template: 'last_seen_mailer/last_seen_more_than_3_days',
+        locals: { last_seen_data: @last_seen_data },
+        layout: false
+      )
+      Rails.logger.debug "Rendered HTML: '#{html}'"
 
-    if mail_not_sent
-      mail(to: @mailing_list, subject: "Please check #{district_data[:name]} last seen more than 3 days ago")
+      filename = "last_seen_more_than_3_days_#{Date.today.strftime('%Y%m%d')}.html"
+      attachments[filename] = {
+        mime_type: 'text/html',
+        content: html.force_encoding('UTF-8')
+      }
+
+      if @mailing_list.present? || @admin_list.present?
+        mail(
+          to: @mailing_list,
+          cc: @admin_list,
+          subject: 'Summary Of DDE Sites Not Reachable'
+        ) 
+      else
+        Rails.logger.warn 'Email not sent: No recipients'
+      end
+    rescue StandardError => e
+      Rails.logger.error "Error: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
     end
   end
 
@@ -24,7 +45,6 @@ class LastSeenMailer < ApplicationMailer
 
   def mail_not_sent
     MailingLog.where(
-      district_id: @district_data[:district_id],
       notification_type:  "#{mail.to} #{mail.subject}",
       created_at: Time.zone.today.beginning_of_day..Time.zone.today.end_of_day
     )
@@ -34,7 +54,6 @@ class LastSeenMailer < ApplicationMailer
     return unless mail.perform_deliveries
  
      MailingLog.create!(
-      district_id: @district_data[:district_id],
       notification_type: "#{mail.to} #{mail.subject}"
      )
   end
