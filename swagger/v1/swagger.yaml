@@ -123,7 +123,7 @@ paths:
                       type: string
                 identifiers:
                   type: object
-                  properties: 
+                  properties:
                     national_id:
                       type: string
               required:
@@ -136,7 +136,6 @@ paths:
               - home_district
               - home_village
               - home_traditional_authority
-              - identifierrs
   "/v1/search_by_name_and_gender":
     post:
       summary: search_by_name_and_gender people_detail
@@ -261,10 +260,10 @@ paths:
                       type: string
                 npid:
                   type: string
-                national_id: 
+                national_id:
                   type: string
                 doc_id:
-                  type: string 
+                  type: string
               required:
               - doc_id
   "/v1/void_person/":
@@ -443,6 +442,38 @@ paths:
       responses:
         '200':
           description: successful
+  "/v1/push_errors":
+    post:
+      summary: Push Errors
+      tags:
+      - Sychronization
+      parameters: []
+      responses:
+        '201':
+          description: sucessful
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                site_id:
+                  type: integer
+                incident_time:
+                  type: string
+                  format: date_time
+                error:
+                  type: string
+                uuid:
+                  type: string
+                created_at:
+                  type: string
+                  format: date_time
+                updated_at:
+                  type: string
+                  format: date_time
   "/v1/login":
     post:
       summary: User Login
