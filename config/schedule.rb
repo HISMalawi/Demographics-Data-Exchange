@@ -25,6 +25,9 @@ when 'development'
   end
 end
 
+every 1.day, at: '3:00 am' do 
+  rake 'reports:cleanup_old'
+end
 
 
 # Learn more: http://github.com/javan/whenever
