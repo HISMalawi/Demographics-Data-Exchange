@@ -9,19 +9,24 @@ class LastSyncedMailer < ApplicationMailer
                               .pluck(:email)
 
       begin
-        # Use the mailer's view context
+     
         html = render_to_string(
           template: 'last_synced_mailer/last_synced_more_than_3_days',
           locals: { last_synced_data: @last_synced_data },
           layout: false
         )
+        
         Rails.logger.debug "Rendered HTML: '#{html}'"
   
         filename = "last_synced_more_than_3_days_#{Date.today.strftime('%Y%m%d')}.html"
-        attachments[filename] = {
-          mime_type: 'text/html',
-          content: html.force_encoding('UTF-8')
-        }      
+        file_path = Rails.root.join('public', 'reports', filename)
+        FileUtils.mkdir_p(File.dirname(file_path))
+        File.open(file_path, 'w') { |f| f.write(html.force_encoding('UTF-8'))}
+        
+        # Generate public URL
+        host = Rails.application.routes.default_url_options[:host] || 'http://localhost:8050'
+
+        @report_url = "#{host}/reports/#{filename}"  # Used summary erb.html view  
   
         if @mailing_list.present? || @admin_list.present?
           mail(
