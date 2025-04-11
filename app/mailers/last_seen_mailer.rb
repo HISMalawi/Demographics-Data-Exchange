@@ -29,7 +29,7 @@ class LastSeenMailer < ApplicationMailer
       # Generate public URL
       host = Rails.application.routes.default_url_options[:host] || 'http://localhost:8050'
 
-      @report_url = "#{host}/reports/#{filename}"  # Used summary erb.html view
+      @report_url = "#{host}/v1/reports/#{filename}"  # Used summary erb.html view
   
       if @mailing_list.present? || @admin_list.present?
         mail(
