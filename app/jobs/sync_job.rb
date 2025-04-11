@@ -113,6 +113,10 @@ class SyncJob < ApplicationJob
             if PersonDetail.exists?(npid: record['npid'])
               log_error("Duplicate NPID detected (#{record['npid']}) for incoming UUID #{record['person_uuid']}")
               next
+            elsif PersonDetail.exists?(national_id: record['national_id'])
+              log_error("Duplicate National ID detected (#{record['national_id']}) \
+                for incomming UUID: #{record['person_uuid']}, npid: #{record['npid']}")
+              next
             end
             PersonDetail.create!(record)
           else
@@ -149,6 +153,10 @@ class SyncJob < ApplicationJob
           if person.blank?
             if PersonDetail.exists?(npid: record['npid'])
               log_error("Duplicate NPID detected (#{record['npid']}) for incoming UUID #{record['person_uuid']}")
+              next
+            elsif PersonDetail.exists?(national_id: record['national_id'])
+              log_error("Duplicate National ID detected (#{record['national_id']}) \
+                for incomming UUID: #{record['person_uuid']}, npid: #{record['npid']}")
               next
             end
             PersonDetail.create!(record)
