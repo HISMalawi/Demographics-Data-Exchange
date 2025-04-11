@@ -30,4 +30,4 @@ last_sequence.txt
 erl_crash.dump
 .project
 .byebug_history
-public/reports/*.html
+/public/reports/*
