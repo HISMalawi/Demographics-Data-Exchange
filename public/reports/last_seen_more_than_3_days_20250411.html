@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #e0e0e0;
+      font-family: Arial, sans-serif;
+      color: #333333;
+      font-size: 18px; /* Bigger base font */
+    }
+
+    .container {
+      max-width: 100%;
+      padding: 40px 20%;
+      box-sizing: border-box;
+      background: #ffffff;
+      min-height: 100vh;
+    }
+
+    .title {
+      color: #6c757d;
+      font-size: 26px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .intro {
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    #districtSearch {
+      width: 100%;
+      padding: 12px;
+      margin-left: 25px
+      margin-right: 25px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    .district-heading {
+      font-size: 20px;
+      background-color: #f0f0f0;
+      padding: 12px;
+      border-left: 4px solid #6c757d;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .toggle-icon {
+      margin-left: 10px;
+      font-size: 14px;
+      transition: transform 0.3s ease;
+    }
+
+    .rotate {
+      transform: rotate(90deg);
+    }
+
+    .site-table {
+      display: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+
+    th {
+      background-color: #6c757d;
+      color: #ffffff;
+      padding: 10px;
+      text-align: left;
+      font-size: 15px;
+      border: 1px solid #dddddd;
+    }
+
+    td {
+      border: 1px solid #dddddd;
+      padding: 10px;
+      font-size: 15px;
+    }
+
+    .even-row {
+      background-color: #ffffff;
+    }
+
+    .odd-row {
+      background-color: #f9f9f9;
+    }
+
+    .footer-text,
+    .signature {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    
+    .copyright {
+      font-size: 13px;
+      color: #777777;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px 5%;
+      }
+
+      .title {
+        font-size: 22px;
+      }
+
+      .intro,
+      .footer-text,
+      .signature {
+        font-size: 16px;
+      }
+
+      .district-heading {
+        font-size: 18px;
+      }
+
+      th, td {
+        font-size: 14px;
+        padding: 8px;
+      }
+  
+      #districtSearch {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">DDE Sites Connectivity Issues Summary</h1>
+
+   <p class="intro">
+    <strong>232 sites</strong> out of
+    <strong> sites</strong>  have connectivity issues
+    Below is the list of districts and their respective sites that have been offline for more than <strong>3 days</strong>.
+  </p>
+
+    <input type="text" id="districtSearch" placeholder="Search district by name..." onkeyup="filterDistricts()" />
+
+      <div class="district-section" data-district="balaka">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Balaka (5 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Balaka District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Balaka OPD Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Kalembo Dispensary</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mbera Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Phalula Health Centre</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="blantyre">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Blantyre (27 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Bangwe Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Blantyre Civic Centre Dispensary</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Chikowa Health Centre (Blantyre)</td>
+                  <td>204</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Chileka Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Chileka SDQ Health Centre (Blantyre)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Chilimba City Clinic</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Chilomoni Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Dziwe Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Gateway Clinic (Blantyre)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Kadidi Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Limbe Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Lirangwe Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Lundu Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>MACRO Blantyre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Makata Health Centre (Lunzu)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Makheta Youth Organization Clinic</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mbayani Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mdeka Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mlambe Hospital</td>
+                  <td>205</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mpemba Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Namikoko Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Ndirande Urban Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Queen Elizabeth Central Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Soche Maternity</td>
+                  <td>189</td>
+                </tr>
+                <tr class="even-row">
+                  <td>South Lunzu Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>St Vincent Health Centre (Chadzunda)</td>
+                  <td>206</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Zingwangwa Urban Health Centre</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="chikwawa">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Chikwawa (10 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Chikwawa District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Kalulu Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Makhwira Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mfera Health Centre</td>
+                  <td>190</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Ndakwela Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Ngabu Rural Hospital</td>
+                  <td>275</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Ngabu SDA Health Center</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Nkhwazi Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>St Montfort Hospital</td>
+                  <td>201</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>SUCOMA Health Centre (Illovo)</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="chiradzulu">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Chiradzulu (12 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Bilal Dispensary</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Chiradzulu District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Chitera Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mauwa Health Centre</td>
+                  <td>176</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mbulumbudzi Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Milepa Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Namadzi Health Centre</td>
+                  <td>175</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Namitambo Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Ndunde Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Nguludi St Josephs Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Nkalo Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Thumbwe Health Centre</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="chitipa">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Chitipa (1 site)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Chitipa District Hospital</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="dedza">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Dedza (4 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Dedza District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Kaphuka Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Lobi Rural Health Centre</td>
+                  <td>210</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mua Mission Hospital</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="dowa">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Dowa (4 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Dowa District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Madisi Mission Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mponela Rural Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mvera Army Camp Dispensary</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="karonga">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Karonga (5 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Chilumba Garrison Dispensary</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Chilumba Rural Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Kaporo Rural Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Karonga District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Nyungwe Health Centre</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="kasungu">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Kasungu (2 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Kasungu District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>MaHIS</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="lilongwe">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Lilongwe (30 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Airwing Clinic (Lilongwe)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Area 18 Urban Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Area 25 Urban Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Chileka Health Centre (Lilongwe)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Chitedze Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Daeyang Luke Hospital</td>
+                  <td>223</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Dzenza Health Centre</td>
+                  <td>177</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Kabudula Rural Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Kamuzu Barracks Dispensary</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Kamuzu Central Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Kawale Urban Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Khongoni Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Lighthouse</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Likuni Hospital</td>
+                  <td>201</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Lumbadzi Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>MACRO Lilongwe</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Malingunde Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Martin Preuss Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Maula Prison Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mbabvi Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mitundu Rural Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mlale Mission Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Moyo Clinic (Lilongwe)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mtenthera Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Nathenje Health Centre</td>
+                  <td>178</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Nkhoma Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Nsaru Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Nthondo Health Centre (Lilongwe)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Police (Area 30) Dispensary</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>St Gabriels Hospital</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="machinga">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Machinga (11 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Chikweo Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Machinga District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mangamba Dispensary</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mposa Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Namanja Health Centre</td>
+                  <td>285</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Nayinunje Health Centre</td>
+                  <td>177</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Nayuchi Health Centre</td>
+                  <td>171</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Ngokwe Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Nsanama Health Centre</td>
+                  <td>173</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Ntaja Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Nyambi Health Centre</td>
+                  <td>189</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="mangochi">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Mangochi (19 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Chilipa Health Centre (Mangochi)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Chiponde Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Jalasi Health Centre</td>
+                  <td>213</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Katema Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Katuli Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Koche Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Kukalanga Health Centre</td>
+                  <td>224</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Lulanga Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Lungwena Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Makanjira Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Malembo Health Centre (Mangochi)</td>
+                  <td>334</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mangochi District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Monkey-Bay Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mpondas Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mulibwanji Health Centre (Mangochi)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Namwera Health Centre</td>
+                  <td>294</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Nankumba Health Centre</td>
+                  <td>467</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Nkope Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>St Martin Hospital</td>
+                  <td>476</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="mchinji">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Mchinji (4 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Kapiri Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Kochilira Rural Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mchinji District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mkanda Health Centre</td>
+                  <td>189</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="mulanje">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Mulanje (15 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Chambe Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Chisitu Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Chonde Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Kambenje Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mbiza Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Milonde Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mimosa Dispensary</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mpala Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mulanje District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mulanje Mission Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mulomba Health Centre</td>
+                  <td>176</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Muloza Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Namasalima Health Centre (Mulanje)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Namphungo Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Naphimba Health Centre</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="mwanza">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Mwanza (1 site)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Mwanza District Hospital</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="mzimba">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Mzimba (11 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Ekwendeni Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Embangweni Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Euthini Rural Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Jenda Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>MACRO Mzuzu</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Moyale Barracks Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mzimba District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mzuzu Central Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mzuzu Urban Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Ngwelero Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>St Johns Mzuzu Hospital</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="nkhata-bay">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Nkhata-bay (2 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Chintheche Rural Hospital</td>
+                  <td>238</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Nkhata Bay District Hospital</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="nkhotakota">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Nkhotakota (4 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Alinafe Rehabilitation Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Matiki Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Nkhotakota District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Nkhunga Health Centre</td>
+                  <td>183</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="nsanje">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Nsanje (8 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Kalemba Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Masenjere Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mbenje Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Ndamera Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Nsanje District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Sorgin Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Tengani Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Trinity - Fatima Hospital</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="ntcheu">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Ntcheu (5 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Kasinje Health Centre</td>
+                  <td>197</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Lizulu Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Nsiyaludzu Health Centre</td>
+                  <td>385</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Ntcheu District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Sister Teleza Health Centre</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="ntchisi">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Ntchisi (1 site)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Ntchisi District Hospital</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="phalombe">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Phalombe (8 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Chitekesa Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Kalinde Health Centre (Phalombe)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Migowi Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mkhwayi Health Centre</td>
+                  <td>278</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Nambazo Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Nazombe Health Centre (Gogo Nazombe)</td>
+                  <td>413</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Phalombe Health District</td>
+                  <td>759</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Phalombe Mission Hospital</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="rumphi">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Rumphi (3 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Bolero Rural Health Centre</td>
+                  <td>190</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>DGM Livingstonia Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Rumphi District Hospital</td>
+                  <td>181</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="salima">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Salima (4 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Khombedza Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Life Line Salima Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mafco Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Salima District Hospital</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="thyolo">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Thyolo (13 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Bvumbwe Research Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Changata Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Chimaliro Health Centre</td>
+                  <td>268</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Chisoka Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Khonjeni Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Makungwa Health Centre</td>
+                  <td>171</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Malamulo Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mangunda Maternity</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mikolongwe Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Thekerani Rural Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Thunga Health Centre</td>
+                  <td>185</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Thyolo District Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Zoa Health Centre</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="district-section" data-district="zomba">
+        <div class="district-heading" onclick="toggleSection(this)">
+          <span>Zomba (23 sites)</span>
+          <span class="toggle-icon">&#9654;</span>
+        </div>
+
+        <div class="site-table">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <thead>
+              <tr>
+                <th>Site Name</th>
+                <th>Days Since Last Seen</th>
+              </tr>
+            </thead>
+            <tbody>
+                <tr class="even-row">
+                  <td>Chilipa Health Centre (Zomba)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Chingale Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Chipini Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>City Clinic (Zomba)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Cobbe Barracks Hospital</td>
+                  <td>177</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Domasi Rural Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Lambulira Health Centre</td>
+                  <td>346</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Likangala Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Machinjiri Health Centre</td>
+                  <td>282</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Makwapala Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Matawale Urban Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Matiya Health Centre</td>
+                  <td>259</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Mayaka Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Mmambo Health Centre (Zomba)</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Naisi Health Centre</td>
+                  <td>171</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Namikango Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Nasawa Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Nkasala Health Centre</td>
+                  <td>227</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Pirimiti Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Sadzi Health Centre</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>St Lukes Hospital</td>
+                  <td>170</td>
+                </tr>
+                <tr class="odd-row">
+                  <td>Thondwe Dispensary</td>
+                  <td>170</td>
+                </tr>
+                <tr class="even-row">
+                  <td>Zomba Central Hospital</td>
+                  <td>170</td>
+                </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    <p class="footer-text">
+      Please address the connectivity issues with the respective facilities. For real-time status, visit:
+      <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
+    </p>
+
+    <p class="signature">
+      Best regards,<br><strong>Demographics Data Exchange</strong>
+    </p>
+
+    <div class="copyright">
+      &copy; 2025 Demographics Data Exchange. All rights reserved.
+    </div>
+  </div>
+
+  <script>
+    function toggleSection(header) {
+      const icon = header.querySelector(".toggle-icon");
+      const section = header.nextElementSibling;
+
+      if (section.style.display === "none" || section.style.display === "") {
+        section.style.display = "block";
+        icon.classList.add("rotate");
+      } else {
+        section.style.display = "none";
+        icon.classList.remove("rotate");
+      }
+    }
+
+    function filterDistricts() {
+      const input = document.getElementById("districtSearch").value.toLowerCase();
+      const sections = document.querySelectorAll(".district-section");
+
+      sections.forEach(section => {
+        const name = section.getAttribute("data-district");
+        section.style.display = name.includes(input) ? "block" : "none";
+      });
+    }
+
+    // Collapse all by default
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".site-table").forEach(table => table.style.display = "none");
+    });
+  </script>
+</body>
+</html>
