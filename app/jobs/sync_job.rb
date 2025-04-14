@@ -284,11 +284,11 @@ class SyncJob < ApplicationJob
         foot.foot_print_id if response.code == 201  # Collect successful IDs
       rescue RestClient::ExceptionWithResponse => e
         Rails.logger.error("Failed to sync footprint #{foot.foot_print_id}: #{e.response}")
-        log_error(e.message)
+        log_error("#{e.message} #{foot.foot_print_id}: #{e.response}")
         nil
       rescue StandardError => e
         Rails.logger.error("Unexpected error syncing footprint #{foot.foot_print_id}: #{e.message}")
-        log_error(e.message)
+        log_error("#{e.message} #{foot.foot_print_id}: #{e.response}")
         nil
       end.compact
 
