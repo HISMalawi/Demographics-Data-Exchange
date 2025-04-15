@@ -1,33 +1,46 @@
+# frozen_string_literal: true
+
 class LowNpidNotificationJob < ApplicationJob
   queue_as :default
 
   def perform(*args)
-    # Fetch all sites at once to ensure complete grouping
     sites = fetch_all_sites
-  
+
+    #Global Totals
+    total_sites = 0 
+
     # Ensure BigDecimal values are converted to Float
     sites.each do |site|
       site[:avg_consumption_rate_per_day] = site[:avg_consumption_rate_per_day].to_f if site[:avg_consumption_rate_per_day].is_a?(BigDecimal)
       site[:days_remaining] = site[:days_remaining].to_f if site[:days_remaining].is_a?(BigDecimal)
     end
 
-    # Group sites by district
+    # Group by district
     grouped_sites = sites.group_by { |site| site[:district_id] }
-  
-    # Send one email per district
-    grouped_sites.each_value do |district_sites|
-      district_data = {
+
+    # Build structured district list
+    districts = grouped_sites.map do |district_id, district_sites|
+      {
+        district_id: district_id,
         name: district_sites.first[:district_name],
         sites: district_sites
       }
-
-
-      LowNpidNotificationMailer.low_npid(district_data).deliver_later
     end
+
+    # Sort alphabetically by district name
+    sorted_districts = districts.sort_by { |d| d[:name] }
+
+    result = {
+      total_sites: sites.count,
+      districts: sorted_districts
+    }
+
+    # Send a single email with all districts
+    LowNpidNotificationMailer.low_npid_summary(result).deliver_now
   end
-  
+
   private
-  
+
   def fetch_all_sites
     query = <<-SQL
       SELECT
@@ -64,10 +77,9 @@ class LowNpidNotificationJob < ApplicationJob
       HAVING 
         days_remaining < 30 OR unassigned < 1000
       ORDER BY 
-        days_remaining ASC  -- Prioritize urgent ones first
+        days_remaining ASC
     SQL
-  
+
     ActiveRecord::Base.connection.select_all(query).map(&:symbolize_keys)
   end
-
 end
