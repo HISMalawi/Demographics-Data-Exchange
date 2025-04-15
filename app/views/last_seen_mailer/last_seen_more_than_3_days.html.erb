@@ -80,7 +80,7 @@
 
     th {
       background-color: #6c757d;
-      color: #ffffff;
+      color: #000000;
       padding: 10px;
       text-align: left;
       font-size: 15px;
@@ -121,6 +121,92 @@
       text-decoration: none;
     }
 
+    .pagination-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+    }
+
+    .pagination-controls button {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .pagination-controls button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    .pagination-controls .page-info {
+      font-size: 14px;
+      color: #555;
+    }
+
+    .page-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    }
+
+  /* Fixed Sticky Header and Footer */
+  .sticky-header,
+  .sticky-footer {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    z-index: 100;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .sticky-header {
+    top: 0;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .sticky-footer {
+    bottom: 0;
+    border-top: 1px solid #ddd;
+  }
+
+  /* Scrollable Content Area */
+  .scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 100px 20px 120px; /* leave space for fixed header and footer */
+    background-color: #f9f9f9;
+    margin-top: 100px;
+    margin-bottom: 100px;
+  }
+
+  /* Optional: clean spacing for sections inside */
+  .district-section {
+    margin-bottom: 30px;
+  }
+
+  .site-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+
+  .site-table th, .site-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+
+  .site-table th {
+    background-color: #eee;
+  }
+
     /* Mobile responsiveness */
     @media (max-width: 768px) {
       .container {
@@ -153,56 +239,70 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1 class="title">DDE Sites Connectivity Issues Summary</h1>
+   <div class="page-wrapper">
+    <!-- Sticky Header -->
+    <div class="sticky-header">
+      <h1 class="title">DDE Sites Connectivity Issues Summary</h1>
 
-   <p class="intro">
-    <strong><%= @last_seen_data[:total_sites_with_issue] %> site<%= 's' if @last_seen_data[:total_sites_with_issue] != 1 %></strong> out of
-    <strong><%= @last_seen_data[:total_sites] %> site<%= 's' if @last_seen_data[:total_sites] != 1 %></strong>  have connectivity issues
-    Below is the list of districts and their respective sites that have been offline for more than <strong>3 days</strong>.
-  </p>
+      <p class="intro">
+        <strong><%= @last_seen_data[:total_sites_with_issue] %> site<%= 's' if @last_seen_data[:total_sites_with_issue] != 1 %></strong> out of
+        <strong><%= @last_seen_data[:total_sites] %> site<%= 's' if @last_seen_data[:total_sites] != 1 %></strong> have connectivity issues.
+        Below is the list of districts and their respective sites that have been offline for more than <strong>3 days</strong>.
+      </p>
 
-    <input type="text" id="districtSearch" placeholder="Search district by name..." onkeyup="filterDistricts()" />
+      <input type="text" id="districtSearch" placeholder="Search district by name..." onkeyup="filterDistricts()" />
+    </div>
 
-    <% @last_seen_data[:districts].each do |district| %>
-      <div class="district-section" data-district="<%= district[:name].downcase %>">
-        <div class="district-heading" onclick="toggleSection(this)">
-          <span><%= district[:name] %> (<%= district[:sites].count %> site<%= 's' if district[:sites].count != 1 %>)</span>
-          <span class="toggle-icon">&#9654;</span>
-        </div>
+    <!-- Scrollable Content -->
+    <div class="scrollable-content">
+      <% @last_seen_data[:districts].each do |district| %>
+        <div class="district-section" data-district="<%= district[:name].downcase %>">
+          <div class="district-heading" onclick="toggleSection(this)">
+            <span><%= district[:name] %> (<%= district[:sites].count %> site<%= 's' if district[:sites].count != 1 %>)</span>
+            <span class="toggle-icon">&#9654;</span>
+          </div>
 
-        <div class="site-table">
-          <table role="presentation" cellpadding="0" cellspacing="0">
-            <thead>
-              <tr>
-                <th>Site Name</th>
-                <th>Days Since Last Seen</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% district[:sites].each_with_index do |site, i| %>
-                <tr class="<%= i.even? ? 'even-row' : 'odd-row' %>">
-                  <td><%= site['site_name'] %></td>
-                  <td><%= site['days_since_last_seen'] %></td>
+          <div class="site-table">
+            <table role="presentation" cellpadding="0" cellspacing="0" class="paginated-table">
+              <thead>
+                <tr>
+                  <th>Site Name</th>
+                  <th>Days Since Last Seen</th>
                 </tr>
-              <% end %>
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                <% district[:sites].each_with_index do |site, i| %>
+                  <tr class="<%= i.even? ? 'even-row' : 'odd-row' %>">
+                    <td><%= site['site_name'] %></td>
+                    <td><%= site['days_since_last_seen'] %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+            <div class="pagination-controls">
+              <button class="prev-btn">Previous</button>
+              <span class="page-info"></span>
+              <button class="next-btn">Next</button>
+            </div>
+          </div>
         </div>
+      <% end %>
+    </div>
+
+    <!-- Sticky Footer -->
+    <div class="sticky-footer">
+      <p class="footer-text">
+        Please address the connectivity issues with the respective facilities. For real-time status, visit:
+        <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
+      </p>
+
+      <p class="signature">
+        Best regards,<br><strong>Demographics Data Exchange</strong>
+      </p>
+
+      <div class="copyright">
+        &copy; <%= Time.now.year %> Demographics Data Exchange. All rights reserved.
       </div>
-    <% end %>
-
-    <p class="footer-text">
-      Please address the connectivity issues with the respective facilities. For real-time status, visit:
-      <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
-    </p>
-
-    <p class="signature">
-      Best regards,<br><strong>Demographics Data Exchange</strong>
-    </p>
-
-    <div class="copyright">
-      &copy; <%= Time.now.year %> Demographics Data Exchange. All rights reserved.
     </div>
   </div>
 
@@ -229,6 +329,54 @@
         section.style.display = name.includes(input) ? "block" : "none";
       });
     }
+
+    function paginateTable(table, rowsPerPage = 10) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      const totalPages = Math.ceil(rows.length / rowsPerPage);
+      const controls = table.parentElement.querySelector(".pagination-controls");
+      const prevBtn = controls.querySelector(".prev-btn");
+      const nextBtn = controls.querySelector(".next-btn");
+      const pageInfo = controls.querySelector(".page-info");
+
+      let currentPage = 1;
+
+      function updateDisplay() {
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        rows.forEach((row, i) => {
+          row.style.display = i >= start && i < end ? "" : "none";
+        });
+
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+      }
+
+      prevBtn.onclick = () => {
+        if (currentPage > 1) {
+          currentPage--;
+          updateDisplay();
+        }
+      };
+
+      nextBtn.onclick = () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          updateDisplay();
+        }
+      };
+
+      updateDisplay();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Collapse all tables by default
+      document.querySelectorAll(".site-table").forEach(table => table.style.display = "none");
+
+      // Add pagination to each paginated table
+      document.querySelectorAll(".paginated-table").forEach(table => paginateTable(table, 10));
+    });
 
     // Collapse all by default
     document.addEventListener("DOMContentLoaded", () => {

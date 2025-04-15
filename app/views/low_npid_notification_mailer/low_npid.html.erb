@@ -1,103 +1,377 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #e0e0e0;
-        color: #333;
-        margin: 0;
-        padding: 20px;
-      }
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #e0e0e0;
+      font-family: Arial, sans-serif;
+      color: #333;
+      font-size: 18px;
+    }
+
+    .container {
+      max-width: 100%;
+      padding: 40px 10%;
+      box-sizing: border-box;
+      background: #ffffff;
+      min-height: 100vh;
+      border-left: 6px solid #ffc107;
+    }
+
+    h1 {
+      color: #ffc107;
+      font-size: 26px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    .intro {
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    #districtSearch {
+      width: 100%;
+      padding: 12px;
+      margin: 20px 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+
+    .district-heading {
+      font-size: 20px;
+      background-color: #fde9c6;
+      padding: 12px;
+      border-left: 4px solid #ffc107;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #333;
+    }
+
+    .toggle-icon {
+      margin-left: 10px;
+      font-size: 14px;
+      transition: transform 0.3s ease;
+    }
+
+    .rotate {
+      transform: rotate(90deg);
+    }
+
+    .site-table {
+      display: none;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+      background-color: #fff;
+    }
+
+    th {
+      background-color: #ffc107;
+      color: #00000;
+      padding: 10px;
+      text-align: left;
+      font-size: 15px;
+      border: 1px solid #e6e6e6;
+    }
+
+    td {
+      border: 1px solid #e6e6e6;
+      padding: 10px;
+      font-size: 15px;
+    }
+
+    .even-row {
+      background-color: #ffffff;
+    }
+
+    .odd-row {
+      background-color: #fff6d8;
+    }
+
+    a {
+      color: #ffc107;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .footer {
+      font-size: 14px;
+      color: #777;
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    .pagination-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+    }
+
+    .pagination-controls button {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .pagination-controls button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    .pagination-controls .page-info {
+      font-size: 14px;
+      color: #555;
+    }
+
+    .page-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    }
+
+  /* Fixed Sticky Header and Footer */
+  .sticky-header,
+  .sticky-footer {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    z-index: 100;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .sticky-header {
+    top: 0;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .sticky-footer {
+    bottom: 0;
+    border-top: 1px solid #ddd;
+  }
+
+  /* Scrollable Content Area */
+  .scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 100px 20px 120px; /* leave space for fixed header and footer */
+    background-color: #f9f9f9;
+    margin-top: 140px;
+    margin-bottom: 100px;
+  }
+
+  /* Optional: clean spacing for sections inside */
+  .district-section {
+    margin-bottom: 30px;
+  }
+
+  .site-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+
+  .site-table th, .site-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+
+  .site-table th {
+    background-color: #eee;
+  }
+
+    @media (max-width: 768px) {
       .container {
-        max-width: 600px;
-        background: #ffffff;
-        padding: 20px;
-        margin: auto;
-        border-radius: 8px;
-        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        padding: 20px 5%;
       }
+
       h1 {
-        color: #ffc107;
-        font-size: 20px;
+        font-size: 22px;
       }
-      p {
-        font-size: 14px;
-        line-height: 1.6;
+
+      .intro {
+        font-size: 16px;
       }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 15px;
-      }
+
       th, td {
-        border: 1px solid #ddd;
-        padding: 10px;
-        text-align: left;
+        font-size: 14px;
+        padding: 8px;
       }
-      th {
-        background: #ffc107;
-        color: white;
-        font-weight: bold;
-      }
-      tr:nth-child(even) {
-        background-color: #f9f9f9;
-      }
-      a {
-        color: #ffc107;
-        text-decoration: none;
-        font-weight: bold;
-      }
-      .footer {
-        font-size: 12px;
-        color: #777;
-        text-align: center;
-        margin-top: 20px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1>Notification: Low NPID Levels in <%= @district_data[:name] %></h1>
 
-      <p>
-        Please be advised that <%= @district_data[:sites].count %> site<%= @district_data[:sites].count == 1 ? '' : 's' %> in this district is currently experiencing low NPID levels.
+      #districtSearch {
+        font-size: 15px;
+      }
+
+      .district-heading {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrapper">
+    <div class="sticky-header">
+      <h1>DDE Low NPIDs</h1>
+      <p class="intro">
+        Please be advised that <strong><%= @low_npid_data[:total_sites] %> site<%= @low_npid_data[:total_sites] == 1 ? '' : 's' %></strong> are currently experiencing low NPID levels.
       </p>
-      
-      <p><strong>Current Status:</strong></p>
-  
-      <table>
-        <tr>
-          <th>Site</th>
-          <th>Unassigned NPIDs</th>
-          <th>Average Consumption (Per Day)</th>
-          <th>Estimated Days Remaining</th>
-        </tr>
-      
-        <% @district_data[:sites].each do |site| %> 
-          <tr>
-          <td><%= site[:location_name] %></td>
-          <td><%= site[:unassigned] %></td>
-          <td><%= site[:avg_consumption_rate_per_day].round %></td>
-          <td><%= site[:days_remaining].round %></td>
-          </tr>
-        <% end %>
-    
-      </table>
+      <input type="text" id="districtSearch" placeholder="Search district by name..." onkeyup="filterDistricts()" />
+    </div>
 
-      <p>
-        Please take the necessary steps to replenish the NPIDs. 
-        For more details, visit: 
+    <!-- Scrollable Content -->
+    <div class="scrollable-content">
+      <% @low_npid_data[:districts].each do |district| %>
+        <div class="district-section" data-district="<%= district[:name].downcase %>">
+          <div class="district-heading" onclick="toggleSection(this)">
+            <span><%= district[:name] %> (<%= district[:sites].count %> site<%= 's' if district[:sites].count != 1 %>)</span>
+            <span class="toggle-icon">&#9654;</span>
+          </div>
+
+          <div class="site-table">
+            <table  role="presentation" cellpadding="0" cellspacing="0" class="paginated-table">
+              <thead>
+                <tr>
+                  <th>Site Name</th>
+                  <th>Assigned</th>
+                  <th>Unassigned</th>
+                  <th>Avg. Consumption</th>
+                  <th>Days Remaining</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% district[:sites].each_with_index do |site, i| %>
+                  <tr class="<%= i.even? ? 'even-row' : 'odd-row' %>">
+                    <td><%= site[:location_name] %></td>
+                    <td><%= site[:assigned] %></td>
+                    <td><%= site[:unassigned] %></td>
+                    <td><%= site[:avg_consumption_rate_per_day] %></td>
+                    <td><%= site[:days_remaining] %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+            <div class="pagination-controls">
+              <button class="prev-btn">Previous</button>
+              <span class="page-info"></span>
+              <button class="next-btn">Next</button>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>  
+
+
+    <!-- Sticky Footer -->
+    <div class="sticky-footer">
+      <p class="intro">
+        Please take the necessary steps to replenish the NPIDs. For more details, visit:
         <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
       </p>
 
-      <p>Thank you,</p>
-      <p><strong>Demographics Data Exchange</strong></p>
+      <p class="intro"><strong>Demographics Data Exchange</strong></p>
 
       <div class="footer">
         &copy; <%= Time.now.year %> Demographics Data Exchange. All rights reserved.
       </div>
     </div>
-  </body>
+
+  </div>
+  <script>
+    function toggleSection(element) {
+      const icon = element.querySelector('.toggle-icon');
+      icon.classList.toggle('rotate');
+      const table = element.nextElementSibling;
+      table.style.display = (table.style.display === 'none' || table.style.display === '') ? 'block' : 'none';
+    }
+
+    function filterDistricts() {
+      const input = document.getElementById("districtSearch").value.toLowerCase();
+      const sections = document.querySelectorAll(".district-section");
+
+      sections.forEach(section => {
+        const district = section.getAttribute("data-district");
+        section.style.display = district.includes(input) ? "block" : "none";
+      });
+    }
+
+    function paginateTable(table, rowsPerPage = 10) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      const totalPages = Math.ceil(rows.length / rowsPerPage);
+      const controls = table.parentElement.querySelector(".pagination-controls");
+      const prevBtn = controls.querySelector(".prev-btn");
+      const nextBtn = controls.querySelector(".next-btn");
+      const pageInfo = controls.querySelector(".page-info");
+
+      let currentPage = 1;
+
+      function updateDisplay() {
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        rows.forEach((row, i) => {
+          row.style.display = i >= start && i < end ? "" : "none";
+        });
+
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+      }
+
+      prevBtn.onclick = () => {
+        if (currentPage > 1) {
+          currentPage--;
+          updateDisplay();
+        }
+      };
+
+      nextBtn.onclick = () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          updateDisplay();
+        }
+      };
+
+      updateDisplay();
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Collapse all tables by default
+      document.querySelectorAll(".site-table").forEach(table => table.style.display = "none");
+
+      // Add pagination to each paginated table
+      document.querySelectorAll(".paginated-table").forEach(table => paginateTable(table, 10));
+    });
+
+    // Collapse all by default
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".site-table").forEach(table => table.style.display = "none");
+    });
+</script>
+</body>
 </html>
