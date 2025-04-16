@@ -268,7 +268,7 @@
       <% @last_seen_data[:districts].each do |district| %>
         <div class="district-section" data-district="<%= district[:name].downcase %>">
           <div class="district-heading" onclick="toggleSection(this)">
-            <span><%= district[:name] %> (<%= district[:sites].count %> site<%= 's' if district[:sites].count != 1 %>)</span>
+            <span><%= district[:name] %> (<%= district[:sites].count %> out of <%= district[:total_sites] %> site<%= 's' if district[:total_sites] != 1 %> )</span>
             <span class="toggle-icon">&#9654;</span>
           </div>
       
