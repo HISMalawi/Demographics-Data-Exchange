@@ -37,20 +37,31 @@ Rails.application.configure do
   config.action_mailer.preview_path =  "#{Rails.root}/test/mailers/previews"
   config.action_mailer.delivery_method = :smtp 
 
-  smtp_settings = YAML.load_file(Rails.root.join('config', 'smtp_settings.yml'))
-                      .deep_symbolize_keys[:smtp_settings][Rails.env.to_sym]
-  
-  config.action_mailer.smtp_settings  = {
-      address:  smtp_settings[:address],
+  config.action_mailer.show_previews = true
+  config.action_mailer.preview_path = "#{Rails.root}/test/mailers/previews"
+
+  smtp_config_path = Rails.root.join('config', 'smtp_settings.yml')
+
+  if File.exist?(smtp_config_path)
+    smtp_settings = YAML.load_file(smtp_config_path)
+                        .deep_symbolize_keys[:smtp_settings][Rails.env.to_sym]
+
+    config.action_mailer.smtp_settings = {
+      address: smtp_settings[:address],
       port: smtp_settings[:port],
       domain: smtp_settings[:domain],
       user_name: smtp_settings[:user_name],
       password: smtp_settings[:password],
       authentication: :login,
       enable_starttls_auto: smtp_settings[:enable_starttls_auto],
-      open_timeout: 30, 
-      read_timeout: 60  
-  }
+      open_timeout: 30,
+      read_timeout: 60
+    }
+  else
+     puts "WARNING: SMTP config file not found at #{smtp_config_path}. Skipping SMTP setup."
+    # You can choose to set default SMTP settings here or skip entirely.
+    # config.action_mailer.smtp_settings = { ...default values... }
+  end
 
   config.action_mailer.perform_caching = false
 
