@@ -6,11 +6,11 @@ class LastSeenMailer < ApplicationMailer
 
   def summary_of_last_seen(last_seen)
     @last_seen_data = last_seen
-    @mailing_list = MailingList.pluck(:email)
-    @admin_list = MailingList.joins(:roles)
-                             .where(roles: { role: 'Admin' })
-                             .pluck(:email)
-  
+    @mailing_list = MailingList.joins(:roles).where(roles: { role: 'Networks Officer' }).pluck(:email)
+
+    @cc_list = MailingList.joins(:roles).where(roles: { role: ['Admin','Help Desk Officer'] })
+                                        .pluck(:email)
+
     begin
       
       html = render_to_string(
@@ -31,10 +31,10 @@ class LastSeenMailer < ApplicationMailer
 
       @report_url = "#{host}/v1/reports/#{filename}"  # Used summary erb.html view
   
-      if @mailing_list.present? || @admin_list.present?
+      if @mailing_list.present? || @cc_list.present?
         mail(
           to: @mailing_list,
-          cc: @admin_list,
+          cc: @cc_list,
           subject: 'Summary Of DDE Sites Not Reachable'
         )
       else

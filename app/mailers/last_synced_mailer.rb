@@ -3,10 +3,9 @@ class LastSyncedMailer < ApplicationMailer
 
     def summary_of_last_synced(last_synced)
       @last_synced_data = last_synced
-      @mailing_list = MailingList.pluck(:email)
-      @admin_list = MailingList.joins(:roles)
-                              .where(roles: { role: 'Admin' })
-                              .pluck(:email)
+      @mailing_list = mailing_lists.joins(:roles).where(roles: { role: 'HIS Officer' }).pluck(:email)
+      @cc_list = MailingList.joins(:roles).where(roles: { role: ['Admin', 'Zonal Coordinator', 'Systems Analyst Role', 'Help Desk Officer'] })
+                               .pluck(:email)
 
       begin
      
@@ -28,10 +27,10 @@ class LastSyncedMailer < ApplicationMailer
 
         @report_url = "#{host}/v1/reports/#{filename}"  # Used summary erb.html view  
 
-        if @mailing_list.present? || @admin_list.present?
+        if @mailing_list.present? || @cc_list.present?
           mail(
             to: @mailing_list,
-            cc: @admin_list,
+            cc: @cc_list,
             subject: 'Summary Of DDE Sites Syncing'
           ) 
         else
