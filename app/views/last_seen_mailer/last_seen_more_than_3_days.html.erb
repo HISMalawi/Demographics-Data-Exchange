@@ -207,6 +207,16 @@
     background-color: #eee;
   }
 
+  .siteSearch {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
     /* Mobile responsiveness */
     @media (max-width: 768px) {
       .container {
@@ -261,8 +271,9 @@
             <span><%= district[:name] %> (<%= district[:sites].count %> site<%= 's' if district[:sites].count != 1 %>)</span>
             <span class="toggle-icon">&#9654;</span>
           </div>
-
+      
           <div class="site-table">
+              <input type="text" class="siteSearch" placeholder="Search site..." onkeyup="filterSites(this)" />
             <table role="presentation" cellpadding="0" cellspacing="0" class="paginated-table">
               <thead>
                 <tr>
@@ -370,6 +381,25 @@
       updateDisplay();
     }
 
+    function filterSites(input) {
+      const filter = input.value.toLowerCase();
+    
+      // Find the closest .site-table container for the current input
+      const container = input.closest(".site-table");
+      if (!container) return;
+    
+      // Find the table inside this specific container
+      const table = container.querySelector("table");
+      if (!table) return;
+    
+      const rows = table.querySelectorAll("tbody tr");
+    
+      rows.forEach(row => {
+        const siteName = row.cells[0].textContent.toLowerCase();
+        row.style.display = siteName.includes(filter) ? "" : "none";
+      });
+    }    
+    
     document.addEventListener("DOMContentLoaded", () => {
       // Collapse all tables by default
       document.querySelectorAll(".site-table").forEach(table => table.style.display = "none");
