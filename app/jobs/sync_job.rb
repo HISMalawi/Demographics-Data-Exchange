@@ -49,10 +49,13 @@ class SyncJob < ApplicationJob
       push_records_updates
       push_footprints
       pull_npids
-     ensure
-       if File.exist?("/tmp/dde_sync.lock")
-         FileUtils.rm "/tmp/dde_sync.lock"
-       end
+      push_errors
+    rescue StandardError => e
+      log_error(e.message)
+    ensure
+      if File.exist?("/tmp/dde_sync.lock")
+        FileUtils.rm "/tmp/dde_sync.lock"
+      end
     end
   end
 
@@ -96,28 +99,39 @@ class SyncJob < ApplicationJob
   def pull_new_records
     pull_seq = Config.find_by_config('pull_seq_new')['config_value'].to_i
     url = "#{@base_url}/person_changes_new?site_id=#{@location}&pull_seq=#{pull_seq}"
+    begin
+      updates = JSON.parse(RestClient.get(url, headers={Authorization: @token }))
 
-    updates = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
-
-    updates.each do |record|
-      person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
-      pull_seq = record['id'].to_i
-      record.delete('id')
-      record.delete('created_at')
-      record.delete('updated_at')
-      ActiveRecord::Base.transaction do
-        if person.blank?
-          PersonDetail.create!(record)
-        else
-          person.update(record)
-            audit_record = JSON.parse(person.to_json)
-            audit_record.delete('id')
-            audit_record.delete('created_at')
-            audit_record.delete('updated_at')
-            PersonDetailsAudit.create!(audit_record)
+      updates.each do |record|
+        person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
+        pull_seq = record['id'].to_i
+        record.delete('id')
+        record.delete('created_at')
+        record.delete('updated_at')
+        ActiveRecord::Base.transaction do
+          if person.blank?
+            if PersonDetail.exists?(npid: record['npid'])
+              log_error("Duplicate NPID detected (#{record['npid']}) for incoming UUID #{record['person_uuid']}")
+              next
+            elsif PersonDetail.exists?(national_id: record['national_id'])
+              log_error("Duplicate National ID detected (#{record['national_id']}) \
+                for incomming UUID: #{record['person_uuid']}, npid: #{record['npid']}")
+              next
+            end
+            PersonDetail.create!(record)
+          else
+            person.update(record)
+              audit_record = JSON.parse(person.to_json)
+              audit_record.delete('id')
+              audit_record.delete('created_at')
+              audit_record.delete('updated_at')
+              PersonDetailsAudit.create!(audit_record)
+          end
+          Config.where(config: 'pull_seq_new').update(config_value: pull_seq)
         end
-        Config.where(config: 'pull_seq_new').update(config_value: pull_seq)
       end
+    rescue StandardError => e
+      log_error(e.message)
     end
   end
 
@@ -125,29 +139,41 @@ class SyncJob < ApplicationJob
     pull_seq = Config.find_by_config('pull_seq_update')['config_value'].to_i
     url = "#{@base_url}/person_changes_updates?site_id=#{@location}&pull_seq=#{pull_seq}"
 
-    updates = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
+    begin
+      updates = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
 
-    updates.each do |record|
-      person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
-      pull_seq = record['update_seq'].to_i
-      record.delete('id')
-      record.delete('created_at')
-      record.delete('updated_at')
-      record.delete('update_seq')
-      ActiveRecord::Base.transaction do
-        if person.blank?
-          PersonDetail.create!(record)
-        else
-          person.update(record)
-            audit_record = JSON.parse(person.to_json)
-            audit_record.delete('id')
-            audit_record.delete('created_at')
-            audit_record.delete('updated_at')
-            audit_record.delete('update_seq')
-            PersonDetailsAudit.create!(audit_record)
+      updates.each do |record|
+        person = PersonDetail.unscoped.find_by(person_uuid: record['person_uuid'])
+        pull_seq = record['update_seq'].to_i
+        record.delete('id')
+        record.delete('created_at')
+        record.delete('updated_at')
+        record.delete('update_seq')
+        ActiveRecord::Base.transaction do
+          if person.blank?
+            if PersonDetail.exists?(npid: record['npid'])
+              log_error("Duplicate NPID detected (#{record['npid']}) for incoming UUID #{record['person_uuid']}")
+              next
+            elsif PersonDetail.exists?(national_id: record['national_id'])
+              log_error("Duplicate National ID detected (#{record['national_id']}) \
+                for incomming UUID: #{record['person_uuid']}, npid: #{record['npid']}")
+              next
+            end
+            PersonDetail.create!(record)
+          else
+            person.update(record)
+              audit_record = JSON.parse(person.to_json)
+              audit_record.delete('id')
+              audit_record.delete('created_at')
+              audit_record.delete('updated_at')
+              audit_record.delete('update_seq')
+              PersonDetailsAudit.create!(audit_record)
+          end
+          Config.where(config: 'pull_seq_update').update(config_value: pull_seq)
         end
-        Config.where(config: 'pull_seq_update').update(config_value: pull_seq)
       end
+    rescue StandardError => e
+      log_error(e.message)
     end
   end
 
@@ -155,18 +181,22 @@ class SyncJob < ApplicationJob
     npid_seq = Config.find_by_config('npid_seq')['config_value'].to_i
     url = "#{@base_url}/pull_npids?site_id=#{@location}&npid_seq=#{npid_seq}"
 
-    npids = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
+    begin
+      npids = JSON.parse(RestClient.get(url,headers={Authorization: @token }))
 
-    unless npids.blank?
-      npids.each do |npid|
-        next if LocationNpid.find_by_npid(npid['npid'])
-        ActiveRecord::Base.transaction do
-          LocationNpid.create!(location_id: npid['location_id'],
-                               npid: npid['npid'],
-                               assigned: npid['assigned'])
-          Config.where(config: 'npid_seq').update(config_value: npid['id'])
+      unless npids.blank?
+        npids.each do |npid|
+          next if LocationNpid.find_by_npid(npid['npid'])
+          ActiveRecord::Base.transaction do
+            LocationNpid.create!(location_id: npid['location_id'],
+                                npid: npid['npid'],
+                                assigned: npid['assigned'])
+            Config.where(config: 'npid_seq').update(config_value: npid['id'])
+          end
         end
       end
+    rescue StandardError => e
+      log_error(e.message)
     end
   end
 
@@ -184,8 +214,8 @@ class SyncJob < ApplicationJob
       redo if response.code != 201
       updated = Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response.code == 201
       redo if updated != true
-    rescue => e
-      File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
+    rescue StandardError => e
+      log_error(e.message)
     end
   end
 
@@ -205,7 +235,7 @@ class SyncJob < ApplicationJob
       updated = Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i) if response.code == 201
       redo if updated != true
     rescue => e
-      File.write("#{Rails.root}/log/sync_err.log", e, mode: 'a')
+      log_error(e.message)
     end
   end
 
@@ -254,15 +284,46 @@ class SyncJob < ApplicationJob
         foot.foot_print_id if response.code == 201  # Collect successful IDs
       rescue RestClient::ExceptionWithResponse => e
         Rails.logger.error("Failed to sync footprint #{foot.foot_print_id}: #{e.response}")
+        log_error("#{e.message} #{foot.foot_print_id}: #{e.response}")
         nil
       rescue StandardError => e
         Rails.logger.error("Unexpected error syncing footprint #{foot.foot_print_id}: #{e.message}")
+        log_error("#{e.message} #{foot.foot_print_id}: #{e.response}")
         nil
       end.compact
 
       # Bulk update successful records
       FootPrint.where(foot_print_id: responses).update_all(synced: true) if responses.any?
     end
+  end
+
+  def push_errors
+    url = "#{@base_url}/push_errors"
+
+    SyncError.where(synced: false).find_in_batches(batch_size: 500) do |batch|
+      responses = Parallel.map(batch, in_threads: 10) do |error|
+
+        response = RestClient.post(url, error.as_json, { Authorization: @token })
+        error.id if response.code == 201 # Collect successful IDs
+      rescue RestClient::ExceptionWithResponse => e
+        Rails.logger.error("Failed to sync footprint #{error.id}: #{e.response}")
+        log_error("msg: #{e.message} error_id: #{error.id}: response: #{e.response}")
+        nil
+      rescue StandardError => e
+        Rails.logger.error("Unexpected error syncing footprint #{error.id}: #{e.message}")
+        log_error("msg: #{e.message} error_id: #{error.id}: response: #{e.response}")
+        nil
+      end.compact
+
+      # Bulk update successful records
+      SyncError.where(id: responses).update_all(synced: true) if responses.any?
+    end
+  end
+
+  private
+
+  def log_error(error)
+    SyncError.create!(site_id: @location, incident_time: Time.now, error: error.to_s)
   end
 end
 

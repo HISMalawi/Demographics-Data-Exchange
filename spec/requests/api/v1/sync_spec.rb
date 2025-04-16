@@ -195,4 +195,33 @@ RSpec.describe 'api/v1/sync', type: :request do
       end
     end
   end
+
+  path '/v1/push_errors' do
+    post('Push Errors') do
+      tags 'Sychronization'
+      consumes 'application/json'
+      parameter name: :sync_errors, in: :body, schema: {
+        type: :object,
+        properties: {
+          id: { type: :integer },
+          site_id: { type: :integer },
+          incident_time: { type: :string, format: :date_time },
+          error: { type: :string },
+          uuid: { type: :string },
+          created_at: { type: :string, format: :date_time},
+          updated_at: {type: :string, format: :date_time}
+        }
+      }
+      response(201, 'sucessful') do
+        after do |example|
+          example.metadata[:response][:content] = {
+            'application/json' => {
+              example: JSON.parse(response.body, symbolize_names: true)
+            }
+          }
+        end
+        run_test!
+      end
+    end
+  end
 end
