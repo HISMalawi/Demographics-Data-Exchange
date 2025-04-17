@@ -3,6 +3,17 @@ class LowNpidNotificationMailerPreview < ActionMailer::Preview
     
     def low_npid_summary
       result = LowNpidNotificationService.processed_data
-      LowNpidNotificationMailer.low_npid_summary(result).deliver_now
+      
+      if result[:districts].any?
+          LowNpidNotificationMailer.low_npid_summary(result).deliver_now
+      else
+          Mail.new(
+            to: 'preview@example.com',
+            from: 'no-reply@example.com',
+            subject: 'Low NPID Notification Summary - No Data Available',
+            body: 'There is no data available to render this preview.'
+          )
+      end
+      
     end
 end
