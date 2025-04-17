@@ -108,8 +108,8 @@
     </h1>
 
     <p class="intro">
-      <%= @last_synced_data[:total_sites_with_issue] %> site<%= 's' if @last_synced_data[:total_sites_with_issue] != 1 %> have connectivity issues
-      Below is the list of districts and their respective sites that have been offline for more than <strong>3 days</strong>.
+      <strong><%= @last_synced_data[:total_sites_with_issue] %> site<%= 's' if @last_synced_data[:total_sites_with_issue] != 1 %></strong> out of
+      <strong><%= @last_synced_data[:total_sites] %> site<%= 's' if @last_synced_data[:total_sites] != 1 %></strong> have synchronization issues
     </p>
 
     <% @last_synced_data[:districts].each do |district| %>

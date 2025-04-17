@@ -24,15 +24,15 @@
 
     .title {
       color: #6c757d;
-      font-size: 26px;
+      font-size: 22px;
       font-weight: bold;
-      margin-bottom: 20px;
+      margin-bottom: 8px;
     }
 
     .intro {
       font-size: 18px;
       line-height: 1.6;
-      margin-bottom: 20px;
+      margin-bottom: 8px;
     }
 
     #districtSearch {
@@ -105,7 +105,7 @@
     .signature {
       font-size: 16px;
       line-height: 1.6;
-      margin-bottom: 20px;
+      margin-bottom: 8px;
     }
 
     
@@ -113,7 +113,7 @@
       font-size: 13px;
       color: #777777;
       text-align: center;
-      margin-top: 30px;
+      margin-top: 10px;
     }
 
     a {
@@ -245,6 +245,15 @@
       #districtSearch {
         font-size: 15px;
       }
+
+      .scrollable-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 100px 20px 120px; /* leave space for fixed header and footer */
+        background-color: #f9f9f9;
+        margin-top: 150px;
+        margin-bottom: 150px;
+      }
     }
   </style>
 </head>
@@ -278,13 +287,15 @@
               <thead>
                 <tr>
                   <th>Site Name</th>
-                  <th>Days Since Last Seen</th>
+                  <th>IP Address</th>
+                  <th>Days Since Last Seen On Network</th>
                 </tr>
               </thead>
               <tbody>
                 <% district[:sites].each_with_index do |site, i| %>
                   <tr class="<%= i.even? ? 'even-row' : 'odd-row' %>">
                     <td><%= site['site_name'] %></td>
+                    <td><%= site['ip_address'] %></td>
                     <td><%= site['days_since_last_seen'] %></td>
                   </tr>
                 <% end %>
@@ -305,10 +316,6 @@
       <p class="footer-text">
         Please address the connectivity issues with the respective facilities. For real-time status, visit:
         <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
-      </p>
-
-      <p class="signature">
-        Best regards,<br><strong>Demographics Data Exchange</strong>
       </p>
 
       <div class="copyright">

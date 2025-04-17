@@ -104,7 +104,8 @@
     </h1>
 
     <p class="intro">
-      <%= @last_seen_data[:total_sites_with_issue] %> site<%= 's' if @last_seen_data[:total_sites_with_issue] != 1 %> have connectivity issues
+      <strong><%= @last_seen_data[:total_sites_with_issue] %> site<%= 's' if @last_seen_data[:total_sites_with_issue] != 1 %></strong> out of 
+      <strong><%= @last_seen_data[:total_sites] %> site<%= 's' if @last_seen_data[:total_sites] != 1 %></strong> have connectivity issues
       Below is the list of districts and their respective sites that have been offline for more than <strong>3 days</strong>.
     </p>
 
