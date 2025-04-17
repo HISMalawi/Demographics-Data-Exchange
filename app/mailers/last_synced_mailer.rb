@@ -3,7 +3,7 @@ class LastSyncedMailer < ApplicationMailer
 
     def summary_of_last_synced(last_synced)
       @last_synced_data = last_synced
-      @mailing_list = mailing_lists.joins(:roles).where(roles: { role: 'HIS Officer' }).pluck(:email)
+      @mailing_list = MailingList.joins(:roles).where(roles: { role: 'HIS Officer' }).pluck(:email)
       @cc_list = MailingList.joins(:roles).where(roles: { role: ['Admin', 'Zonal Coordinator', 'Systems Analyst Role', 'Help Desk Officer'] })
                                .pluck(:email)
 
