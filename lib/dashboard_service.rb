@@ -92,6 +92,7 @@ module DashboardService
       SELECT l.name site_name, 
       l.location_id,
       d.name as district_name,
+      l.ip_address,
       max(fp.created_at) last_activity,
       l.last_seen last_seen,
       l.activated,

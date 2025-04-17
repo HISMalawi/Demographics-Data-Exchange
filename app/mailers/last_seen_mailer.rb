@@ -4,19 +4,46 @@
 class LastSeenMailer < ApplicationMailer
   after_action :log_mail
 
-  def last_seen_more_than_3_days(district_data)
-   
-    @district_data = district_data
-    @mailing_list = MailingList.joins(:mailer_districts).where(
-                  'mailer_districts.district_id = ?', 
-                  district_data[:district_id]).pluck(:email)
+  def summary_of_last_seen(last_seen)
+    @last_seen_data = last_seen
+    @mailing_list = MailingList.joins(:roles).where(roles: { role: 'Networks Officer' }).pluck(:email)
 
-    if @mailing_list.blank?
-      @mailing_list = MailingList.joins(:roles).where('roles.role = ?', 'Admin').pluck(:email)
-    end
+    @cc_list = MailingList.joins(:roles).where(roles: { role: ['Admin','Help Desk Officer'] })
+                                        .pluck(:email)
 
-    if mail_not_sent
-      mail(to: @mailing_list, subject: "Please check #{district_data[:name]} last seen more than 3 days ago")
+    begin
+      
+      html = render_to_string(
+        template: 'last_seen_mailer/last_seen_more_than_3_days',
+        locals: { last_seen_data: @last_seen_data },
+        layout: false
+      )
+
+      Rails.logger.debug "Rendered HTML: '#{html}'"
+  
+      filename = "last_seen_more_than_3_days_#{Date.today.strftime('%Y%m%d')}.html"
+      file_path = Rails.root.join('public', 'reports', filename)
+      FileUtils.mkdir_p(File.dirname(file_path))
+      File.open(file_path, 'w') { |f| f.write(html.force_encoding('UTF-8')) }
+  
+      # Generate public URL
+      host = Rails.application.routes.default_url_options[:host] || 'http://localhost:8050'
+
+      @report_url = "#{host}/v1/reports/#{filename}"  # Used summary erb.html view
+  
+      if @mailing_list.present? || @cc_list.present?
+        mail(
+          to: @mailing_list,
+          cc: @cc_list,
+          subject: 'Summary Of DDE Sites Not Reachable'
+        )
+      else
+        Rails.logger.warn 'Email not sent: No recipients'
+      end
+  
+    rescue StandardError => e
+      Rails.logger.error "Error: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
     end
   end
 
@@ -24,7 +51,6 @@ class LastSeenMailer < ApplicationMailer
 
   def mail_not_sent
     MailingLog.where(
-      district_id: @district_data[:district_id],
       notification_type:  "#{mail.to} #{mail.subject}",
       created_at: Time.zone.today.beginning_of_day..Time.zone.today.end_of_day
     )
@@ -34,7 +60,6 @@ class LastSeenMailer < ApplicationMailer
     return unless mail.perform_deliveries
  
      MailingLog.create!(
-      district_id: @district_data[:district_id],
       notification_type: "#{mail.to} #{mail.subject}"
      )
   end
