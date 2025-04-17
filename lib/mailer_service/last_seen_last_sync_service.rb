@@ -63,17 +63,18 @@ module LastSeenLastSyncService
             sorted_activity = last_activity_grouped.values.sort_by { |d| d[:name] }
             sorted_last_seen = last_seen_grouped.values.sort_by { |d| d[:name] }
       
-            # Example payloads (optional: return or use in your views/API)
             result = {
               last_seen: {
+                total_sites: total_sites,
                 total_sites_with_issue: total_last_seen_sites,
-                districts: sorted_last_seen
+                districts: sorted_last_seen,
               },
               last_activity: {
+                total_sites: total_sites,
                 total_sites_with_issue: total_last_synced_sites,
                 districts: sorted_activity
               },
-              total_sites: total_sites # Total number of sites across all districts
+             
             }
       
             result
