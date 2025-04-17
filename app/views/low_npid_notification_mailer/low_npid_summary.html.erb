@@ -26,22 +26,22 @@
     color: #f0ad4e; /* muted warning yellow */
     font-size: 20px;
     font-weight: bold;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
   }
 
   .intro {
     font-size: 14px;
     line-height: 1.6;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
     color: #8a6d3b; /* warning-style muted brown */
   }
 
   .district-heading {
-    font-size: 16px;
+    font-size: 20px;
     background-color: #fff8e5; /* soft warning tone */
     padding: 8px;
     border-left: 4px solid #f0ad4e;
-    margin-top: 20px;
+    margin-top: 10px;
     margin-bottom: 10px;
     color: #333333;
   }
@@ -79,7 +79,7 @@
   .signature {
     font-size: 14px;
     line-height: 1.6;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
     color: #555555;
   }
 
@@ -99,6 +99,15 @@
     text-align: center;
     margin-top: 20px;
   }
+
+  .scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 100px 20px 120px; /* leave space for fixed header and footer */
+    background-color: #f9f9f9;
+    margin-top: 150px;
+    margin-bottom: 150px;
+  }
   </style>
 </head>
 <body>
@@ -107,7 +116,7 @@
       Notification: DDE Low NPIDs Summary
     </h1>
 
-    <p >
+    <p  class="intro">
       Please be advised that 
       <strong><%= @low_npid_data[:total_sites] %> site<%= @low_npid_data[:total_sites] == 1 ? '' : 's' %></strong> 
       are currently experiencing low NPID levels.
