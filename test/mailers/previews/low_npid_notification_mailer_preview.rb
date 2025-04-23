@@ -5,7 +5,7 @@ class LowNpidNotificationMailerPreview < ActionMailer::Preview
       result = LowNpidNotificationService.processed_data
       
       if result[:districts].any?
-          LowNpidNotificationMailer.low_npid_summary(result).deliver_now
+          LowNpidNotificationMailer.low_npid_summary(result)
       else
           Mail.new(
             to: 'preview@example.com',

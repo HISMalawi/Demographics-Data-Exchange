@@ -4,7 +4,7 @@ class LastSyncedMailerPreview  < ActionMailer::Preview
         result = LastSeenLastSyncService.processed_data
 
         if result[:last_activity].present? && result[:last_activity][:districts].any?
-            LastSyncedMailer.summary_of_last_synced(result[:last_activity]).deliver_now
+            LastSyncedMailer.summary_of_last_synced(result[:last_activity])
         else
             Mail.new(
               to: 'preview@example.com',
