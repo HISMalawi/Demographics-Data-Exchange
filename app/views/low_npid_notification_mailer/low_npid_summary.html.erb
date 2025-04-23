@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+  body {
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f5f5;
+    font-family: Arial, sans-serif;
+    color: #333333;
+  }
+
+  .container {
+    width: 600px;
+    max-width: 600px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 20px;
+    border: 1px solid #dddddd;
+    border-left: 6px solid #f0ad4e; /* warning accent */
+    border-radius: 8px;
+  }
+
+  .title {
+    color: #f0ad4e; /* muted warning yellow */
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  .intro {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 8px;
+    color: #8a6d3b; /* warning-style muted brown */
+  }
+
+  .district-heading {
+    font-size: 20px;
+    background-color: #fff8e5; /* soft warning tone */
+    padding: 8px;
+    border-left: 4px solid #f0ad4e;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    color: #333333;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 25px;
+  }
+
+  th {
+    background-color: #f0ad4e;
+    color: #ffffff;
+    padding: 8px;
+    text-align: left;
+    font-size: 13px;
+    border: 1px solid #dddddd;
+  }
+
+  td {
+    border: 1px solid #dddddd;
+    padding: 8px;
+    font-size: 13px;
+  }
+
+  .even-row {
+    background-color: #ffffff;
+  }
+
+  .odd-row {
+    background-color: #fff9ec; /* hint of amber tint */
+  }
+
+  .footer-text,
+  .signature {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 8px;
+    color: #555555;
+  }
+
+  a {
+    color: #f0ad4e; /* match warning theme */
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  .copyright {
+    font-size: 12px;
+    color: #888888;
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 100px 20px 120px; /* leave space for fixed header and footer */
+    background-color: #f9f9f9;
+    margin-top: 150px;
+    margin-bottom: 150px;
+  }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">
+      Notification: DDE Low NPIDs Summary
+    </h1>
+
+    <p  class="intro">
+      Please be advised that 
+      <strong><%= @low_npid_data[:total_sites] %> site<%= @low_npid_data[:total_sites] == 1 ? '' : 's' %></strong> 
+      are currently experiencing low NPID levels.
+    </p>
+
+    <% @low_npid_data[:districts].each do |district| %>
+      <h2 class="district-heading">
+        <%= district[:name] %> (<%= district[:sites].count %> site<%= district[:sites].count == 1 ? '' : 's' %>)
+      </h2>
+    <% end %>
+
+    <p class="footer-text">
+      For the full interactive report, <a href="<%= @report_url %>">click here to view it in your browser</a>. 
+      For real-time status, visit: <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
+      <br>
+      <strong>Note:</strong> Access to the above links requires connection to the <em>MOH VPN</em>.
+    </p>
+
+    <p class="signature">
+      Thank you,<br>
+      <strong>Demographics Data Exchange</strong>
+    </p>
+
+    <div class="copyright">
+      &copy; <%= Time.now.year %> Demographics Data Exchange. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>

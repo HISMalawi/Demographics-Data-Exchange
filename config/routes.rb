@@ -95,5 +95,9 @@ Rails.application.routes.draw do
   #config routes
   put 'v1/configs', to: 'api/v1/configs#update'
 
+  # config/routes.rb
+  get 'v1/reports/:filename', to: 'api/v1/report#show', as: :report
+
+
   root to: redirect('/api-docs/')
 end
