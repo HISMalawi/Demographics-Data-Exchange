@@ -3,9 +3,12 @@ class LastSyncedMailer < ApplicationMailer
 
     def summary_of_last_synced(last_synced)
       @last_synced_data = last_synced
-      @mailing_list = MailingList.joins(:roles).where(roles: { role: 'HIS Officer' }).pluck(:email)
+      @mailing_list = MailingList.joins(:roles).where(roles: { role: 'HIS Officer' }).pluck(:email, :id)
       @cc_list = MailingList.joins(:roles).where(roles: { role: ['Admin', 'Zonal Coordinator', 'Systems Analyst Role', 'Help Desk Officer'] })
-                               .pluck(:email)
+                               .pluck(:email, :id)
+
+      @emails, @mailer_ids = @mailing_list.transpose unless @mailing_list.empty?
+      @cc_emails, @cc_mailer_ids = @cc_list.transpose unless @cc_list.empty? 
 
       begin
      
@@ -27,10 +30,10 @@ class LastSyncedMailer < ApplicationMailer
 
         @report_url = "#{host}/v1/reports/#{filename}"  # Used summary erb.html view  
 
-        if @mailing_list.present? || @cc_list.present?
+        if @emails.present? || @cc_emails.present?
           mail(
-            to: @mailing_list,
-            cc: @cc_list,
+            to: @emails,
+            cc: @cc_emails,
             subject: 'Summary Of DDE Sites Syncing'
           ) 
         else
@@ -46,7 +49,7 @@ class LastSyncedMailer < ApplicationMailer
 
     def mail_not_sent
       MailingLog.where(
-        notification_type:  "#{mail.to} #{mail.subject}",
+        notification_type:  "#{@mailer_ids} #{mail.subject}",
         created_at: Time.zone.today.beginning_of_day..Time.zone.today.end_of_day
       )
     end
@@ -54,7 +57,7 @@ class LastSyncedMailer < ApplicationMailer
     def log_mail
       return unless mail.perform_deliveries
       MailingLog.create!(
-        notification_type: "#{mail.to} #{mail.subject}"
+        notification_type: "#{@mailer_ids} #{mail.subject}"
       )
     end
 end
