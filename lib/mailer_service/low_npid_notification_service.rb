@@ -42,6 +42,8 @@ module LowNpidNotificationService
             l.name AS location_name,
             ln.location_id,
             l.district_id,
+            l.ip_address,
+            l.activated,
             d.name as district_name,
             COUNT(CASE WHEN assigned = false THEN 1 ELSE NULL END) AS unassigned,
             COUNT(CASE WHEN assigned = true THEN 1 ELSE NULL END) AS assigned,
@@ -70,7 +72,7 @@ module LowNpidNotificationService
         GROUP BY 
             ln.location_id, l.name, l.district_id, d.name
         HAVING 
-            days_remaining < 30 OR unassigned < 1000
+            activated = true and days_remaining < 30 OR unassigned < 1000
         ORDER BY 
             days_remaining ASC
         SQL
