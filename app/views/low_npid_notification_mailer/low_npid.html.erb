@@ -269,6 +269,7 @@
               <thead>
                 <tr>
                   <th>Site Name</th>
+                  <th>IP Address</th>
                   <th>Assigned</th>
                   <th>Unassigned</th>
                   <th>Avg. Consumption</th>
@@ -279,10 +280,11 @@
                 <% district[:sites].each_with_index do |site, i| %>
                   <tr class="<%= i.even? ? 'even-row' : 'odd-row' %>">
                     <td><%= site[:location_name] %></td>
-                    <td><%= site[:assigned] %></td>
-                    <td><%= site[:unassigned] %></td>
-                    <td><%= site[:avg_consumption_rate_per_day] %></td>
-                    <td><%= site[:days_remaining] %></td>
+                    <td><%= site[:ip_address] %></td>
+                    <td><%= number_with_delimiter(site[:assigned]) %></td>
+                    <td><%= number_with_delimiter(site[:unassigned]) %></td>
+                    <td><%=  number_with_delimiter(site[:avg_consumption_rate_per_day].round(0)) %></td>
+                    <td><%= site[:days_remaining].round(0) %></td>
                   </tr>
                 <% end %>
               </tbody>
