@@ -64,6 +64,7 @@ module SyncService
     ActiveRecord::Base.transaction do
       if person.blank?
         PersonDetail.create!(data)
+        LocationNpid.unscoped.find_by_npid(data[:npid]).update(assigned: true)
       else
         person.update(data)
         audit_record = JSON.parse(person.to_json)
@@ -73,7 +74,6 @@ module SyncService
         audit_record.delete('update_seq')
         PersonDetailsAudit.create!(audit_record)
       end
-      LocationNpid.find_by_npid(data[:npid]).update(assigned: true)
       push_seq.update(push_seq: current_seq)
       {status: 200, push_seq: current_seq}
     end
