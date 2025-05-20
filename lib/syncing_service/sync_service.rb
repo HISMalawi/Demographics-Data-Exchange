@@ -36,9 +36,6 @@ module SyncService
     data.delete('updated_at')
     data.delete('update_seq')
     ActiveRecord::Base.transaction do
-      if person.blank?
-        PersonDetail.create!(data)
-      else
         audit_record = JSON.parse(person.dup.to_json)
         person.update(data)
         audit_record.delete('id')
@@ -46,10 +43,8 @@ module SyncService
         audit_record.delete('updated_at')
         audit_record.delete('update_seq')
         PersonDetailsAudit.create!(audit_record)
-      end
-      LocationNpid.find_by_npid(data[:npid]).update(assigned: true)
-      push_seq.update(push_seq: current_seq)
-      {status: 200, push_seq: current_seq}
+        push_seq.update(push_seq: current_seq)
+        {status: 200, push_seq: current_seq}
     end
   end
 
