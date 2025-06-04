@@ -17,43 +17,119 @@ module DashboardService
   end
 
   def self.client_movements
-    sites = FootPrint.find_by_sql('SELECT sites_visited, count(*) number_of_pple FROM (SELECT person_uuid, count(*) as sites_visited
-      FROM (SELECT DISTINCT person_uuid,location_id FROM foot_prints fp
-      group by person_uuid,location_id) movement group by person_uuid) sites
-      GROUP BY sites_visited;')
+    sites = FootPrint.find_by_sql('SELECT
+        COUNT(*) AS number_of_pple,
+        sites_visited
+      FROM
+        (
+        SELECT
+          COUNT(DISTINCT location_id) AS sites_visited
+        FROM
+          foot_prints
+        GROUP BY
+          person_uuid
+      ) AS person_sites
+      GROUP BY
+        sites_visited;')
   end
 
   def self.npids
-    assigned_unassiged_npids = ActiveRecord::Base.connection.select_all("
-      SELECT l.name location_name, ln.location_id, l.activated,
-      count(if(assigned = false,1,null)) unassigned,
-      count(if(assigned = true,1,null)) assigned,
-      max(ln.updated_at) date_last_updated,
-      ROUND(count(if(assigned = true,1,null))/(DATEDIFF(max(date(ln.updated_at)),min(date(ln.updated_at))))) avg_consumption_rate_per_day
-      FROM location_npids ln
-      JOIN locations l
-      ON ln.location_id = l.location_id
-      WHERE l.ip_address is not null
-      GROUP BY ln.location_id,l.name, l.activated
-      ORDER BY max(ln.updated_at) desc,count(*);
+    ActiveRecord::Base.connection.select_all("
+      SELECT
+      l.name location_name,
+      l.location_id,
+      l.activated,
+      assigned.assigned,
+      unassigned.unassigned,
+      date_last_updated,
+      ROUND(assigned.assigned / DATEDIFF(date_last_updated, min_date_updated)) avg_consumption_rate_per_day
+    FROM
+      locations l
+    JOIN (
+      SELECT
+        location_id,
+        max(updated_at) date_last_updated,
+        min(updated_at) min_date_updated
+      FROM
+        location_npids
+      GROUP BY
+        location_id) max_updated
+          ON
+      l.location_id = max_updated.location_id
+    JOIN (
+      SELECT
+        ln.location_id,
+        count(*) assigned
+      FROM
+        location_npids ln
+      WHERE ln.assigned = 1
+      GROUP BY
+        location_id) assigned
+          ON
+      l.location_id = assigned.location_id
+    JOIN  (
+      SELECT
+        ln.location_id,
+        count(*) unassigned
+      FROM
+        location_npids ln
+      WHERE ln.assigned = 0
+      GROUP BY
+        location_id) unassigned
+          ON
+      l.location_id = unassigned.location_id
+    WHERE
+      ip_address is not null;
       ")
   end
 
   def self.location_npids(location_id)
-    assigned_unassiged_npids = ActiveRecord::Base.connection.select_all("
-      SELECT l.name location_name, ln.location_id,
-      count(if(assigned = false,1,null)) unassigned,
-      count(if(assigned = true,1,null)) assigned,
-      count(if(allocated = true OR assigned = true,1,null)) allocated,
-      count(if(allocated = false AND assigned = false,1,null)) unallocated,
-      max(ln.updated_at) date_last_updated,
-      ROUND(count(if(assigned = true,1,null))/(DATEDIFF(max(date(ln.updated_at)),min(date(ln.updated_at))))) avg_consumption_rate_per_day
-      FROM location_npids ln
-      JOIN locations l
-      ON ln.location_id = l.location_id
-      WHERE l.location_id = #{location_id}
-      GROUP BY ln.location_id,l.name
-      ORDER BY max(ln.updated_at) desc,count(*);
+    ActiveRecord::Base.connection.select_all("
+      SELECT
+      l.name location_name,
+      l.location_id,
+      l.activated,
+      assigned.assigned,
+      unassigned.unassigned,
+      date_last_updated,
+      ROUND(assigned.assigned / DATEDIFF(date_last_updated, min_date_updated)) avg_consumption_rate_per_day
+    FROM
+      locations l
+    JOIN (
+      SELECT
+        location_id,
+        max(updated_at) date_last_updated,
+        min(updated_at) min_date_updated
+      FROM
+        location_npids
+      GROUP BY
+        location_id) max_updated
+          ON
+      l.location_id = max_updated.location_id
+    JOIN (
+      SELECT
+        ln.location_id,
+        count(*) assigned
+      FROM
+        location_npids ln
+      WHERE ln.assigned = 1
+      GROUP BY
+        location_id) assigned
+          ON
+      l.location_id = assigned.location_id
+    JOIN  (
+      SELECT
+        ln.location_id,
+        count(*) unassigned
+      FROM
+        location_npids ln
+      WHERE ln.assigned = 0
+      GROUP BY
+        location_id) unassigned
+          ON
+      l.location_id = unassigned.location_id
+    WHERE
+      ip_address is not null;
       ")
   end
 
@@ -88,22 +164,24 @@ module DashboardService
   end
 
   def self.site_activities
-    site_activity = ActiveRecord::Base.connection.select_all("
-      SELECT l.name site_name, 
+    ActiveRecord::Base.connection.select_all("
+      SELECT l.name site_name,
       l.location_id,
       d.name as district_name,
       l.ip_address,
-      max(fp.created_at) last_activity,
+      max_created_at last_activity,
       l.last_seen last_seen,
       l.activated,
       l.district_id,
-      TIMESTAMPDIFF(DAY, max(fp.created_at), CURRENT_TIMESTAMP()) days_since_last_activity,
+      TIMESTAMPDIFF(DAY, max_created_at, CURRENT_TIMESTAMP()) days_since_last_activity,
       TIMESTAMPDIFF(DAY, l.last_seen, CURRENT_TIMESTAMP()) days_since_last_seen
       FROM locations l
-      JOIN districts d ON d.district_id = l.district_id
-      LEFT JOIN foot_prints fp
-      ON fp.location_id = l.location_id
+      LEFT JOIN (SELECT location_id, max(fp.created_at) max_created_at FROM foot_prints fp
+			group by location_id) max_created
+		  ON l.location_id = max_created.location_id 
+      JOIN districts d ON l.district_id = d.district_id
       WHERE l.ip_address is not null
-      GROUP BY l.name, l.last_seen, l.activated, l.location_id;")
+      GROUP BY l.activated, l.location_id, l.name, l.last_seen
+      ORDER by l.name;")
   end
 end
