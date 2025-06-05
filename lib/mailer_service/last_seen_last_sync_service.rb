@@ -11,6 +11,8 @@ module LastSeenLastSyncService
             total_last_seen_sites = 0
             total_last_synced_sites = 0
             total_sites = 0
+    
+            sites = sites.select { |entry| entry["activated"] == 1 }
       
             sites.each do |site|
               district_id = site['district_id']
