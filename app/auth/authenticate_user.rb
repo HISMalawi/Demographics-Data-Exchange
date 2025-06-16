@@ -36,7 +36,6 @@ class AuthenticateUser
   def authorize_system_user
 
     host = Rails.application.routes.default_url_options[:host]
-
     base_url = "#{host}/v1/token"
 
     payload = { username: username, password: password }.to_json
