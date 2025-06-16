@@ -159,6 +159,13 @@ This will create the npids table which you can populate with your preferred uniq
   rails r bin/npids_faker.rb
 ```
 
+
+**Important:** The `DDE_HOST_URL` environment variable *must* be set to the correct hostname or IP address and Port where DDE is running. This is required for mailer reports to be stored correctly and for the EMR User Management engine to authenticate properly.
+
+```bash
+export DDE_HOST_URL="[DDE Host URL]"
+```
+
 Voila! you got it.
 
 Additions to this README are most welcome we want to make the process as painless as possible.
