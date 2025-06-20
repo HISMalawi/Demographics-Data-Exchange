@@ -1,4 +1,10 @@
 class Api::V1::LocationController < ApplicationController
+
+  def index 
+    render json: Location.where(voided: false).all
+  end 
+
+
   def find
     render json: LocationService.find_location(params[:location_id])
   end

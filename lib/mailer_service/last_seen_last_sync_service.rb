@@ -21,7 +21,7 @@ module LastSeenLastSyncService
               # Count the total sites (sum of all sites across all districts)
               total_sites += 1
       
-              if site['days_since_last_activity'].to_i > 3 && site['days_since_last_seen'].to_i == 0
+              if site['days_since_last_activity'].to_i > 3
                 total_last_synced_sites += 1
       
                 last_activity_grouped[district_id] ||= {

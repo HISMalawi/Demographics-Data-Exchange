@@ -291,6 +291,7 @@
                   <th>Site Name</th>
                   <th>IP Address</th>
                   <th>Days Since Last Synced With Master</th>
+                  <th>Days Since Last Seen On Network</th>
                 </tr>
               </thead>
               <tbody>
@@ -299,6 +300,7 @@
                     <td><%= site['site_name'] %></td>
                     <td><%= site['ip_address'] %></td>
                     <td><%= site['days_since_last_activity'] %></td>
+                    <td><%= site['days_since_last_seen'] %></td>
                   </tr>
                 <% end %>
               </tbody>
