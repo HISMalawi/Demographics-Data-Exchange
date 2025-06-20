@@ -102,6 +102,8 @@ Rails.application.routes.draw do
   # config/routes.rb
   get 'v1/reports/:filename', to: 'api/v1/report#show', as: :report
 
+  get 'v1/roles', to: 'mailing_lists#roles'
+
 
   root to: redirect('/api-docs/')
 end
