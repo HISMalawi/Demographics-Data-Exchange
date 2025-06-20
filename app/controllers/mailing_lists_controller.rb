@@ -39,6 +39,12 @@ class MailingListsController < ApplicationController
     @mailing_list.destroy
   end
 
+  def roles
+    @roles = Role.all
+
+    render json: @roles
+  end 
+
   private
     # Use callbacks to share common setup or constraints between actions.
     def set_mailing_list
@@ -47,6 +53,6 @@ class MailingListsController < ApplicationController
 
     # Only allow a trusted parameter "white list" through.
     def mailing_list_params
-      params.require(:mailing_list).permit(:first_name, :last_name, :email, :phone_number)
+      params.require(:mailing_list).permit(:first_name, :last_name, :email, :phone_number, :role_id)
     end
 end

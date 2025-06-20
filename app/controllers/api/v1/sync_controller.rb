@@ -65,6 +65,10 @@ module Api
         end
       end
 
+      def sync_errors
+        sync_errors = SyncError.all
+      end
+
       private
 
       def update_params
