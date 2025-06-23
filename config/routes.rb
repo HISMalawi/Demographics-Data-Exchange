@@ -50,6 +50,7 @@ Rails.application.routes.draw do
   post "v1/npids_assigned", to: "api/v1/location#npids_assigned"
   post "v1/total_allocated_npids", to: "api/v1/location#total_allocated_npids"
   post "v1/get_locations", to: "api/v1/location#get_locations"
+  get "v1/locations", to: "api/v1/location#index"
 
   #footprint
   post "v1/update_footprint/", to: "api/v1/footprint#update_footprint"

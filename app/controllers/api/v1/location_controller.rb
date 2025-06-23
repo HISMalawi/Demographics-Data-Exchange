@@ -50,4 +50,9 @@ class Api::V1::LocationController < ApplicationController
   def sync_info
     render json: LocationService.sync_info
   end
+
+	def index
+  	render json: LocationService.all(params[:page], params[:page_size])
+	end
+
 end

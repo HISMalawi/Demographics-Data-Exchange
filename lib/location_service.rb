@@ -240,6 +240,20 @@ EOF
     return sync_status
   end
 
+	def self.all(page = 1, page_size = 20)
+		page = page.to_i
+		page = 1 if page < 1
+
+		page_size = page_size.to_i
+		page_size = 20 if page_size < 1
+
+		offset = (page - 1) * page_size
+
+		Location.limit(page_size).offset(offset)
+	end
+
+
+
   private
 
   def self.get_locaton_id(user_id)
