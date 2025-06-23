@@ -2,8 +2,8 @@
 
 # Parent controller
 class ApplicationController < ActionController::API
-  before_action :authenticate_request, except: %i[index verify_token refresh_dashboard whitelist_ip_address]
-  before_action :authorize_system_user, only: %i[ whitelist_ip_address]
+  before_action :authenticate_request, except: %i[index verify_token refresh_dashboard whitelist_ip_address sync_errors]
+  before_action :authorize_system_user, only: %i[ whitelist_ip_address sync_errors]
   after_action  :update_socket_dashboard, only: %i[pushed_updates pushed_updates_new pushed_footprints]
   after_action  :update_location_npids, only: %i[pushed_updates pushed_updates_new assign_npids]
 

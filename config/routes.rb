@@ -95,6 +95,7 @@ Rails.application.routes.draw do
   post  'v1/push_footprints', to: 'api/v1/sync#pushed_footprints'
   get   'v1/pull_npids', to: 'api/v1/sync#pull_npids'
   post  'v1/push_errors', to: 'api/v1/sync#pushed_errors'
+  get   'v1/sync_errors', to: 'api/v1/sync#sync_errors'
 
   #config routes
   put 'v1/configs', to: 'api/v1/configs#update'

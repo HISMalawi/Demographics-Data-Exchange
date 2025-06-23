@@ -101,4 +101,22 @@ module SyncService
     error.delete(:id)
     SyncError.create!(error) unless SyncError.find_by_uuid(error[:uuid])
   end
+
+  def self.sync_errors
+    SyncError.select(
+    'locations.name, locations.ip_address, locations.activated, se.*'
+    ).from('sync_errors se').joins(<<-SQL.squish)
+      INNER JOIN locations
+      ON locations.voided = FALSE
+      AND locations.location_id = se.site_id
+      INNER JOIN (
+      SELECT site_id, MAX(created_at) AS latest_created_at
+      FROM sync_errors
+      GROUP BY site_id
+      ) latest_se
+      ON se.site_id = latest_se.site_id
+      AND se.created_at = latest_se.latest_created_at
+    SQL
+    .order('se.created_at DESC')
+  end 
 end

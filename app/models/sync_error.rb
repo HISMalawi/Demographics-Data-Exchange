@@ -3,6 +3,11 @@ class SyncError < ApplicationRecord
 
   validates :uuid, uniqueness: true
 
+  belongs_to :location,
+             foreign_key: :site_id,
+             primary_key: :location_id,
+             optional: true
+
   private
 
   def generate_uuid

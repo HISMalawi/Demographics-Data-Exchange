@@ -66,7 +66,13 @@ module Api
       end
 
       def sync_errors
-        sync_errors = SyncError.all
+        sync_errors = SyncService.sync_errors
+
+        unless sync_errors.blank?  
+          render json: sync_errors, status: :ok
+        else 
+          render json: {}, status: :not_found
+        end
       end
 
       private
