@@ -7,7 +7,6 @@ Sidekiq::Web.use ActionDispatch::Session::CookieStore, key: "_interslice_session
 
 Rails.application.routes.draw do
   mount UserManagement::Engine, at: '/v1' 
-  resources :mailing_lists
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
   mount Sidekiq::Web => '/v1/sidekiq'
@@ -103,8 +102,11 @@ Rails.application.routes.draw do
   # config/routes.rb
   get 'v1/reports/:filename', to: 'api/v1/report#show', as: :report
 
-  get 'v1/roles', to: 'mailing_lists#roles'
+  get 'v1/roles', to: 'api/v1/mailing_lists#roles'
 
+  get 'v1/mailing_lists',  to: 'api/v1/mailing_lists#index'
+  post 'v1/mailing_list', to: 'api/v1/mailing_lists#create'
+  put 'v1/mailing_list/:id', to: 'api/v1/mailing_lists#update'
 
   root to: redirect('/api-docs/')
 end
