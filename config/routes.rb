@@ -107,6 +107,7 @@ Rails.application.routes.draw do
   get 'v1/mailing_lists',  to: 'api/v1/mailing_lists#index'
   post 'v1/mailing_list', to: 'api/v1/mailing_lists#create'
   put 'v1/mailing_list/:id', to: 'api/v1/mailing_lists#update'
+  delete 'v1/mailing_list/:id/void', to: 'api/v1/mailing_lists#destroy'
 
   root to: redirect('/api-docs/')
 end
