@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #e0e0e0;
+      font-family: Arial, sans-serif;
+      color: #333333;
+      font-size: 18px;
+    }
+    .container {
+      max-width: 100%;
+      padding: 40px 20%;
+      box-sizing: border-box;
+      background: #ffffff;
+      min-height: 100vh;
+    }
+    .title {
+      color: #6c757d;
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .intro {
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    .district-heading {
+      font-size: 20px;
+      background-color: #f0f0f0;
+      padding: 12px;
+      border-left: 4px solid #6c757d;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .toggle-icon {
+      margin-left: 10px;
+      font-size: 14px;
+      transition: transform 0.3s ease;
+    }
+    .rotate {
+      transform: rotate(90deg);
+    }
+    .site-table {
+      display: none;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+    th {
+      background-color: #6c757d;
+      color: #000000;
+      padding: 10px;
+      text-align: left;
+      font-size: 15px;
+      border: 1px solid #dddddd;
+    }
+    td {
+      border: 1px solid #dddddd;
+      padding: 10px;
+      font-size: 15px;
+    }
+    .even-row {
+      background-color: #ffffff;
+    }
+    .odd-row {
+      background-color: #f9f9f9;
+    }
+    .footer-text,
+    .signature {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+    .copyright {
+      font-size: 13px;
+      color: #777777;
+      text-align: center;
+      margin-top: 10px;
+    }
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    .pagination-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+    }
+    .pagination-controls button {
+      background-color: #6c757d;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .pagination-controls button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+    .pagination-controls .page-info {
+      font-size: 14px;
+      color: #555;
+    }
+    .page-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .sticky-header,
+    .sticky-footer {
+      position: fixed;
+      width: 100%;
+      left: 0;
+      z-index: 100;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .sticky-header {
+      top: 0;
+      border-bottom: 1px solid #ddd;
+    }
+    .sticky-footer {
+      bottom: 0;
+      border-top: 1px solid #ddd;
+    }
+    .scrollable-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 100px 20px 120px;
+      background-color: #f9f9f9;
+      margin-top: 100px;
+      margin-bottom: 100px;
+    }
+    .district-section {
+      margin-bottom: 30px;
+    }
+    .site-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    .site-table th, .site-table td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+    .site-table th {
+      background-color: #eee;
+    }
+    .siteSearch {
+      width: 100%;
+      padding: 8px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px 5%;
+      }
+      .title {
+        font-size: 22px;
+      }
+      .intro,
+      .footer-text,
+      .signature {
+        font-size: 16px;
+      }
+      .district-heading {
+        font-size: 18px;
+      }
+      th, td {
+        font-size: 14px;
+        padding: 8px;
+      }
+      #districtSearch {
+        font-size: 15px;
+      }
+      .scrollable-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 100px 20px 120px;
+        background-color: #f9f9f9;
+        margin-top: 150px;
+        margin-bottom: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+   <div class="page-wrapper">
+    <!-- Sticky Header -->
+    <div class="sticky-header">
+      <h1 class="title">DDE Sites Synchronization Errors Summary</h1>
+      <p class="intro">
+        <strong><%= @sync_error_data[:total_sites_with_issue] %> site<%= 's' if @sync_error_data[:total_sites_with_issue] != 1 %></strong> out of
+        <strong><%= @sync_error_data[:total_sites] %> site<%= 's' if @sync_error_data[:total_sites] != 1 %></strong> have synchronization errors.
+        Below is the list of districts and their respective sites that have sync errors.
+      </p>
+      <input type="text" id="districtSearch" placeholder="Search district by name..." onkeyup="filterDistricts()" />
+    </div>
+    <!-- Scrollable Content -->
+    <div class="scrollable-content">
+      <% @sync_error_data[:districts].each do |district| %>
+        <div class="district-section" data-district="<%= district[:name].downcase %>">
+          <div class="district-heading" onclick="toggleSection(this)">
+            <span><%= district[:name] %> (<%= district[:sites_with_errors] %> out of <%= district[:total_sites] %> site<%= 's' if district[:total_sites] != 1 %> )</span>
+            <span class="toggle-icon">&#9654;</span>
+          </div>
+          <div class="site-table">
+              <input type="text" class="siteSearch" placeholder="Search site..." onkeyup="filterSites(this)" />
+            <table role="presentation" cellpadding="0" cellspacing="0" class="paginated-table">
+              <thead>
+                <tr>
+                  <th>Site Name</th>
+                  <th>Site ID</th>
+                  <th>Last Error Message</th>
+                  <th>Last Error Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% district[:sync_errors].each_with_index do |error, i| %>
+                  <tr class="<%= i.even? ? 'even-row' : 'odd-row' %>">
+                    <td><%= error.try(:location_name) %></td>
+                    <td><%= error.try(:site_id) %></td>
+                    <td><%= error.try(:error) %></td>
+                    <td><%= error.try(:created_at) %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+            <div class="pagination-controls">
+              <button class="prev-btn">Previous</button>
+              <span class="page-info"></span>
+              <button class="next-btn">Next</button>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+    <!-- Sticky Footer -->
+    <div class="sticky-footer">
+      <p class="footer-text">
+        Please address the synchronization errors with the respective facilities. For real-time status, visit:
+        <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
+      </p>
+      <div class="copyright">
+        &copy; <%= Time.now.year %> Demographics Data Exchange. All rights reserved.
+      </div>
+    </div>
+  </div>
+  <script>
+    function toggleSection(header) {
+      const icon = header.querySelector(".toggle-icon");
+      const section = header.nextElementSibling;
+      if (section.style.display === "none" || section.style.display === "") {
+        section.style.display = "block";
+        icon.classList.add("rotate");
+      } else {
+        section.style.display = "none";
+        icon.classList.remove("rotate");
+      }
+    }
+    function filterDistricts() {
+      const input = document.getElementById("districtSearch").value.toLowerCase();
+      const sections = document.querySelectorAll(".district-section");
+      sections.forEach(section => {
+        const name = section.getAttribute("data-district");
+        section.style.display = name.includes(input) ? "block" : "none";
+      });
+    }
+    function paginateTable(table, rowsPerPage = 10) {
+      const tbody = table.querySelector("tbody");
+      const rows = Array.from(tbody.querySelectorAll("tr"));
+      const totalPages = Math.ceil(rows.length / rowsPerPage);
+      const controls = table.parentElement.querySelector(".pagination-controls");
+      const prevBtn = controls.querySelector(".prev-btn");
+      const nextBtn = controls.querySelector(".next-btn");
+      const pageInfo = controls.querySelector(".page-info");
+      let currentPage = 1;
+      function updateDisplay() {
+        const start = (currentPage - 1) * rowsPerPage;
+        const end = start + rowsPerPage;
+        rows.forEach((row, i) => {
+          row.style.display = i >= start && i < end ? "" : "none";
+        });
+        pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+        prevBtn.disabled = currentPage === 1;
+        nextBtn.disabled = currentPage === totalPages;
+      }
+      prevBtn.onclick = () => {
+        if (currentPage > 1) {
+          currentPage--;
+          updateDisplay();
+        }
+      };
+      nextBtn.onclick = () => {
+        if (currentPage < totalPages) {
+          currentPage++;
+          updateDisplay();
+        }
+      };
+      updateDisplay();
+    }
+    function filterSites(input) {
+      const filter = input.value.toLowerCase();
+      const container = input.closest(".site-table");
+      if (!container) return;
+      const table = container.querySelector("table");
+      if (!table) return;
+      const rows = table.querySelectorAll("tbody tr");
+      rows.forEach(row => {
+        const siteName = row.cells[0].textContent.toLowerCase();
+        row.style.display = siteName.includes(filter) ? "" : "none";
+      });
+    }
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".site-table").forEach(table => table.style.display = "none");
+      document.querySelectorAll(".paginated-table").forEach(table => paginateTable(table, 10));
+    });
+    document.addEventListener("DOMContentLoaded", () => {
+      document.querySelectorAll(".site-table").forEach(table => table.style.display = "none");
+    });
+  </script>
+</body>
+</html>

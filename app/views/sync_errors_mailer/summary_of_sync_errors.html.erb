@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      background-color: #e0e0e0;
+      font-family: Arial, sans-serif;
+      color: #333333;
+    }
+
+    .container {
+      width: 600px;
+      max-width: 600px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 20px;
+      border: 1px solid #dddddd;
+      border-radius: 8px;
+    }
+
+    .title {
+      color: #6c757d;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .intro {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .district-heading {
+      font-size: 16px;
+      background-color: #f0f0f0;
+      padding: 8px;
+      border-left: 4px solid #6c757d;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 25px;
+    }
+
+    th {
+      background-color: #6c757d;
+      color: #ffffff;
+      padding: 8px;
+      text-align: left;
+      font-size: 13px;
+      border: 1px solid #dddddd;
+    }
+
+    td {
+      border: 1px solid #dddddd;
+      padding: 8px;
+      font-size: 13px;
+    }
+
+    .even-row {
+      background-color: #ffffff;
+    }
+
+    .odd-row {
+      background-color: #f9f9f9;
+    }
+
+    .footer-text {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .signature {
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .copyright {
+      font-size: 12px;
+      color: #777777;
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <h1 class="title">
+      DDE Sites Synchronization Errors Summary
+    </h1>
+
+    <p class="intro">
+      <strong><%= @sync_error_data[:total_sites_with_issue] %> site<%= 's' if @sync_error_data[:total_sites_with_issue] != 1 %></strong> out of 
+      <strong><%= @sync_error_data[:total_sites] %> site<%= 's' if @sync_error_data[:total_sites] != 1 %></strong> have synchronization errors.<br>
+      Below is the list of districts and their respective sites that have sync errors.
+    </p>
+
+    <% @sync_error_data[:districts].each do |district| %>
+      <h2 class="district-heading">
+        <%= district[:name] %> (<%= district[:sites_with_errors] %> out of <%= district[:total_sites] %> site<%= 's' if district[:total_sites] != 1 %> )
+      </h2>
+    <% end %>
+
+    <p class="footer-text">
+      For the full interactive report, <a href="<%= @report_url %>">click here to view it in your browser</a>. 
+      For real-time status, visit: <a href="https://ddedashboard.hismalawi.org" target="_blank">DDE Dashboard</a>.
+      <br>
+      <strong>Note:</strong> Access to the above links requires connection to the <em>MOH VPN</em>.
+    </p>
+
+    <p class="signature">
+      Best regards,<br><strong>Demographics Data Exchange</strong>
+    </p>
+
+    <div class="copyright">
+      &copy; <%= Time.now.year %> Demographics Data Exchange. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
