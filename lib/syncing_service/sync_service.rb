@@ -104,19 +104,22 @@ module SyncService
 
   def self.sync_errors
     SyncError.select(
-    'locations.name, locations.ip_address, locations.activated, se.*'
+      'districts.name AS district_name, districts.district_id, 
+      locations.name AS location_name, locations.ip_address, locations.activated, se.*'
     ).from('sync_errors se').joins(<<-SQL.squish)
       INNER JOIN locations
-      ON locations.voided = FALSE
-      AND locations.location_id = se.site_id
+        ON locations.voided = FALSE
+        AND locations.location_id = se.site_id
+      INNER JOIN districts
+        ON districts.district_id = locations.district_id
       INNER JOIN (
-      SELECT site_id, MAX(created_at) AS latest_created_at
-      FROM sync_errors
-      GROUP BY site_id
+        SELECT site_id, MAX(created_at) AS latest_created_at
+        FROM sync_errors
+        GROUP BY site_id
       ) latest_se
-      ON se.site_id = latest_se.site_id
-      AND se.created_at = latest_se.latest_created_at
+        ON se.site_id = latest_se.site_id
+        AND se.created_at = latest_se.latest_created_at
     SQL
     .order('se.created_at DESC')
-  end 
+  end
 end
