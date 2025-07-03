@@ -110,9 +110,23 @@
     </p>
 
     <% @last_seen_data[:districts].each do |district| %>
-        <h2 class="district-heading">
-        <%= district[:name] %> (<%= district[:sites].count %> out of <%= district[:total_sites] %> site<%= 's' if district[:total_sites] != 1 %> )
-         </h2>
+      <h2 class="district-heading" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>
+          <%= district[:name] %> (
+            <%= district[:sites].count %> out of <%= district[:total_sites] %> site<%= 's' if district[:total_sites] != 1 %>)
+        </span>
+        <% if district[:change] && district[:change_percent] %>
+          <span style="font-weight:bold; color:<%= district[:change] < 0 ? 'green' : (district[:change] > 0 ? 'red' : 'red') %>; margin-left: 12px; white-space: nowrap;">Change 
+            <% if district[:change] > 0 %>
+              &#9650;
+            <% elsif district[:change] < 0 %>
+              &#9660;
+            <% end %>
+            <%= district[:change] > 0 ? '+' : '' %><%= district[:change] %>
+            (<%= district[:change_percent] > 0 ? '+' : '' %><%= district[:change_percent] %>% )
+          </span>
+        <% end %>
+      </h2>
     <% end %>
 
     <p class="footer-text">

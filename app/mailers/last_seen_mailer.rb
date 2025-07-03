@@ -6,6 +6,7 @@ class LastSeenMailer < ApplicationMailer
 
   def summary_of_last_seen(last_seen)
     @last_seen_data = last_seen
+
     @mailing_list = MailingList.joins(:roles).where(roles: { role: 'Networks Officer' }).pluck(:email, :id)
 
     @cc_list = MailingList.joins(:roles).where(roles: { role: ['Admin','Help Desk Officer', 'Networks Supervisor'] })
