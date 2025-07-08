@@ -75,7 +75,7 @@ class SyncJob < ApplicationJob
   end
 
   def authenticate
-    url = "#{@base_url}/login?username=#{@username}&password=#{@pwd}"
+    url = "#{@base_url}/login?username=#{@username}&password=#{@pwd}&user_type=proxy"
 
       token = JSON.parse(RestClient.post(url,headers={}))['access_token']
   end
