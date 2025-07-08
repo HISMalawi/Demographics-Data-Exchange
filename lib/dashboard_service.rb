@@ -168,11 +168,13 @@ module DashboardService
       SELECT l.name site_name,
       l.location_id,
       d.name as district_name,
+      r.name as region_name,
       l.ip_address,
       max_created_at last_activity,
       l.last_seen last_seen,
       l.activated,
       l.district_id,
+      d.region_id,
       TIMESTAMPDIFF(DAY, max_created_at, CURRENT_TIMESTAMP()) days_since_last_activity,
       TIMESTAMPDIFF(DAY, l.last_seen, CURRENT_TIMESTAMP()) days_since_last_seen
       FROM locations l
@@ -180,6 +182,7 @@ module DashboardService
 			group by location_id) max_created
 		  ON l.location_id = max_created.location_id 
       JOIN districts d ON l.district_id = d.district_id
+      JOIN regions r ON r.id = d.region_id
       WHERE l.ip_address is not null
       GROUP BY l.activated, l.location_id, l.name, l.last_seen
       ORDER by l.name;")
