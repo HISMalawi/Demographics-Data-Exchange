@@ -112,7 +112,11 @@
       <strong><%= @last_synced_data[:total_sites] %> site<%= 's' if @last_synced_data[:total_sites] != 1 %></strong> have synchronization issues
     </p>
 
-    <% @last_synced_data[:districts].each do |district| %>
+    <% (@last_synced_data[:regions] || []).each do |region| %>
+      <h2 class="district-heading" style="background-color: #f9eaea; color: #333; font-size: 18px; border-left: 4px solid #d43f3a;">
+        <%= region[:name] %>
+      </h2>
+      <% (region[:districts] || []).each do |district| %>
         <h2 class="district-heading" style="display: flex; justify-content: space-between; align-items: center;">
           <span>
             <%= district[:name] %> (
@@ -132,6 +136,7 @@
             <% end %>
           </span>
         </h2>
+      <% end %>
     <% end %>
 
      <p class="footer-text">

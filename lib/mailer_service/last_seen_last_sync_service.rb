@@ -39,61 +39,76 @@ module LastSeenLastSyncService
     # Only look at sites that are activated (ignore the rest)
     sites = sites.select { |entry| entry["activated"] == 1 }
 
-    # Go through each site and group/categorize for stats
+    # Group by region, then by district
     sites.each do |site|
+      region_id = site['region_id']
+      region_name = site['region_name']
       district_id = site['district_id']
-      name = site['district_name']
+      district_name = site['district_name']
       total_sites += 1
 
-      # If the site hasn't synced in >3 days and hasn't been seen today, count it for 'last activity' issues
-      if site['days_since_last_activity'].to_i > 3  && site['days_since_last_seen'].to_i < 300
+      # Last activity grouping
+      if site['days_since_last_activity'].to_i > 3 && site['days_since_last_seen'].to_i < 400
         total_last_synced_sites += 1
-        last_activity_grouped[district_id] ||= {
+        last_activity_grouped[region_id] ||= { region_id: region_id, name: region_name, total_sites: 0, total_sites_with_issue: 0, districts: {} }
+        last_activity_grouped[region_id][:districts][district_id] ||= {
           district_id: district_id,
-          name: name,
+          name: district_name,
           sites_last_activity_greater_than_3_days_sites: 0,
           sites: [],
           total_sites: 0
         }
-        last_activity_grouped[district_id][:sites_last_activity_greater_than_3_days_sites] += 1
-        last_activity_grouped[district_id][:sites] << site
+        last_activity_grouped[region_id][:districts][district_id][:sites_last_activity_greater_than_3_days_sites] += 1
+        last_activity_grouped[region_id][:districts][district_id][:sites] << site
       end
 
-      # If the site hasn't been seen in >3 days, count it for 'last seen' issues
+      # Last seen grouping
       if site['days_since_last_seen'].to_i > 3
         total_last_seen_sites += 1
-        last_seen_grouped[district_id] ||= {
+        last_seen_grouped[region_id] ||= { region_id: region_id, name: region_name, total_sites: 0, total_sites_with_issue: 0, districts: {} }
+        last_seen_grouped[region_id][:districts][district_id] ||= {
           district_id: district_id,
-          name: name,
+          name: district_name,
           sites_last_seen_greater_than_3_days_sites: 0,
           sites: [],
           total_sites: 0
         }
-        last_seen_grouped[district_id][:sites_last_seen_greater_than_3_days_sites] += 1
-        last_seen_grouped[district_id][:sites] << site
+        last_seen_grouped[region_id][:districts][district_id][:sites_last_seen_greater_than_3_days_sites] += 1
+        last_seen_grouped[region_id][:districts][district_id][:sites] << site
       end
     end
 
-    last_activity_grouped.each do |district_id, data|
-      data[:total_sites] = sites.count { |s| s['district_id'] == district_id }
+    # Count total sites per region and district
+    last_activity_grouped.each do |region_id, region|
+      region[:districts].each do |district_id, district|
+        district[:total_sites] = sites.count { |s| s['district_id'] == district_id }
+        region[:total_sites_with_issue] += district[:sites_last_activity_greater_than_3_days_sites]
+        region[:total_sites] += district[:total_sites]
+      end
+      region[:districts] = region[:districts].values.sort_by { |d| d[:name] }
     end
-    last_seen_grouped.each do |district_id, data|
-      data[:total_sites] = sites.count { |s| s['district_id'] == district_id }
+    last_seen_grouped.each do |region_id, region|
+      region[:districts].each do |district_id, district|
+        district[:total_sites] = sites.count { |s| s['district_id'] == district_id }
+        region[:total_sites_with_issue] += district[:sites_last_seen_greater_than_3_days_sites]
+        region[:total_sites] += district[:total_sites]
+      end
+      region[:districts] = region[:districts].values.sort_by { |d| d[:name] }
     end
 
-    sorted_activity = last_activity_grouped.values.sort_by { |d| d[:name] }
-    sorted_last_seen = last_seen_grouped.values.sort_by { |d| d[:name] }
+    sorted_activity = last_activity_grouped.values.sort_by { |r| r[:name] }
+    sorted_last_seen = last_seen_grouped.values.sort_by { |r| r[:name] }
 
     {
       last_seen: {
         total_sites: total_sites,
         total_sites_with_issue: total_last_seen_sites,
-        districts: sorted_last_seen,
+        regions: sorted_last_seen,
       },
       last_activity: {
         total_sites: total_sites,
         total_sites_with_issue: total_last_synced_sites,
-        districts: sorted_activity
+        regions: sorted_activity
       }
     }
   end
@@ -121,24 +136,49 @@ module LastSeenLastSyncService
   end
 
   def self.compare_stats(today_stats, yesterday_data)
-    today_seen = today_stats[:last_seen][:districts].index_by { |d| d[:district_id] }
-    yesterday_seen = yesterday_data[:last_seen][:districts].index_by { |d| d[:district_id] } rescue {}
+    # Compare for last_seen
+    (today_stats[:last_seen][:regions] || []).each do |region|
+      yest_region = (yesterday_data[:last_seen][:regions] || []).find { |r| r[:region_id] == region[:region_id] } rescue nil
+      region[:districts].each do |district|
+        yest_district = yest_region ? (yest_region[:districts] || []).find { |d| d[:district_id] == district[:district_id] } : nil
+        today_count = district[:sites_last_seen_greater_than_3_days_sites]
+        yest_count = yest_district ? yest_district[:sites_last_seen_greater_than_3_days_sites] : 0
+        change = today_count - yest_count
+        change_percent =
+          if yest_count == 0
+            today_count == 0 ? 0 : 100
+          elsif change == 0
+            0
+          else
+            ((change.to_f / yest_count) * 100).round(2)
+          end
+        district[:yesterday] = yest_count
+        district[:change] = change
+        district[:change_percent] = change_percent
+      end
+    end
 
-    today_activity = today_stats[:last_activity][:districts].index_by { |d| d[:district_id] }
-    yesterday_activity = yesterday_data[:last_activity][:districts].index_by { |d| d[:district_id] } rescue {}
-    
-    add_comparison_to_districts(
-      today_stats[:last_seen][:districts],
-      yesterday_seen,
-      :sites_last_seen_greater_than_3_days_sites
-    )
-
-    add_comparison_to_districts(
-      today_stats[:last_activity][:districts],
-      yesterday_activity,
-      :sites_last_activity_greater_than_3_days_sites
-    )
-
+    # Compare for last_activity
+    (today_stats[:last_activity][:regions] || []).each do |region|
+      yest_region = (yesterday_data[:last_activity][:regions] || []).find { |r| r[:region_id] == region[:region_id] } rescue nil
+      region[:districts].each do |district|
+        yest_district = yest_region ? (yest_region[:districts] || []).find { |d| d[:district_id] == district[:district_id] } : nil
+        today_count = district[:sites_last_activity_greater_than_3_days_sites]
+        yest_count = yest_district ? yest_district[:sites_last_activity_greater_than_3_days_sites] : 0
+        change = today_count - yest_count
+        change_percent =
+          if yest_count == 0
+            today_count == 0 ? 0 : 100
+          elsif change == 0
+            0
+          else
+            ((change.to_f / yest_count) * 100).round(2)
+          end
+        district[:yesterday] = yest_count
+        district[:change] = change
+        district[:change_percent] = change_percent
+      end
+    end
     nil
   end
 
