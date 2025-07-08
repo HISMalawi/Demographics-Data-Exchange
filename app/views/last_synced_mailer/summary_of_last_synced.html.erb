@@ -113,8 +113,8 @@
     </p>
 
     <% (@last_synced_data[:regions] || []).each do |region| %>
-      <h2 class="district-heading" style="background-color: #f9eaea; color: #333; font-size: 18px; border-left: 4px solid #d43f3a;">
-        <%= region[:name] %>
+      <h2 class="district-heading" style="background-color: #f9eaea; color: #333; font-size: 20px; border-left: 4px solid #d43f3a;">
+        <%= region[:name] %> Region
       </h2>
       <% (region[:districts] || []).each do |district| %>
         <h2 class="district-heading" style="display: flex; justify-content: space-between; align-items: center;">
