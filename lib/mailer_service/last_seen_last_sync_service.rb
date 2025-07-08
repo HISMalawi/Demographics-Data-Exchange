@@ -48,7 +48,7 @@ module LastSeenLastSyncService
       total_sites += 1
 
       # Last activity grouping
-      if site['days_since_last_activity'].to_i > 3 && site['days_since_last_seen'].to_i < 400
+      if site['days_since_last_activity'].to_i > 3 && site['days_since_last_seen'].to_i < 3
         total_last_synced_sites += 1
         last_activity_grouped[region_id] ||= { region_id: region_id, name: region_name, total_sites: 0, total_sites_with_issue: 0, districts: {} }
         last_activity_grouped[region_id][:districts][district_id] ||= {
