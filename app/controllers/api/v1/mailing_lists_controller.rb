@@ -6,7 +6,7 @@ class Api::V1::MailingListsController < ApplicationController
 
   # GET v1/mailing_lists
   def index
-    @mailing_lists = MailingList.where(voided: false).all
+    @mailing_lists = MailingList.all
 
     render json: @mailing_lists
   end
