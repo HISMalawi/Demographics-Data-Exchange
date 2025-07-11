@@ -6,7 +6,8 @@ class Api::V1::MailingListsController < ApplicationController
 
   # GET v1/mailing_lists
   def index
-    @mailing_lists = MailingList.all
+    @mailing_lists = MailingList.joins(:roles)
+                                .select("mailing_lists.*, roles.role")
 
     render json: @mailing_lists
   end
@@ -38,7 +39,7 @@ class Api::V1::MailingListsController < ApplicationController
 
   # DELETE /mailing_lists/1
   def destroy
-    @mailing_list.update(voided: true)
+    @mailing_list.update(deactivated: true)
   end
 
   def roles
