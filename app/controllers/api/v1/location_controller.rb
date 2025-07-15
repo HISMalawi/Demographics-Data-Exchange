@@ -70,16 +70,9 @@ class Api::V1::LocationController < ApplicationController
     render json: LocationService.sync_info
   end
 
-<<<<<<< HEAD
   private 
 
   def location_params
     params.permit(:location_id,:ip_address)
   end
-=======
-	def index
-  	render json: LocationService.all(params[:page], params[:page_size])
-	end
-
->>>>>>> 4812b45bc334d935eef1129f2bcd5a022489ab2c
 end
