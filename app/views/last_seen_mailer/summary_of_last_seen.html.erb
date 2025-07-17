@@ -120,7 +120,7 @@
               <%= district[:sites].count %> out of <%= district[:total_sites] %> site<%= 's' if district[:total_sites] != 1 %>)
           </span>
           <% if district[:change] && district[:change_percent] %>
-            <span style="font-weight:bold; color:<%= district[:change] < 0 ? 'green' : (district[:change] > 0 ? 'red' : 'red') %>; margin-left: 12px; white-space: nowrap;">Change 
+            <span style="font-weight:bold; color:<%= district[:change] < 0 ? 'green' : (district[:change] > 0 ? 'red' : 'red') %>; margin-left: 12px; white-space: nowrap;"> 
               <% if district[:change] > 0 %>
                 &#9650;
               <% elsif district[:change] < 0 %>
