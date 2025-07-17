@@ -155,8 +155,9 @@ The process of setting up DDE Master is similar to setting up DDE Proxy. The onl
     cp config/secrets.yml.example config/secrets.yml
     cp config/schedule.yml.example config/schedule.yml
     cp config/sidekiq.yml.example config/sidekiq.yml
+    cp config/settings.yml.example config/settings.yml
   ```
-  
+
 ```bash
   MASTER=true rails db:create db:migrate db:seed
 ```
