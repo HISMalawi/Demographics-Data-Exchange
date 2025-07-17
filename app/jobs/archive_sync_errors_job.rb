@@ -43,7 +43,7 @@ class ArchiveSyncErrorsJob < ApplicationJob
           total_sites_with_issue: total_sites_with_issue,
           districts: districts.values
         }
-        SyncErrorsMailer.summary_of_sync_errors(sync_error_data).deliver_now
+        SyncErrorsMailer.summary_of_sync_errors(sync_error_data).deliver_later
         Rails.logger.info "[ArchiveSyncErrorsJob] Sync error summary mail sent."
       else
         Rails.logger.info "[ArchiveSyncErrorsJob] No districts found in recent errors. Mail not sent."
