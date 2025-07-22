@@ -2,7 +2,7 @@ class CreateMailerLocations < ActiveRecord::Migration[5.2]
   def change
     if ENV['MASTER'] == 'true'
       create_table :mailer_locations do |t|
-        t.integer :location_id
+        t.bigint :location_id
         t.bigint :mailer_id
 
         t.timestamps
