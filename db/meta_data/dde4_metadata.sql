@@ -49,9 +49,9 @@ DROP TABLE IF EXISTS `districts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `districts` (
-  `district_id` int(11) NOT NULL AUTO_INCREMENT,
+  `district_id` BIGINT NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
-  `region_id` int(11) NOT NULL,
+  `region_id` BIGINT NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`district_id`),
@@ -78,7 +78,7 @@ DROP TABLE IF EXISTS `locations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `locations` (
-  `location_id` int(11) NOT NULL AUTO_INCREMENT,
+  `location_id` BIGINT NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `couchdb_location_id` varchar(255) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
@@ -87,7 +87,7 @@ CREATE TABLE `locations` (
   `voided` tinyint(1) NOT NULL DEFAULT '0',
   `void_reason` varchar(255) DEFAULT NULL,
   `couchdb_parentlocation_id` varchar(255) DEFAULT NULL,
-  `district_id` int(11) DEFAULT NULL,
+  `district_id` BIGINT DEFAULT NULL,
   `code` varchar(255) DEFAULT NULL,
   `creator` int(11) NOT NULL,
   `created_at` datetime NOT NULL,
@@ -118,7 +118,7 @@ DROP TABLE IF EXISTS `region`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `region` (
-  `region_id` int(11) NOT NULL AUTO_INCREMENT,
+  `region_id` BIGINT NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
   `created_at` varchar(45) DEFAULT NULL,
   `updated_at` varchar(45) DEFAULT NULL,
@@ -144,7 +144,7 @@ DROP TABLE IF EXISTS `roles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `roles` (
-  `role_id` int(11) NOT NULL AUTO_INCREMENT,
+  `role_id` BIGINT NOT NULL AUTO_INCREMENT,
   `couchdb_role_id` varchar(255) DEFAULT NULL,
   `role` varchar(255) NOT NULL,
   `description` varchar(255) DEFAULT NULL,
@@ -175,7 +175,7 @@ CREATE TABLE `user_roles` (
   `couchdb_user_id` varchar(255) DEFAULT NULL,
   `couchdb_role_id` varchar(255) DEFAULT NULL,
   `user_id` bigint(20) NOT NULL,
-  `role_id` int(11) NOT NULL,
+  `role_id` BIGINT NOT NULL,
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
   `role` varchar(255) NOT NULL,
