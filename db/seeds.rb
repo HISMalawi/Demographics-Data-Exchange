@@ -60,3 +60,32 @@ connection = ActiveRecord::Base.connection
     puts ''
   end
 end
+
+# === Add foreign key constraints ===
+connection = ActiveRecord::Base.connection
+
+begin
+  connection.execute <<-SQL
+    ALTER TABLE mailer_districts
+    ADD CONSTRAINT fk_mailer_districts_district
+    FOREIGN KEY (district_id)
+    REFERENCES districts(district_id);
+  SQL
+
+  puts "Added foreign key to mailer_districts → districts"
+rescue => e
+  puts "Could not add foreign key to mailer_districts: #{e.message}"
+end
+
+begin
+  connection.execute <<-SQL
+    ALTER TABLE mailing_logs
+    ADD CONSTRAINT fk_mailing_logs_district
+    FOREIGN KEY (district_id)
+    REFERENCES districts(district_id);
+  SQL
+
+  puts "Added foreign key to mailing_logs → districts"
+rescue => e
+  puts "Could not add foreign key to mailing_logs: #{e.message}"
+end
