@@ -5,7 +5,6 @@ module LastSeenLastSyncService
     begin
       sites = DashboardService.site_activities
 
-
       stats = calculate_stats(sites)
 
       # Save the raw sites, not the processed stats
@@ -78,28 +77,71 @@ module LastSeenLastSyncService
       end
     end
 
-    # Count total sites per region and district
+    # Initialize region counts for all regions that have sites
+    sites.group_by { |s| s['region_id'] }.each do |region_id, region_sites|
+      region_name = region_sites.first['region_name']
+      
+      # Initialize last_activity_grouped for this region if it doesn't exist
+      last_activity_grouped[region_id] ||= { 
+        region_id: region_id, 
+        name: region_name, 
+        total_sites: 0, 
+        total_sites_with_issue: 0, 
+        districts: {} 
+      }
+      
+      # Initialize last_seen_grouped for this region if it doesn't exist
+      last_seen_grouped[region_id] ||= { 
+        region_id: region_id, 
+        name: region_name, 
+        total_sites: 0, 
+        total_sites_with_issue: 0, 
+        districts: {} 
+      }
+    end
+
+    # Count total sites per region and district for last_activity
     last_activity_grouped.each do |region_id, region|
+      region[:total_sites] = 0
+      region[:total_sites_with_issue] = 0
+      
       region[:districts].each do |district_id, district|
         district[:total_sites] = sites.count { |s| s['district_id'] == district_id }
         region[:total_sites_with_issue] += district[:sites_last_activity_greater_than_3_days_sites]
         region[:total_sites] += district[:total_sites]
       end
+      
+      # If region has no districts with issues, still count total sites in region
+      if region[:districts].empty?
+        region[:total_sites] = sites.count { |s| s['region_id'] == region_id }
+      end
+      
       region[:districts] = region[:districts].values.sort_by { |d| d[:name] }
     end
+
+    # Count total sites per region and district for last_seen
     last_seen_grouped.each do |region_id, region|
+      region[:total_sites] = 0
+      region[:total_sites_with_issue] = 0
+      
       region[:districts].each do |district_id, district|
         district[:total_sites] = sites.count { |s| s['district_id'] == district_id }
         region[:total_sites_with_issue] += district[:sites_last_seen_greater_than_3_days_sites]
         region[:total_sites] += district[:total_sites]
       end
+      
+      # If region has no districts with issues, still count total sites in region
+      if region[:districts].empty?
+        region[:total_sites] = sites.count { |s| s['region_id'] == region_id }
+      end
+      
       region[:districts] = region[:districts].values.sort_by { |d| d[:name] }
     end
 
     sorted_activity = last_activity_grouped.values.sort_by { |r| r[:name] }
     sorted_last_seen = last_seen_grouped.values.sort_by { |r| r[:name] }
 
-    {
+    stats = {
       last_seen: {
         total_sites: total_sites,
         total_sites_with_issue: total_last_seen_sites,
@@ -111,6 +153,9 @@ module LastSeenLastSyncService
         regions: sorted_activity
       }
     }
+
+
+    stats
   end
 
   def self.save_stats_to_cache(sites)

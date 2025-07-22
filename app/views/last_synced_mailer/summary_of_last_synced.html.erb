@@ -45,6 +45,18 @@
     margin-bottom: 10px;
     color: #333333;
   }
+
+   .region-heading {
+    font-size: 16px;
+    background-color: #8B0000; /* soft danger tone */
+    padding: 8px;
+    border-left: 4px solid #d43f3a;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #333333;
+  }
+
+
   
   table {
     width: 100%;
@@ -113,8 +125,15 @@
     </p>
 
     <% (@last_synced_data[:regions] || []).each do |region| %>
-      <h2 class="district-heading" style="background-color: #f9eaea; color: #333; font-size: 20px; border-left: 4px solid #d43f3a;">
-        <%= region[:name] %> Region
+       <% 
+        total_region_sites = region[:total_sites]
+        total_region_sites_with_issues = region[:total_sites_with_issue]
+      %>
+
+      <h2 class="district-heading region-heading" style="background-color: #c9302c; color: #fff; font-size: 20px; border-left: 4px solid #d43f3a;">
+        <%= region[:name] %> Region (
+          <%= total_region_sites_with_issues %> out of <%= total_region_sites %> site<%= 's' if total_region_sites != 1 %> 
+        )
       </h2>
       <% (region[:districts] || []).each do |district| %>
         <h2 class="district-heading" style="display: flex; justify-content: space-between; align-items: center;">

@@ -219,6 +219,12 @@
     border-radius: 4px;
   }
 
+   .region-summary {
+      font-size: 18px;
+      color: #fff;
+      margin-left: 10px;
+    }
+
     /* Mobile responsiveness */
     @media (max-width: 768px) {
       .container {
@@ -256,6 +262,10 @@
         margin-top: 150px;
         margin-bottom: 150px;
       }
+
+      .region-summary {
+        font-size: 14px;
+      }
     }
   </style>
 </head>
@@ -278,11 +288,15 @@
     <div class="scrollable-content">
       <% (@last_synced_data[:regions] || []).each_with_index do |region, region_idx| %>
         <div class="region-section" data-region="<%= region[:name].downcase %>">
-          <h2 class="district-heading region-toggle" onclick="toggleRegionSection(this)" style="background-color: #f9eaea; color: #000; font-size: 20px; border-left: 4px solid #d43f3a; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
-            <span><%= region[:name] %> Region</span>
+          <h2 class="district-heading region-toggle" onclick="toggleRegionSection(this)" style="background-color: #c9302c; color: #fff; font-size: 20px; border-left: 4px solid #d43f3a; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
+            <span><%= region[:name] %> Region
+               <span class="region-summary">
+                (<%= region[:total_sites_with_issue] %> out of <%= region[:total_sites] %> site<%= 's' if region[:total_sites] != 1 %>)
+               </span>
+            </span>
             <span class="toggle-icon region-toggle-icon"><%= region_idx == 0 ? raw('&#9660;') : raw('&#9654;') %></span>
           </h2>
-          <div class="region-content" style="display:<%= region_idx == 0 ? 'block' : 'none' %>;">
+          <div class="region-content" style="display: none;">
             <% (region[:districts] || []).each do |district| %>
               <div class="district-section" data-district="<%= district[:name].downcase %>">
                 <div class="district-heading" onclick="toggleSection(this)">
