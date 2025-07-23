@@ -232,6 +232,7 @@
               <thead>
                 <tr>
                   <th>Site Name</th>
+                  <th>IP Address</th>
                   <th>Site ID</th>
                   <th>Last Error Message</th>
                   <th>Last Error Time</th>
@@ -240,10 +241,13 @@
               <tbody>
                 <% district[:sync_errors].each_with_index do |error, i| %>
                   <tr class="<%= i.even? ? 'even-row' : 'odd-row' %>">
-                    <td><%= error.try(:location_name) %></td>
-                    <td><%= error.try(:site_id) %></td>
-                    <td><%= error.try(:error) %></td>
-                    <td><%= error.try(:created_at) %></td>
+                    <td><%= error.location&.name%></td>
+                    <td><%= error.location&.ip_address %></td>
+                    <td><%= error[:site_id] %></td>
+                    <td><%= error[:error] %></td>
+                    <td>
+                     <%= error[:created_at].in_time_zone('Africa/Blantyre').strftime('%d/%b/%Y %I:%M %p') %>
+                    </td>
                   </tr>
                 <% end %>
               </tbody>

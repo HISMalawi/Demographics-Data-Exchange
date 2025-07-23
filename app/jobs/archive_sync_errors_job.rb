@@ -66,6 +66,7 @@ class ArchiveSyncErrorsJob < ApplicationJob
       district_id = error.try(:district_id)
       district_name = error.try(:district_name)
       site_id = error.try(:site_id)
+
       next unless district_id && district_name && site_id
 
       districts[district_id] ||= { name: district_name, sync_errors: [] }
