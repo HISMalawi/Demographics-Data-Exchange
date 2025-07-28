@@ -139,7 +139,7 @@ module LastSeenLastSyncService
 
   def self.fetch_yesterday_stats
     yesterday_cache = SyncStatsCache.where(name: 'last_seen_and_last_sync')
-      .where('created_at < ?', Time.now.beginning_of_day)
+      .where('updated_at < ?', Time.now.beginning_of_day)
       .order(created_at: :desc).first
     yesterday_cache ? JSON.parse(yesterday_cache.value) : nil
   end
