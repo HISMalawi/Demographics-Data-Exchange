@@ -13,9 +13,11 @@ class AuthenticateUser
   
   #this is where the result gets returned
   def call
-    if user_type == "proxy"
+    type = user_type.presence || "proxy"
+    
+    if type == "proxy"
       JsonWebToken.encode(user_id: user.id, user_location_id: user.location_id) if user
-    elsif user_type == "system"
+    elsif type == "system"
       authorize_system_user
     else
       errors.add :user_authentication, 'User type does not exist'
