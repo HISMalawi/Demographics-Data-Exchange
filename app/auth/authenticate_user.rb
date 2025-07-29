@@ -17,7 +17,7 @@ class AuthenticateUser
 
     if type == "proxy"
       JsonWebToken.encode(user_id: user.id, user_location_id: user.location_id) if user
-    elsif user_type == "system"
+    elsif type == "system"
       authorize_system_user
     else
       errors.add :user_authentication, 'User type does not exist'
