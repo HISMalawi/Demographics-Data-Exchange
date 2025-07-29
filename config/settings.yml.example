@@ -1,0 +1,4 @@
+secret_key: ""
+duplicate_precision: 90
+gateway_key: 'usermanagement'
+sss_url: localhost:3001

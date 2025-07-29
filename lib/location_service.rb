@@ -240,19 +240,22 @@ EOF
     return sync_status
   end
 
-	def self.all(page = 1, page_size = 20)
-		page = page.to_i
-		page = 1 if page < 1
+  def self.whitelist_ip_address(location_id:, ip_address:)
+    whitelisted = false
+     location = Location.find_by(location_id: location_id)
 
-		page_size = page_size.to_i
-		page_size = 20 if page_size < 1
+      if location.nil?
+        return { error: "Location with ID #{location_id} does not exist", whitelisted:}
+      end
 
-		offset = (page - 1) * page_size
+      if Location.exists?(ip_address: ip_address)
+       return  { error: "IP address #{ip_address} is already whitelisted", whitelisted:}
+      end
 
-		Location.limit(page_size).offset(offset)
-	end
+      location.update(ip_address: ip_address)
 
-
+      { location: location, whitelisted: true }
+  end
 
   private
 

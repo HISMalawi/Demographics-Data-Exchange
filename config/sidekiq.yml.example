@@ -4,6 +4,7 @@
 - location_npid
 - npid_pool
 - email_notifications
+- archive_sync_errors
 - sync
 
 :redis:

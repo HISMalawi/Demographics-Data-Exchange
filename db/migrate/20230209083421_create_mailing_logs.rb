@@ -2,7 +2,7 @@ class CreateMailingLogs < ActiveRecord::Migration[5.2]
   def change
     if ENV['MASTER'] == 'true'
       create_table :mailing_logs do |t|
-        t.integer :location_id
+        t.bigint :location_id
         t.string :notification_type
 
         t.timestamps

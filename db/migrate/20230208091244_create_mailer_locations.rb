@@ -2,7 +2,7 @@ class CreateMailerLocations < ActiveRecord::Migration[5.2]
   def change
     if ENV['MASTER'] == 'true'
       create_table :mailer_locations do |t|
-        t.integer :location_id
+        t.bigint :location_id
         t.bigint :mailer_id
 
         t.timestamps
@@ -14,15 +14,3 @@ class CreateMailerLocations < ActiveRecord::Migration[5.2]
     end
   end
 end
-
-{
-  district_id: 2,
-  sites: {
-    sites_last_seen_greater_than_3_days: [
-     # The sites here
-    ],
-    sites_last_activity_greater_than_3_days:[
-         # The sites here
-    ]
-  }
-}

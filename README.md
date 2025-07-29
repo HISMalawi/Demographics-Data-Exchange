@@ -149,6 +149,15 @@ And users to the application
 
 The process of setting up DDE Master is similar to setting up DDE Proxy. The only difference is that you will need to run to run you migration about with the key like in the example below.
 
+* Copy all .yml.example files in config folder into .yml files.
+  ```bash
+    cp config/database.yml.example config/database.yml
+    cp config/secrets.yml.example config/secrets.yml
+    cp config/schedule.yml.example config/schedule.yml
+    cp config/sidekiq.yml.example config/sidekiq.yml
+    cp config/settings.yml.example config/settings.yml
+  ```
+
 ```bash
   MASTER=true rails db:create db:migrate db:seed
 ```
@@ -157,6 +166,13 @@ This will create the npids table which you can populate with your preferred uniq
 
 ```bash
   rails r bin/npids_faker.rb
+```
+
+
+**Important:** The `DDE_HOST_URL` environment variable *must* be set to the correct hostname or IP address and Port where DDE is running. This is required for mailer reports to be stored correctly and for the EMR User Management engine to authenticate properly.
+
+```bash
+export DDE_HOST_URL="DDE Host URL"
 ```
 
 Voila! you got it.

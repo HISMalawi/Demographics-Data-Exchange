@@ -75,7 +75,7 @@ class SyncJob < ApplicationJob
   end
 
   def authenticate
-    url = "#{@base_url}/login?username=#{@username}&password=#{@pwd}"
+    url = "#{@base_url}/login?username=#{@username}&password=#{@pwd}&user_type=proxy"
 
       token = JSON.parse(RestClient.post(url,headers={}))['access_token']
   end
@@ -323,7 +323,22 @@ class SyncJob < ApplicationJob
   private
 
   def log_error(error)
-    SyncError.create!(site_id: @location, incident_time: Time.now, error: error.to_s)
+    return if @location.blank? || error.to_s.blank?
+
+    existing_error = SyncError.find_by(site_id: @location, error: error.to_s)
+
+    if existing_error
+      existing_error.update!(
+        incident_time: Time.now,
+        updated_at: Time.now
+      )
+    else
+      SyncError.create!(
+        site_id: @location_id,
+        incident_time: Time.now,
+        error: error.to_s
+      )
+    end
   end
 end
 

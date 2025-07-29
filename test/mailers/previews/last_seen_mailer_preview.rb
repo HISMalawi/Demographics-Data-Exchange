@@ -4,7 +4,7 @@ class LastSeenMailerPreview < ActionMailer::Preview
     def summary_of_last_seen
         result = LastSeenLastSyncService.processed_data
       
-        if result[:last_seen].present? && result[:last_seen][:districts].any?
+        if result[:last_seen].present? && result[:last_seen][:regions].any?
             LastSeenMailer.summary_of_last_seen(result[:last_seen])
         else
             Mail.new(
