@@ -2,7 +2,7 @@ class Api::V1::UserController < ApplicationController
   skip_before_action :authenticate_request, only: %i[login]
 
   def login
-    authenticate(params[:username], params[:password])
+    authenticate(params[:username], params[:password], params[:user_type])
   end
 
   def register
@@ -50,16 +50,16 @@ class Api::V1::UserController < ApplicationController
   private
 
   def user_params
-    params.permit(:username, :password)
+    params.permit(:username, :password, :user_type)
   end
 
-  def authenticate(username, password)
-    command = AuthenticateUser.call(username, password)
+  def authenticate(username, password, user_type)
+    command = AuthenticateUser.call(username, password, user_type)
 
     if command.success?
       render json: {
-               access_token: command.result,
-               message: "Login Successful",
+              access_token: command.result,
+              message: "Login Successful",
              }
     else
       render json: {error: command.errors}, status: :unauthorized

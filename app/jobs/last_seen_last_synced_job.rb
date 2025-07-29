@@ -8,7 +8,7 @@ class LastSeenLastSyncedJob < ApplicationJob
   def perform(*args)
     # Send summary emails
     result = LastSeenLastSyncService.processed_data
-    LastSyncedMailer.summary_of_last_synced(result[:last_activity]).deliver_later if result[:last_activity][:districts].any?
-    LastSeenMailer.summary_of_last_seen(result[:last_seen]).deliver_later if result[:last_seen][:districts].any?
+    LastSyncedMailer.summary_of_last_synced(result[:last_activity]).deliver_now if result[:last_activity][:regions].any?
+    LastSeenMailer.summary_of_last_seen(result[:last_seen]).deliver_now if result[:last_seen][:regions].any?
   end
 end

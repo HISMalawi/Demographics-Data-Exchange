@@ -240,6 +240,23 @@ EOF
     return sync_status
   end
 
+  def self.whitelist_ip_address(location_id:, ip_address:)
+    whitelisted = false
+     location = Location.find_by(location_id: location_id)
+
+      if location.nil?
+        return { error: "Location with ID #{location_id} does not exist", whitelisted:}
+      end
+
+      if Location.exists?(ip_address: ip_address)
+       return  { error: "IP address #{ip_address} is already whitelisted", whitelisted:}
+      end
+
+      location.update(ip_address: ip_address)
+
+      { location: location, whitelisted: true }
+  end
+
   private
 
   def self.get_locaton_id(user_id)

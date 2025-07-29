@@ -6,10 +6,11 @@ Sidekiq::Web.use ActionDispatch::Cookies
 Sidekiq::Web.use ActionDispatch::Session::CookieStore, key: "_interslice_session"
 
 Rails.application.routes.draw do
-  resources :mailing_lists
+  mount UserManagement::Engine, at: '/v1' 
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
   mount Sidekiq::Web => '/v1/sidekiq'
+
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 
   namespace :api do
@@ -51,6 +52,7 @@ Rails.application.routes.draw do
   post "v1/npids_assigned", to: "api/v1/location#npids_assigned"
   post "v1/total_allocated_npids", to: "api/v1/location#total_allocated_npids"
   post "v1/get_locations", to: "api/v1/location#get_locations"
+  post "v1/whitelist_ip_address", to: "api/v1/location#whitelist_ip_address"
 
   #footprint
   post "v1/update_footprint/", to: "api/v1/footprint#update_footprint"
@@ -92,6 +94,7 @@ Rails.application.routes.draw do
   post  'v1/push_footprints', to: 'api/v1/sync#pushed_footprints'
   get   'v1/pull_npids', to: 'api/v1/sync#pull_npids'
   post  'v1/push_errors', to: 'api/v1/sync#pushed_errors'
+  get   'v1/sync_errors', to: 'api/v1/sync#sync_errors'
 
   #config routes
   put 'v1/configs', to: 'api/v1/configs#update'
@@ -99,6 +102,12 @@ Rails.application.routes.draw do
   # config/routes.rb
   get 'v1/reports/:filename', to: 'api/v1/report#show', as: :report
 
+  get 'v1/roles', to: 'api/v1/mailing_lists#roles'
+
+  get 'v1/mailing_lists',  to: 'api/v1/mailing_lists#index'
+  post 'v1/mailing_list', to: 'api/v1/mailing_lists#create'
+  put 'v1/mailing_list/:id', to: 'api/v1/mailing_lists#update'
+  delete 'v1/mailing_list/:id/deactivate', to: 'api/v1/mailing_lists#destroy'
 
   root to: redirect('/api-docs/')
 end

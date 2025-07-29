@@ -2,7 +2,8 @@
 
 # Parent controller
 class ApplicationController < ActionController::API
-  before_action :authenticate_request, except: %i[index verify_token refresh_dashboard]
+  before_action :authenticate_request, except: %i[index verify_token refresh_dashboard whitelist_ip_address sync_errors]
+  before_action :authorize_system_user, only: %i[ whitelist_ip_address sync_errors]
   after_action  :update_socket_dashboard, only: %i[pushed_updates pushed_updates_new pushed_footprints]
   after_action  :update_location_npids, only: %i[pushed_updates pushed_updates_new assign_npids]
 
@@ -17,7 +18,14 @@ class ApplicationController < ActionController::API
 		User.current = @current_user
 		render json: { error: 'Not Authorized' }, status: 401 unless @current_user
 	end
-	
+
+	def authorize_system_user
+    	token = request.headers[:Authorization]
+    	response = JSON.parse(UserManagement::ApplicationController.authorized(token))
+    	return render json: {status: 403, message: 'User not authorized or token expired'}, status: 403 if response['status'] == 403
+    	return render json: {status: 401, message: 'Invalid username or password'}, status: 401 if response['status'] == 401
+  	end
+
 	def update_socket_dashboard
 	   	DashboardSocketDataJob.perform_later
 	end

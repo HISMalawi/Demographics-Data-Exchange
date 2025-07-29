@@ -53,7 +53,26 @@ class Api::V1::LocationController < ApplicationController
     #<CouchdbLocation name: nil, description: nil, latitude: "-13.8898", longitude: "33.80487", voided: nil, void_reason: nil, parent_location: "f79a0d44a0e921e79b6205bb8fe05a08", code: nil, creator: "f79a0d44a0e921e79b6205bb8fe22e83", updated_at: 2018-10-09 13:22:06 UTC, created_at: 2018-10-08 13:31:39 UTC, _id: "1200f9a4d2c0a8a52396511c67163673", _rev: "3-a9a77ab19107a2e11d543bea2d66a958", type: "CouchdbLocation">
   end
 
+  def whitelist_ip_address
+    result = LocationService.whitelist_ip_address(
+                location_id: params[:location_id],
+                ip_address: params[:ip_address]
+               )
+  
+    if result[:whitelisted]
+      render json: {location: result[:location], whitelisted: true}, status: :ok
+    else
+      render json: {error: result[:error], whitelisted: false }, status: :ok
+    end
+  end
+
   def sync_info
     render json: LocationService.sync_info
+  end
+
+  private 
+
+  def location_params
+    params.permit(:location_id,:ip_address)
   end
 end

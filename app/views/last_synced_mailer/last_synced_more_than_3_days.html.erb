@@ -219,6 +219,12 @@
     border-radius: 4px;
   }
 
+   .region-summary {
+      font-size: 18px;
+      color: #fff;
+      margin-left: 10px;
+    }
+
     /* Mobile responsiveness */
     @media (max-width: 768px) {
       .container {
@@ -256,6 +262,10 @@
         margin-top: 150px;
         margin-bottom: 150px;
       }
+
+      .region-summary {
+        font-size: 14px;
+      }
     }
   </style>
 </head>
@@ -291,7 +301,6 @@
                   <th>Site Name</th>
                   <th>IP Address</th>
                   <th>Days Since Last Synced With Master</th>
-                  <th>Days Since Last Seen On Network</th>
                 </tr>
               </thead>
               <tbody>
@@ -300,7 +309,6 @@
                     <td><%= site['site_name'] %></td>
                     <td><%= site['ip_address'] %></td>
                     <td><%= site['days_since_last_activity'] %></td>
-                    <td><%= site['days_since_last_seen'] %></td>
                   </tr>
                 <% end %>
               </tbody>
@@ -338,6 +346,20 @@
       } else {
         section.style.display = "none";
         icon.classList.remove("rotate");
+      }
+    }
+
+    function toggleRegionSection(header) {
+      const regionSection = header.closest('.region-section');
+      const content = regionSection.querySelector('.region-content');
+      const icon = header.querySelector('.region-toggle-icon');
+      const isOpen = content.style.display === 'block';
+      // Collapse all regions
+      document.querySelectorAll('.region-content').forEach(function(rc) { rc.style.display = 'none'; });
+      document.querySelectorAll('.region-toggle-icon').forEach(function(ic) { ic.innerHTML = '&#9654;'; });
+      if (!isOpen) {
+        content.style.display = 'block';
+        icon.innerHTML = '&#9660;';
       }
     }
 

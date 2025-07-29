@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `region`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `region` (
-  `region_id` int NOT NULL AUTO_INCREMENT,
+  `region_id` BIGINT NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
   `created_at` varchar(45) DEFAULT NULL,
   `updated_at` varchar(45) DEFAULT NULL,
@@ -50,9 +50,9 @@ DROP TABLE IF EXISTS `districts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `districts` (
-  `district_id` int NOT NULL AUTO_INCREMENT,
+  `district_id` BIGINT NOT NULL AUTO_INCREMENT,
   `name` varchar(45) NOT NULL,
-  `region_id` int NOT NULL,
+  `region_id` BIGINT NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`district_id`),
@@ -80,7 +80,7 @@ DROP TABLE IF EXISTS `locations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `locations` (
-  `location_id` int NOT NULL AUTO_INCREMENT,
+  `location_id` BIGINT NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `couchdb_location_id` varchar(255) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
@@ -89,7 +89,7 @@ CREATE TABLE `locations` (
   `voided` tinyint(1) NOT NULL DEFAULT '0',
   `void_reason` varchar(255) DEFAULT NULL,
   `couchdb_parentlocation_id` varchar(255) DEFAULT NULL,
-  `district_id` int DEFAULT NULL,
+  `district_id` BIGINT DEFAULT NULL,
   `code` varchar(255) DEFAULT NULL,
   `creator` int NOT NULL,
   `created_at` datetime NOT NULL,

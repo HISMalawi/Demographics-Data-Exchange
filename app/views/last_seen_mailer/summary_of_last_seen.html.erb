@@ -105,14 +105,41 @@
 
     <p class="intro">
       <strong><%= @last_seen_data[:total_sites_with_issue] %> site<%= 's' if @last_seen_data[:total_sites_with_issue] != 1 %></strong> out of 
-      <strong><%= @last_seen_data[:total_sites] %> site<%= 's' if @last_seen_data[:total_sites] != 1 %></strong> have connectivity issues
-      Below is the list of districts and their respective sites that have been offline for more than <strong>3 days</strong>.
+      <strong><%= @last_seen_data[:total_sites] %> site<%= 's' if @last_seen_data[:total_sites] != 1 %></strong> have connectivity issues.
+      Below is the list of regions and their respective districts where sites have been offline for more than <strong>3 days</strong>.
     </p>
 
-    <% @last_seen_data[:districts].each do |district| %>
-        <h2 class="district-heading">
-        <%= district[:name] %> (<%= district[:sites].count %> out of <%= district[:total_sites] %> site<%= 's' if district[:total_sites] != 1 %> )
-         </h2>
+    <% (@last_seen_data[:regions] || []).each do |region| %>
+      <% 
+        total_region_sites = region[:total_sites]
+        total_region_sites_with_issues = region[:total_sites_with_issue]
+      %>
+
+      <h2 class="district-heading" style="background-color: #888; color: #fff; font-size: 20px; border-left: 4px solid #888;">
+        <%= region[:name] %> Region (
+          <%= total_region_sites_with_issues %> out of <%= total_region_sites %> site<%= 's' if total_region_sites != 1 %> with issues
+        )
+      </h2>
+
+      <% (region[:districts] || []).each do |district| %>
+        <h2 class="district-heading" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>
+            <%= district[:name] %> (
+              <%= district[:sites_last_seen_greater_than_3_days_sites] %> out of <%= district[:total_sites] %> site<%= 's' if district[:total_sites] != 1 %>)
+          </span>
+          <% if district[:change] && district[:change_percent] %>
+            <span style="font-weight:bold; color:<%= district[:change] < 0 ? 'green' : (district[:change] > 0 ? 'red' : 'red') %>; margin-left: 12px; white-space: nowrap;"> 
+              <% if district[:change] > 0 %>
+                &#9650;
+              <% elsif district[:change] < 0 %>
+                &#9660;
+              <% end %>
+              <%= district[:change] > 0 ? '+' : '' %><%= district[:change] %>
+              (<%= district[:change_percent] > 0 ? '+' : '' %><%= district[:change_percent] %>% )
+            </span>
+          <% end %>
+        </h2>
+      <% end %>
     <% end %>
 
     <p class="footer-text">

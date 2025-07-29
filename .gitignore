@@ -31,3 +31,4 @@ erl_crash.dump
 .project
 .byebug_history
 /public/reports/*
+Gemfile.lock

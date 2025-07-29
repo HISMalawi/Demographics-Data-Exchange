@@ -58,6 +58,10 @@ def store_master_schedule_config
         config['last_seen_last_synced'] = LAST_SEEN_LAST_SYNCED_CONFIGS
       end
 
+      unless config.key?('archive_sync_errors')
+        config['archive_sync_errors'] = ARCHIVE_SYNC_ERRORS_CONFIG
+      end
+
 
       if config.key?('dde4_sync')
          config.delete('dde4_sync')
@@ -82,6 +86,11 @@ def store_master_schedule_config
 
       if config.key?('low_npid_notification')
         config.delete('low_npid_notification')
+      end
+
+
+      if config.key?('archive_sync_errors')
+        config.delete('archive_sync_errors')
       end
 
       File.open(schedule_file, 'w') do |f|
@@ -122,6 +131,11 @@ LAST_SEEN_LAST_SYNCED_CONFIGS = cron_config('30 7  * * *',
                                             'LastSeenLastSyncedJob',
                                             'last_seen_last_synced',
                                             'Sends last seen and last sync email notifications')
+
+ARCHIVE_SYNC_ERRORS_CONFIG =  cron_config('30 7  * * *', 
+                                            'ArchiveSyncErrorsJob',
+                                            'archive_sync_errors',
+                                            'Archives sync errors')
 
 
 redis = Redis.new(url: 'redis://localhost:6379/0')
