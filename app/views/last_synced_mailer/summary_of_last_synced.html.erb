@@ -149,8 +149,8 @@
                 <% elsif district[:change] < 0 %>
                   &#9660;
                 <% end %>
-                <%= district[:change] > 0 ? '+' : '' %><%= district[:change] %>
-                (<%= district[:change_percent] > 0 ? '+' : '' %><%= district[:change_percent] %>% )
+               <%= district[:change].abs %>
+              (<%= district[:change_percent].abs %>%) 
               </span>
             <% end %>
           </span>
