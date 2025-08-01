@@ -124,14 +124,15 @@ module LastSeenLastSyncService
 
   def self.save_stats_to_cache(sites)
     # Only one entry per calendar date for the given stat name, using app timezone
-    range = Time.zone.today.beginning_of_day..Time.zone.today.end_of_day
-  
-    stat = SyncStatsCache.where(name: 'last_seen_and_last_sync', created_at: range).order(created_at: :desc).first
+    name = "last_seen_and_last_sync_#{Time.zone.today.strftime('%Y-%m-%d')}"
+
+    stat = SyncStatsCache.find_by(name:)
+    
     if stat
       stat.update!(value: sites.to_json)
     else
       SyncStatsCache.create!(
-        name: 'last_seen_and_last_sync',
+        name:,
         value: sites.to_json,
       )
     end
