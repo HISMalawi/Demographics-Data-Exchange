@@ -19,6 +19,11 @@ class Api::V1::MailingListsController < ApplicationController
 
   # POST v1//mailing_lists
   def create
+    if MailingList.exists?(email: mailing_list_params[:email])
+      render json: { error: 'Email already exists' }, status: :ok
+      return
+    end
+
     @mailing_list = MailingList.new(mailing_list_params)
 
     if @mailing_list.save
@@ -30,6 +35,11 @@ class Api::V1::MailingListsController < ApplicationController
 
   # PATCH/PUT v1//mailing_lists/1
   def update
+    if mailing_list_params[:email].present? && MailingList.where(email: mailing_list_params[:email]).where.not(id: @mailing_list.id).exists?
+      render json: { error: 'Email already exists' }, status: :ok
+      return
+    end
+
     if @mailing_list.update(mailing_list_params)
       render json: @mailing_list
     else
