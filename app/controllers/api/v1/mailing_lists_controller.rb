@@ -19,33 +19,21 @@ class Api::V1::MailingListsController < ApplicationController
 
   # POST v1//mailing_lists
   def create
-    if MailingList.exists?(email: mailing_list_params[:email])
-      render json: { error: 'Email already exists' }, status: :ok
-      return
-    end
-
     @mailing_list = MailingList.new(mailing_list_params)
 
     if @mailing_list.save
       render json: @mailing_list, status: :created
     else
-      render json: @mailing_list.errors, status: :unprocessable_entity
+      render json: { error: @mailing_list.errors.full_messages.to_sentence }, status: :ok
     end
   end
 
   # PATCH/PUT v1//mailing_lists/1
   def update
-    if mailing_list_params[:email].present? && mailing_list_params[:email] != @mailing_list.email
-      if MailingList.where(email: mailing_list_params[:email]).exists?
-        render json: { error: 'Email already exists' }, status: :ok
-        return
-      end
-    end
-
     if @mailing_list.update(mailing_list_params)
       render json: @mailing_list
     else
-      render json: @mailing_list.errors, status: :unprocessable_entity
+      render json: { error:  @mailing_list.errors.full_messages.to_sentence }, status: :ok
     end
   end
 
