@@ -35,9 +35,11 @@ class Api::V1::MailingListsController < ApplicationController
 
   # PATCH/PUT v1//mailing_lists/1
   def update
-    if mailing_list_params[:email].present? && MailingList.where(email: mailing_list_params[:email]).where.not(id: @mailing_list.id).exists?
-      render json: { error: 'Email already exists' }, status: :ok
-      return
+    if mailing_list_params[:email].present? && mailing_list_params[:email] != @mailing_list.email
+      if MailingList.where(email: mailing_list_params[:email]).exists?
+        render json: { error: 'Email already exists' }, status: :ok
+        return
+      end
     end
 
     if @mailing_list.update(mailing_list_params)
