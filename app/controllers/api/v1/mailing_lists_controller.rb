@@ -24,7 +24,7 @@ class Api::V1::MailingListsController < ApplicationController
     if @mailing_list.save
       render json: @mailing_list, status: :created
     else
-      render json: @mailing_list.errors, status: :unprocessable_entity
+      render json: { error: @mailing_list.errors.full_messages.to_sentence }, status: :ok
     end
   end
 
@@ -33,7 +33,7 @@ class Api::V1::MailingListsController < ApplicationController
     if @mailing_list.update(mailing_list_params)
       render json: @mailing_list
     else
-      render json: @mailing_list.errors, status: :unprocessable_entity
+      render json: { error:  @mailing_list.errors.full_messages.to_sentence }, status: :ok
     end
   end
 
