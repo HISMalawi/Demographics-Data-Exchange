@@ -114,4 +114,9 @@ Rails.application.routes.draw do
 
   root "api/v1/pages#index"
 
+  get 'troubleshooting', to: 'api/v1/troubleshooting#index'
+  post 'troubleshoot', to: 'api/v1/troubleshooting#troubleshoot'
+  get 'api', to: 'api#index'
+  get 'service', to: 'service#index'
+
 end
