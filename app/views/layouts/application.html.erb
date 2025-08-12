@@ -1,0 +1,71 @@
+<!-- app/views/layouts/application.html.erb -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>My App</title>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
+    <%= csrf_meta_tags %>
+  </head>
+  <body class="bg-gray-100">
+    <div class="flex h-screen">
+      <!-- Sidebar -->
+      <div id="sidebar" class="bg-gray-200 transition-all duration-300 w-64 flex flex-col justify-between">
+        <!-- Top menu -->
+        <div>
+          <div class="flex items-center justify-between p-4 border-b border-gray-300">
+            <span class="font-bold text-gray-800" id="sidebar-title">My App</span>
+            <button id="menu-btn" class="text-gray-600 focus:outline-none">
+              ☰
+            </button>
+          </div>
+          <nav class="mt-4">
+            <a href="#" class="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-300">
+              <span class="material-icons">🏠</span>
+              <span class="sidebar-text">Dashboard</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-300">
+              <span class="material-icons">📄</span>
+              <span class="sidebar-text">Reports</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-300">
+              <span class="material-icons">⚙️</span>
+              <span class="sidebar-text">Settings</span>
+            </a>
+          </nav>
+        </div>
+
+        <!-- Bottom info -->
+        <div class="p-4 border-t border-gray-300 text-sm text-gray-600 flex flex-col items-center">
+          <div class="text-center">&copy; <%= Time.now.year %> My Company</div>
+          <div class="mt-2 self-end text-xs text-gray-500">v1.0.0</div>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <div class="flex-1 p-6">
+        <%= yield %>
+      </div>
+    </div>
+
+    <script>
+      document.getElementById('menu-btn').addEventListener('click', function () {
+        const sidebar = document.getElementById('sidebar');
+        const texts = document.querySelectorAll('.sidebar-text');
+        const title = document.getElementById('sidebar-title');
+
+        if (sidebar.classList.contains('w-64')) {
+          sidebar.classList.remove('w-64');
+          sidebar.classList.add('w-20');
+          texts.forEach(t => t.classList.add('hidden'));
+          title.classList.add('hidden');
+        } else {
+          sidebar.classList.remove('w-20');
+          sidebar.classList.add('w-64');
+          texts.forEach(t => t.classList.remove('hidden'));
+          title.classList.remove('hidden');
+        }
+      });
+    </script>
+  </body>
+</html>
