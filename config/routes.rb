@@ -6,6 +6,7 @@ Sidekiq::Web.use ActionDispatch::Cookies
 Sidekiq::Web.use ActionDispatch::Session::CookieStore, key: "_interslice_session"
 
 Rails.application.routes.draw do
+  get 'dashboard/index'
   mount UserManagement::Engine, at: '/v1' 
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
@@ -109,5 +110,8 @@ Rails.application.routes.draw do
   put 'v1/mailing_list/:id', to: 'api/v1/mailing_lists#update'
   delete 'v1/mailing_list/:id/deactivate', to: 'api/v1/mailing_lists#destroy'
 
-  root to: redirect('/api-docs/')
+  #root to: redirect('/api-docs/')
+
+  root "api/v1/pages#index"
+
 end

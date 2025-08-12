@@ -1,71 +1,221 @@
 <!-- app/views/layouts/application.html.erb -->
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>My App</title>
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
-    <%= csrf_meta_tags %>
-  </head>
-  <body class="bg-gray-100">
-    <div class="flex h-screen">
-      <!-- Sidebar -->
-      <div id="sidebar" class="bg-gray-200 transition-all duration-300 w-64 flex flex-col justify-between">
-        <!-- Top menu -->
-        <div>
-          <div class="flex items-center justify-between p-4 border-b border-gray-300">
-            <span class="font-bold text-gray-800" id="sidebar-title">My App</span>
-            <button id="menu-btn" class="text-gray-600 focus:outline-none">
-              ☰
-            </button>
-          </div>
-          <nav class="mt-4">
-            <a href="#" class="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-300">
-              <span class="material-icons">🏠</span>
-              <span class="sidebar-text">Dashboard</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-300">
-              <span class="material-icons">📄</span>
-              <span class="sidebar-text">Reports</span>
-            </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-300">
-              <span class="material-icons">⚙️</span>
-              <span class="sidebar-text">Settings</span>
-            </a>
-          </nav>
-        </div>
+<html lang="en" class="scroll-smooth">
+<head>
+  <title>DDE</title>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
 
-        <!-- Bottom info -->
-        <div class="p-4 border-t border-gray-300 text-sm text-gray-600 flex flex-col items-center">
-          <div class="text-center">&copy; <%= Time.now.year %> My Company</div>
-          <div class="mt-2 self-end text-xs text-gray-500">v1.0.0</div>
-        </div>
-      </div>
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-      <!-- Main content -->
-      <div class="flex-1 p-6">
-        <%= yield %>
-      </div>
+  <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+  <%= javascript_include_tag "application", "data-turbo-track": "reload" %>
+</head>
+<body class="bg-gray-100 text-gray-700 min-h-screen flex flex-col">
+
+  <!-- Fixed top header bar -->
+  <header class="fixed top-0 left-0 right-0 bg-gray-50/95 backdrop-blur-md border-b border-gray-200/50 h-16 flex items-center justify-between px-6 z-50 shadow-sm transition-all duration-300">
+    <div class="flex items-center gap-4">
+      <button id="hamburgerBtn" aria-label="Toggle sidebar" class="text-gray-600 hover:text-gray-900 focus:outline-none text-xl transition-all duration-200 hover:scale-110 active:scale-95">
+        <span class="block w-6 h-0.5 bg-current mb-1.5 transition-all duration-300 hamburger-line-1"></span>
+        <span class="block w-6 h-0.5 bg-current mb-1.5 transition-all duration-300 hamburger-line-2"></span>
+        <span class="block w-6 h-0.5 bg-current transition-all duration-300 hamburger-line-3"></span>
+      </button>
+      <h1 class="text-xl font-bold text-gray-800 tracking-tight">Demographics Data Exchange</h1>
     </div>
+    <div class="flex items-center gap-3 text-sm text-gray-600">
+      <span class="hidden sm:inline">Version 4.0.0</span>
+      <div class="w-2 h-2 bg-gray-500 rounded-full"></div>
+    </div>
+  </header>
 
-    <script>
-      document.getElementById('menu-btn').addEventListener('click', function () {
-        const sidebar = document.getElementById('sidebar');
-        const texts = document.querySelectorAll('.sidebar-text');
-        const title = document.getElementById('sidebar-title');
+  <div class="flex flex-1 pt-16 pb-12">
 
-        if (sidebar.classList.contains('w-64')) {
-          sidebar.classList.remove('w-64');
-          sidebar.classList.add('w-20');
-          texts.forEach(t => t.classList.add('hidden'));
-          title.classList.add('hidden');
-        } else {
-          sidebar.classList.remove('w-20');
-          sidebar.classList.add('w-64');
-          texts.forEach(t => t.classList.remove('hidden'));
-          title.classList.remove('hidden');
-        }
+    <!-- Fixed Sidebar -->
+    <aside id="sidebar" class="fixed left-0 top-16 bottom-12 bg-gray-800 text-gray-200 flex flex-col transition-all duration-300 w-64 shadow-lg z-40 border-r border-gray-700/50">
+      
+      <!-- Sidebar content -->
+      <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
+        <ul class="space-y-1">
+          <li>
+            <%= link_to "#troubleshooting", class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 hover:translate-x-1" do %>
+              <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#128295;</span>
+              <span class="sidebar-text font-medium">Troubleshooting</span>
+              <span class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200">→</span>
+            <% end %>
+          </li>
+          <li>
+            <%= link_to "#api", class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 hover:translate-x-1" do %>
+              <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#128187;</span>
+              <span class="sidebar-text font-medium">API Documentation</span>
+              <span class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200">→</span>
+            <% end %>
+          </li>
+          <li>
+            <%= link_to "#service", class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 hover:translate-x-1" do %>
+              <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#9881;</span>
+              <span class="sidebar-text font-medium">Service Control</span>
+              <span class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200">→</span>
+            <% end %>
+          </li>
+        </ul>
+      </nav>
+    
+    </aside>
+
+    <!-- Main content area -->
+    <main id="mainContent" class="flex-1 flex flex-col bg-white/50 backdrop-blur-sm ml-64 transition-all duration-300 min-h-0">
+      
+      <!-- Content wrapper with padding -->
+      <div class="flex-1 flex flex-col p-8">
+        
+        <!-- Page header -->
+        <div class="mb-8">
+          <h3 class="text-2xl font-bold text-gray-900 mb-2 transition-all duration-300">
+            <%= content_for?(:page_header) ? yield(:page_header) : "Documentation" %>
+          </h3>
+          <div class="w-16 h-1 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
+        </div>
+
+        <!-- Scrollable content section -->
+        <section class="flex-1 min-h-0">
+          <div class="h-full overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pr-2">
+            <%= yield %>
+          </div>
+        </section>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Fixed bottom footer -->
+  <footer class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-gray-200/50 text-gray-500 text-xs h-12 flex items-center justify-between px-6 z-50 shadow-sm">
+    <span class="flex items-center gap-2">
+      <div class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+      &copy; 2025 HIS Malawi
+    </span>
+    <span class="text-gray-400">System Online</span>
+  </footer>
+
+  <style>
+    /* Custom scrollbar styles */
+    .scrollbar-thin {
+      scrollbar-width: thin;
+    }
+    
+    .scrollbar-thumb-gray-300::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    .scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+      background-color: rgb(209 213 219);
+      border-radius: 3px;
+    }
+    
+    .scrollbar-thumb-gray-600::-webkit-scrollbar-thumb {
+      background-color: rgb(75 85 99);
+      border-radius: 3px;
+    }
+    
+    .scrollbar-track-transparent::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    /* Hamburger animation */
+    .sidebar-collapsed .hamburger-line-1 {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    
+    .sidebar-collapsed .hamburger-line-2 {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    
+    .sidebar-collapsed .hamburger-line-3 {
+      transform: rotate(-45deg) translate(7px, -6px);
+    }
+  </style>
+
+  <script>
+    // Enhanced sidebar toggle logic with smooth animations
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const sidebarTexts = document.querySelectorAll('.sidebar-text');
+    
+    let isCollapsed = false;
+
+    hamburgerBtn.addEventListener('click', () => {
+      isCollapsed = !isCollapsed;
+      
+      if (isCollapsed) {
+        // Collapse sidebar
+        sidebar.classList.remove('w-64');
+        sidebar.classList.add('w-16');
+        mainContent.classList.remove('ml-64');
+        mainContent.classList.add('ml-16');
+        document.body.classList.add('sidebar-collapsed');
+        
+        // Hide text elements with stagger effect
+        sidebarTexts.forEach((el, index) => {
+          setTimeout(() => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(-10px)';
+          }, index * 20);
+        });
+        
+        // After animation, hide elements
+        setTimeout(() => {
+          sidebarTexts.forEach(el => el.classList.add('hidden'));
+        }, 300);
+        
+      } else {
+        // Expand sidebar
+        sidebar.classList.remove('w-16');
+        sidebar.classList.add('w-64');
+        mainContent.classList.remove('ml-16');
+        mainContent.classList.add('ml-64');
+        document.body.classList.remove('sidebar-collapsed');
+        
+        // Show text elements
+        sidebarTexts.forEach(el => el.classList.remove('hidden'));
+        
+        // Animate in with stagger effect
+        setTimeout(() => {
+          sidebarTexts.forEach((el, index) => {
+            setTimeout(() => {
+              el.style.opacity = '1';
+              el.style.transform = 'translateX(0)';
+            }, index * 30);
+          });
+        }, 50);
+      }
+    });
+
+    // Add smooth scroll behavior for navigation links
+    document.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', function(e) {
+        // Add active state animation
+        this.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+          this.style.transform = '';
+        }, 150);
       });
-    </script>
-  </body>
+    });
+
+    // Add resize handler for responsive behavior
+    window.addEventListener('resize', () => {
+      if (window.innerWidth < 768 && !isCollapsed) {
+        hamburgerBtn.click();
+      }
+    });
+
+    // Initialize text transitions
+    sidebarTexts.forEach(el => {
+      el.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+    });
+  </script>
+
+</body>
 </html>
