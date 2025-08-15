@@ -2,8 +2,8 @@
 <% content_for :page_header, "Troubleshooting" %>
 
 <div class="max-w-7xl mx-auto space-y-8">
-  
-  <!-- Error Selection Section -->
+
+  <!-- Search-Based Error Selection -->
   <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
     <div class="flex items-center gap-3 mb-6">
       <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
@@ -11,112 +11,33 @@
       </div>
       <div>
         <h3 class="text-xl font-semibold text-gray-800">System Diagnostics</h3>
-        <p class="text-gray-600 text-sm">Select an error type to begin troubleshooting</p>
+        <p class="text-gray-600 text-sm">Type to search for an error type and begin troubleshooting</p>
       </div>
     </div>
 
-    <%= form_with url: troubleshoot_path, method: :post, remote: true, id: "troubleshoot_form", class: "space-y-6" do |form| %>
-      
-            <!-- Error Categories Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+    <%= form_with url: troubleshoot_path, method: :post, remote: true, id: "troubleshoot_form", class: "space-y-4" do |form| %>
 
-        <!-- Database Errors -->
-        <div class="error-category border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-all duration-200 cursor-pointer" data-category="database">
-            <div class="flex items-center gap-3 mb-3">
-            <div class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                <span class="text-blue-600 text-lg">🗄</span>
-            </div>
-            <h4 class="font-medium text-gray-800">Database Issues</h4>
-            </div>
-            <div class="space-y-2">
-            <div class="flex items-center space-x-2">
-                <%= form.radio_button :error_type, "db_connection", id: "db_connection", class: "text-blue-600 focus:ring-blue-500" %>
-                <%= form.label :db_connection, "Connection Failed", class: "text-sm text-gray-700 cursor-pointer" %>
-            </div>
-            <div class="flex items-center space-x-2">
-                <%= form.radio_button :error_type, "db_migration", id: "db_migration", class: "text-blue-600 focus:ring-blue-500" %>
-                <%= form.label :db_migration, "Migration Errors", class: "text-sm text-gray-700 cursor-pointer" %>
-            </div>
-            <div class="flex items-center space-x-2">
-                <%= form.radio_button :error_type, "db_timeout", id: "db_timeout", class: "text-blue-600 focus:ring-blue-500" %>
-                <%= form.label :db_timeout, "Query Timeout", class: "text-sm text-gray-700 cursor-pointer" %>
-            </div>
-            </div>
-        </div>
+      <!-- Search Box -->
+      <div>
+        <%= form.label :error_type_search, "Search Error Type", class: "block text-sm font-medium text-gray-700 mb-1" %>
+        <%= form.text_field :error_type_search, id: "error_search", autocomplete: "off",
+            class: "block w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500" %>
+        <ul id="search_results" class="mt-2 border border-gray-200 rounded-lg bg-white shadow-sm max-h-60 overflow-y-auto hidden"></ul>
+      </div>
 
-        <!-- Network Errors -->
-        <div class="error-category border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-all duration-200 cursor-pointer" data-category="network">
-            <div class="flex items-center gap-3 mb-3">
-            <div class="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
-                <span class="text-green-600 text-lg">🌐</span>
-            </div>
-            <h4 class="font-medium text-gray-800">Network Issues</h4>
-            </div>
-            <div class="space-y-2">
-            <div class="flex items-center space-x-2">
-                <%= form.radio_button :error_type, "api_timeout", id: "api_timeout", class: "text-green-600 focus:ring-green-500" %>
-                <%= form.label :api_timeout, "API Timeout", class: "text-sm text-gray-700 cursor-pointer" %>
-            </div>
-            <div class="flex items-center space-x-2">
-                <%= form.radio_button :error_type, "ssl_cert", id: "ssl_cert", class: "text-green-600 focus:ring-green-500" %>
-                <%= form.label :ssl_cert, "SSL Certificate", class: "text-sm text-gray-700 cursor-pointer" %>
-            </div>
-            <div class="flex items-center space-x-2">
-                <%= form.radio_button :error_type, "dns_resolution", id: "dns_resolution", class: "text-green-600 focus:ring-green-500" %>
-                <%= form.label :dns_resolution, "DNS Resolution", class: "text-sm text-gray-700 cursor-pointer" %>
-            </div>
-            </div>
-        </div>
+      <!-- Hidden radio buttons (for form submission) -->
+      <% error_options = {
+        'Database Issues' => { 'db_connection' => 'Connection Failed', 'db_migration' => 'Migration Errors', 'db_timeout' => 'Query Timeout' },
+        'Network Issues' => { 'api_timeout' => 'API Timeout', 'ssl_cert' => 'SSL Certificate', 'dns_resolution' => 'DNS Resolution' },
+        'Synchronization Issues' => { 'routing_error' => 'Routing Errors', 'asset_compilation' => 'Asset Compilation', 'dependency_error' => 'Dependency Issues' },
+        'Authentication Issues' => { 'login_failed' => 'Login Failures', 'session_timeout' => 'Session Timeout', 'permission_denied' => 'Permission Denied' }
+      } %>
 
-        <!-- Application Errors -->
-        <div class="error-category border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-all duration-200 cursor-pointer" data-category="application">
-            <div class="flex items-center gap-3 mb-3">
-            <div class="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center">
-                <span class="text-orange-600 text-lg">🔧</span>
-            </div>
-            <h4 class="font-medium text-gray-800">Synchronization Issues</h4>
-            </div>
-            <div class="space-y-2">
-            <div class="flex items-center space-x-2">
-                <%= form.radio_button :error_type, "routing_error", id: "routing_error", class: "text-orange-600 focus:ring-orange-500" %>
-                <%= form.label :routing_error, "Routing Errors", class: "text-sm text-gray-700 cursor-pointer" %>
-            </div>
-            <div class="flex items-center space-x-2">
-                <%= form.radio_button :error_type, "asset_compilation", id: "asset_compilation", class: "text-orange-600 focus:ring-orange-500" %>
-                <%= form.label :asset_compilation, "Asset Compilation", class: "text-sm text-gray-700 cursor-pointer" %>
-            </div>
-            <div class="flex items-center space-x-2">
-                <%= form.radio_button :error_type, "dependency_error", id: "dependency_error", class: "text-orange-600 focus:ring-orange-500" %>
-                <%= form.label :dependency_error, "Dependency Issues", class: "text-sm text-gray-700 cursor-pointer" %>
-            </div>
-            </div>
-        </div>
-
-        <!-- Authentication Errors -->
-        <div class="error-category border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-all duration-200 cursor-pointer" data-category="auth">
-            <div class="flex items-center gap-3 mb-3">
-            <div class="w-8 h-8 bg-red-50 rounded-lg flex items-center justify-center">
-                <span class="text-red-600 text-lg">🔐</span>
-            </div>
-            <h4 class="font-medium text-gray-800">Authentication Issues</h4>
-            </div>
-            <div class="space-y-2">
-            <div class="flex items-center space-x-2">
-                <%= form.radio_button :error_type, "login_failed", id: "login_failed", class: "text-red-600 focus:ring-red-500" %>
-                <%= form.label :login_failed, "Login Failures", class: "text-sm text-gray-700 cursor-pointer" %>
-            </div>
-            <div class="flex items-center space-x-2">
-                <%= form.radio_button :error_type, "session_timeout", id: "session_timeout", class: "text-red-600 focus:ring-red-500" %>
-                <%= form.label :session_timeout, "Session Timeout", class: "text-sm text-gray-700 cursor-pointer" %>
-            </div>
-            <div class="flex items-center space-x-2">
-                <%= form.radio_button :error_type, "permission_denied", id: "permission_denied", class: "text-red-600 focus:ring-red-500" %>
-                <%= form.label :permission_denied, "Permission Denied", class: "text-sm text-gray-700 cursor-pointer" %>
-            </div>
-            </div>
-        </div>
-
-        </div>
+      <% error_options.each do |category, errors| %>
+        <% errors.each do |key, label| %>
+          <%= form.radio_button :error_type, key, id: key, class: "hidden" %>
+        <% end %>
+      <% end %>
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-4 pt-4 border-t border-gray-200">
@@ -124,12 +45,12 @@
             class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed",
             id: "troubleshoot_btn",
             disabled: true %>
-        
+
         <button type="button" id="clear_selection" 
                 class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-all duration-200">
           Clear Selection
         </button>
-        
+
         <div class="flex items-center gap-2 text-sm text-gray-500 ml-auto">
           <div class="w-2 h-2 rounded-full bg-gray-400" id="status_indicator"></div>
           <span id="status_text">Select an error type to begin</span>
@@ -137,61 +58,6 @@
       </div>
 
     <% end %>
-  </div>
-
-  <!-- Output Display Section -->
-  <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-    <div class="border-b border-gray-200 p-6 pb-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center">
-            <span class="text-gray-600 text-xl">📋</span>
-          </div>
-          <div>
-            <h3 class="text-xl font-semibold text-gray-800">Process Output</h3>
-            <p class="text-gray-600 text-sm">Real-time troubleshooting results</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="clear_output" class="text-gray-500 hover:text-gray-700 px-3 py-1 rounded text-sm transition-colors">
-            Clear
-          </button>
-          <button id="export_output" class="text-blue-600 hover:text-blue-700 px-3 py-1 rounded text-sm transition-colors">
-            Export
-          </button>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Terminal-like Output Display -->
-    <div class="p-6">
-      <div id="output_container" class="bg-gray-900 rounded-lg p-4 min-h-96 max-h-96 overflow-y-auto font-mono text-sm">
-        <div id="output_content" class="text-gray-300 whitespace-pre-wrap">
-          <div class="text-gray-500 mb-2">
-┌─────────────────────────────────────────────────────────────┐
-│                    DDE Troubleshoot Console                 │
-└─────────────────────────────────────────────────────────────┘
-
-System ready. Select an error type and click "Start Troubleshooting" to begin.
-
-<span class="text-green-400">user@dde-system:~$</span> <span class="blinking-cursor">█</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Progress Indicator -->
-    <div id="progress_section" class="px-6 pb-6 hidden">
-      <div class="bg-gray-50 rounded-lg p-4">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full"></div>
-          <span class="text-sm font-medium text-gray-700" id="progress_text">Processing...</span>
-        </div>
-        <div class="w-full bg-gray-200 rounded-full h-2">
-          <div id="progress_bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- Recent Troubleshooting History -->
@@ -205,293 +71,55 @@ System ready. Select an error type and click "Start Troubleshooting" to begin.
         <p class="text-gray-600 text-sm">Last 10 troubleshooting sessions</p>
       </div>
     </div>
-    
-    <div class="space-y-3" id="recent_activity">
-      <!-- Sample recent activity items -->
-      <div class="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
-        <div class="flex items-center gap-3">
-          <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-          <span class="text-sm font-medium text-gray-700">Database Connection Fixed</span>
-          <span class="text-xs text-gray-500 bg-white px-2 py-1 rounded">db_connection</span>
-        </div>
-        <span class="text-xs text-gray-500">2 minutes ago</span>
-      </div>
-      
-      <div class="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
-        <div class="flex items-center gap-3">
-          <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
-          <span class="text-sm font-medium text-gray-700">High CPU Usage Diagnosed</span>
-          <span class="text-xs text-gray-500 bg-white px-2 py-1 rounded">high_cpu</span>
-        </div>
-        <span class="text-xs text-gray-500">15 minutes ago</span>
-      </div>
-      
-      <div class="flex items-center justify-between py-2 px-3 bg-gray-50 rounded-lg">
-        <div class="flex items-center gap-3">
-          <div class="w-2 h-2 bg-red-500 rounded-full"></div>
-          <span class="text-sm font-medium text-gray-700">SSL Certificate Issue</span>
-          <span class="text-xs text-gray-500 bg-white px-2 py-1 rounded">ssl_cert</span>
-        </div>
-        <span class="text-xs text-gray-500">1 hour ago</span>
-      </div>
-    </div>
+    <div class="space-y-3" id="recent_activity"></div>
   </div>
-
 </div>
 
 <style>
-  .blinking-cursor {
-    animation: blink 1s infinite;
-  }
-  
-  @keyframes blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
-  }
-  
-  .error-category.selected {
-    border-color: #3b82f6;
-    background-color: #eff6ff;
-  }
-  
-  #output_container::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  #output_container::-webkit-scrollbar-track {
-    background: #374151;
-  }
-  
-  #output_container::-webkit-scrollbar-thumb {
-    background: #6b7280;
-    border-radius: 4px;
-  }
-  
-  #output_container::-webkit-scrollbar-thumb:hover {
-    background: #9ca3af;
-  }
+#search_results li:hover { background-color: #e0f2fe; cursor: pointer; }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const form = document.getElementById('troubleshoot_form');
+  const searchInput = document.getElementById('error_search');
+  const searchResults = document.getElementById('search_results');
   const troubleshootBtn = document.getElementById('troubleshoot_btn');
   const clearBtn = document.getElementById('clear_selection');
-  const outputContent = document.getElementById('output_content');
-  const progressSection = document.getElementById('progress_section');
-  const progressBar = document.getElementById('progress_bar');
-  const progressText = document.getElementById('progress_text');
-  const statusIndicator = document.getElementById('status_indicator');
-  const statusText = document.getElementById('status_text');
-  const clearOutputBtn = document.getElementById('clear_output');
-  const exportOutputBtn = document.getElementById('export_output');
   const radioButtons = document.querySelectorAll('input[type="radio"]');
-  const errorCategories = document.querySelectorAll('.error-category');
 
-  // Handle radio button selection
-  radioButtons.forEach(radio => {
-    radio.addEventListener('change', function() {
-      if (this.checked) {
-        troubleshootBtn.disabled = false;
-        statusIndicator.className = 'w-2 h-2 rounded-full bg-blue-500';
-        statusText.textContent = 'Ready to troubleshoot';
-        
-        // Update category visual state
-        errorCategories.forEach(cat => cat.classList.remove('selected'));
-        this.closest('.error-category').classList.add('selected');
+  const errorMap = {
+    'resolve_sync_credentials': 'Resolve Credentials',
+    'resolve_sync_configs': 'Resolve Sync Configs',
+  };
+
+  searchInput.addEventListener('input', function() {
+    const query = this.value.toLowerCase();
+    searchResults.innerHTML = '';
+    if (!query) { searchResults.classList.add('hidden'); return; }
+
+    Object.entries(errorMap).forEach(([key, label]) => {
+      if (label.toLowerCase().includes(query)) {
+        const li = document.createElement('li');
+        li.textContent = label;
+        li.className = "px-3 py-2 text-sm text-gray-700";
+        li.addEventListener('click', () => {
+          radioButtons.forEach(r => r.checked = r.id === key);
+          troubleshootBtn.disabled = false;
+          searchInput.value = label;
+          searchResults.classList.add('hidden');
+        });
+        searchResults.appendChild(li);
       }
     });
+
+    searchResults.classList.toggle('hidden', searchResults.children.length === 0);
   });
 
-  // Clear selection
   clearBtn.addEventListener('click', function() {
-    radioButtons.forEach(radio => radio.checked = false);
-    errorCategories.forEach(cat => cat.classList.remove('selected'));
+    searchInput.value = '';
+    searchResults.innerHTML = '';
+    radioButtons.forEach(r => r.checked = false);
     troubleshootBtn.disabled = true;
-    statusIndicator.className = 'w-2 h-2 rounded-full bg-gray-400';
-    statusText.textContent = 'Select an error type to begin';
   });
-
-  // Handle form submission
-  form.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const selectedError = document.querySelector('input[name="troubleshoot[error_type]"]:checked');
-    if (!selectedError) return;
-
-    startTroubleshooting(selectedError.value);
-  });
-
-  // Clear output
-  clearOutputBtn.addEventListener('click', function() {
-    outputContent.innerHTML = `
-      <div class="text-gray-500 mb-2">
-┌─────────────────────────────────────────────────────────────┐
-│                    DDE Troubleshoot Console                 │
-└─────────────────────────────────────────────────────────────┘
-
-Output cleared.
-
-<span class="text-green-400">user@dde-system:~$</span> <span class="blinking-cursor">█</span>
-      </div>`;
-  });
-
-  // Export output
-  exportOutputBtn.addEventListener('click', function() {
-    const content = outputContent.textContent;
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `troubleshoot-output-${new Date().getTime()}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-  });
-
-  function startTroubleshooting(errorType) {
-    // Show progress section
-    progressSection.classList.remove('hidden');
-    
-    // Disable form
-    troubleshootBtn.disabled = true;
-    statusIndicator.className = 'w-2 h-2 rounded-full bg-yellow-500 animate-pulse';
-    statusText.textContent = 'Troubleshooting in progress...';
-
-    // Clear previous output and add header
-    outputContent.innerHTML = `
-      <div class="text-gray-500 mb-2">
-┌─────────────────────────────────────────────────────────────┐
-│                    DDE Troubleshoot Console                 │
-└─────────────────────────────────────────────────────────────┘
-      </div>
-      <div class="text-blue-400 mb-2">Starting troubleshooting session for: ${getErrorLabel(errorType)}</div>
-      <div class="text-gray-300">Timestamp: ${new Date().toISOString()}</div>
-      <div class="text-gray-300 mb-4">Session ID: ${generateSessionId()}</div>
-    `;
-
-    // Simulate troubleshooting process
-    simulateTroubleshooting(errorType);
-  }
-
-  function simulateTroubleshooting(errorType) {
-    const steps = getTroubleshootingSteps(errorType);
-    let currentStep = 0;
-    
-    function runNextStep() {
-      if (currentStep >= steps.length) {
-        // Complete the process
-        progressSection.classList.add('hidden');
-        troubleshootBtn.disabled = false;
-        statusIndicator.className = 'w-2 h-2 rounded-full bg-green-500';
-        statusText.textContent = 'Troubleshooting completed';
-        
-        outputContent.innerHTML += `
-<div class="text-green-400 mt-4">✓ Troubleshooting completed successfully</div>
-<div class="text-gray-300">Total time: ${Math.floor(Math.random() * 30) + 10} seconds</div>
-<div class="text-gray-300 mt-2">
-<span class="text-green-400">user@dde-system:~$</span> <span class="blinking-cursor">█</span>
-</div>`;
-        
-        // Add to recent activity
-        addToRecentActivity(errorType);
-        return;
-      }
-
-      const step = steps[currentStep];
-      progressBar.style.width = `${((currentStep + 1) / steps.length) * 100}%`;
-      progressText.textContent = step.description;
-      
-      outputContent.innerHTML += `<div class="text-gray-300">${step.output}</div>`;
-      outputContent.scrollTop = outputContent.scrollHeight;
-      
-      currentStep++;
-      setTimeout(runNextStep, step.duration);
-    }
-
-    runNextStep();
-  }
-
-  function getTroubleshootingSteps(errorType) {
-    const steps = {
-      'db_connection': [
-        { description: 'Checking database connectivity...', output: '→ Testing database connection...', duration: 1500 },
-        { description: 'Validating credentials...', output: '→ Validating database credentials... ✓', duration: 1200 },
-        { description: 'Testing query execution...', output: '→ Running test query... ✓', duration: 1800 },
-        { description: 'Checking connection pool...', output: '→ Analyzing connection pool status... ✓', duration: 1000 }
-      ],
-      'api_timeout': [
-        { description: 'Testing API endpoints...', output: '→ Testing API response times...', duration: 2000 },
-        { description: 'Checking network latency...', output: '→ Measuring network latency... 45ms ✓', duration: 1500 },
-        { description: 'Validating SSL certificates...', output: '→ Checking SSL certificate validity... ✓', duration: 1000 },
-        { description: 'Testing alternative routes...', output: '→ Testing backup API routes... ✓', duration: 1300 }
-      ],
-      'memory_usage': [
-        { description: 'Analyzing memory consumption...', output: '→ Checking current memory usage... 78% used', duration: 1200 },
-        { description: 'Identifying memory leaks...', output: '→ Scanning for memory leaks... None detected ✓', duration: 2000 },
-        { description: 'Checking garbage collection...', output: '→ Analyzing GC performance... Normal ✓', duration: 1500 },
-        { description: 'Optimizing memory allocation...', output: '→ Applying memory optimizations... ✓', duration: 1800 }
-      ]
-    };
-    
-    return steps[errorType] || [
-      { description: 'Running diagnostic checks...', output: '→ Performing system diagnostics...', duration: 1500 },
-      { description: 'Analyzing logs...', output: '→ Scanning error logs... ✓', duration: 1200 },
-      { description: 'Testing system components...', output: '→ Testing related components... ✓', duration: 1800 },
-      { description: 'Applying fixes...', output: '→ Applying recommended fixes... ✓', duration: 1000 }
-    ];
-  }
-
-  function getErrorLabel(errorType) {
-    const labels = {
-      'db_connection': 'Database Connection Failed',
-      'db_migration': 'Migration Errors',
-      'db_timeout': 'Query Timeout',
-      'api_timeout': 'API Timeout',
-      'ssl_cert': 'SSL Certificate',
-      'dns_resolution': 'DNS Resolution',
-      'memory_usage': 'High Memory Usage',
-      'disk_space': 'Low Disk Space',
-      'service_down': 'Service Not Running',
-      'routing_error': 'Routing Errors',
-      'asset_compilation': 'Asset Compilation',
-      'dependency_error': 'Dependency Issues',
-      'login_failed': 'Login Failures',
-      'session_timeout': 'Session Timeout',
-      'permission_denied': 'Permission Denied',
-      'slow_queries': 'Slow Database Queries',
-      'high_cpu': 'High CPU Usage',
-      'cache_issues': 'Cache Problems'
-    };
-    
-    return labels[errorType] || errorType;
-  }
-
-  function generateSessionId() {
-    return 'TS-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-  }
-
-  function addToRecentActivity(errorType) {
-    const recentActivity = document.getElementById('recent_activity');
-    const newItem = document.createElement('div');
-    newItem.className = 'flex items-center justify-between py-2 px-3 bg-green-50 rounded-lg border border-green-200';
-    newItem.innerHTML = `
-      <div class="flex items-center gap-3">
-        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
-        <span class="text-sm font-medium text-gray-700">${getErrorLabel(errorType)} Resolved</span>
-        <span class="text-xs text-green-600 bg-white px-2 py-1 rounded">${errorType}</span>
-      </div>
-      <span class="text-xs text-gray-500">Just now</span>
-    `;
-    
-    recentActivity.insertBefore(newItem, recentActivity.firstChild);
-    
-    // Keep only the latest 5 items
-    const items = recentActivity.children;
-    if (items.length > 5) {
-      recentActivity.removeChild(items[items.length - 1]);
-    }
-  }
 });
 </script>

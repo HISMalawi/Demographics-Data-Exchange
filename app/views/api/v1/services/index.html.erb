@@ -1,0 +1,25 @@
+<div class="container mx-auto p-6">
+  <h1 class="text-2xl font-bold mb-4">Service Control Panel</h1>
+
+  <% if @result.present? %>
+    <div class="mb-4 p-3 bg-gray-100 border rounded">
+      <strong>Result:</strong> <%= @result %>
+    </div>
+  <% end %>
+
+  <%= form_with url: manage_services_path, method: :post, local: true, class: "space-y-4" do |form| %>
+    <div>
+      <label class="block font-medium mb-1">Select Service</label>
+      <%= select_tag :service, options_for_select(@services), class: "border rounded px-3 py-2 w-full" %>
+    </div>
+
+    <div>
+      <label class="block font-medium mb-1">Action</label>
+      <%= select_tag :action_name, options_for_select(@actions), class: "border rounded px-3 py-2 w-full" %>
+    </div>
+
+    <div>
+      <%= submit_tag "Run Action", class: "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded" %>
+    </div>
+  <% end %>
+</div>

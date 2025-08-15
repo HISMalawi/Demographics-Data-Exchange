@@ -14,7 +14,19 @@ class Api::V1::TroubleshootingController <  ActionController::Base
   end
 
   def troubleshoot
-    debugger
-    puts "Seomthing inside so strong"
+    error_type = params[:error_type_search]
+    Rails.logger.info "Params received: #{params.inspect}"
+
+  
+    #render json: {
+    #  error_type: error_type,
+    #  description: info[:description],
+    #  steps: info[:steps]
+    #}
   end
+
+ 
+
+
+  
 end

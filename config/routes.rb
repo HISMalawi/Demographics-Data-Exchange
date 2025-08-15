@@ -116,7 +116,10 @@ Rails.application.routes.draw do
 
   get 'troubleshooting', to: 'api/v1/troubleshooting#index'
   post 'troubleshoot', to: 'api/v1/troubleshooting#troubleshoot'
+  get 'services', to: 'api/v1/services#index'
+  post 'manage_services', to:  'api/v1/services#manage'
+  
   get 'api', to: 'api#index'
-  get 'service', to: 'service#index'
+
 
 end
