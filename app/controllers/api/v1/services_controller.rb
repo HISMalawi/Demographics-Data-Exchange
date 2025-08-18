@@ -1,5 +1,7 @@
 class Api::V1::ServicesController <  ActionController::Base
-   layout "application" 
+   layout "application"
+   
+    skip_before_action :verify_authenticity_token, only: [:manage]
 
    def index 
      @services = ["dde4", "redis-server", "dde4_sidekiq", "mysql"]

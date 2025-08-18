@@ -112,7 +112,10 @@ Rails.application.routes.draw do
 
   #root to: redirect('/api-docs/')
 
-  root "api/v1/pages#index"
+  root "api/v1/documentation#index"
+
+  get "documentation", to: "api/v1/documentation#index"
+  get "quick_links", to: "api/v1/quick_links#index"
 
   get 'troubleshooting', to: 'api/v1/troubleshooting#index'
   post 'troubleshoot', to: 'api/v1/troubleshooting#troubleshoot'
