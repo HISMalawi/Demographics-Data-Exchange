@@ -1,4 +1,6 @@
 require "yaml"
+require "net/http"
+require "uri"
 
 class Troubleshooter
   CONFIG_PATH = Rails.root.join("config", "database.yml") # adjust if your YAML is elsewhere
@@ -48,7 +50,26 @@ class Troubleshooter
         return "Sync configuration values updated to correct protocol and host"
     end
 
-    "Sync configuration is valid"
+    # -- Authentication Checks ---
+    remote_uri = URI("https://ddedashboard.hismalawi.org/v1/login?username=#{username}&password=#{password}")
+    remote_response = Net::HTTP.post(remote_uri, "")
+
+    unless remote_response.is_a?(Net::HTTPSuccess)
+      return "Remote authentication failed: #{remote_response.code} #{remote_response.message}"
+    end 
+
+    # Local Check 
+    port = ENV.fetch("PORT", 8050)
+
+    local_uri = URI("http://localhost:#{port}/v1/login?username=#{username}&password=#{password}")
+    local_response = Net::HTTP.post(local_uri, "")
+
+    unless local_response.is_a?(Net::HTTPSuccess)
+      return "Local authentication failed: #{local_response.code} #{local_response.message}"
+    end
+
+
+    "Sync configuration is valid and authentication succeeded (proxy & master)"
   end
 
   def self.resolve_sync_credentials
