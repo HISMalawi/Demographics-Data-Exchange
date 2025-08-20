@@ -4,6 +4,7 @@ class Api::V1::TroubleshootingController <  ActionController::Base
   skip_before_action :verify_authenticity_token, only: [:troubleshoot]
 
   def index
+    @result = params[:result]
   end
 
   def sync_status
@@ -21,7 +22,7 @@ class Api::V1::TroubleshootingController <  ActionController::Base
 
     begin 
       output =  Troubleshooter.select_solution(@error_type)
-      redirect_to troubleshooting_path(result: " executed #{@error_type}. Output: #{output}")
+      redirect_to troubleshooting_path(result: "Executed => #{@error_type}. [Output]: #{output}")
     rescue => e
       redirect_to troubleshooting_path(result: "Error: #{e.message}")
     end

@@ -1,5 +1,4 @@
 <!-- app/views/api/v1/troubleshooting/index.html.erb -->
-<% content_for :page_header, "Troubleshoot" %>
 
 <div class="max-w-7xl mx-auto space-y-8">
 
@@ -59,21 +58,35 @@
 
     <% end %>
   </div>
+    <!-- Troubleshooting Result -->
+    <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 space-y-6">
+    <div class="flex items-center gap-4">
+        <!-- Unicode Terminal/Output Icon -->
+        
 
-  <!-- Recent Troubleshooting History -->
-  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-    <div class="flex items-center gap-3 mb-6">
-      <div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center">
-        <span class="text-gray-600 text-xl">📊</span>
-      </div>
-      <div>
-        <h3 class="text-xl font-semibold text-gray-800">Recent Activity</h3>
-        <p class="text-gray-600 text-sm">Last 10 troubleshooting sessions</p>
-      </div>
+        <div class="flex-1">
+        <h3 class="text-2xl font-semibold text-gray-800 mb-2">Output</h3>
+
+        <% if @result.present? %>
+            <% result_class = @result.downcase.include?("error") ? 
+                "bg-red-50 border-red-300 text-red-700" : 
+                "bg-green-50 border-green-300 text-green-700" %>
+
+            <div class="p-4 rounded-lg border <%= result_class %> shadow-sm">
+            <strong class="block mb-1">Result:</strong>
+            <span class="whitespace-pre-line"><%= @result %></span>
+            </div>
+        <% else %>
+            <p class="text-gray-500 italic">No result available.</p>
+        <% end %>
+        </div>
     </div>
-    <div class="space-y-3" id="recent_activity"></div>
-  </div>
-</div>
+
+    <!-- Recent Activity -->
+    <div class="space-y-3" id="recent_activity">
+        <!-- Dynamically filled -->
+    </div>
+    </div>
 
 <style>
 #search_results li:hover { background-color: #e0f2fe; cursor: pointer; }
