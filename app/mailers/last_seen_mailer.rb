@@ -10,8 +10,8 @@ class LastSeenMailer < ApplicationMailer
 
     @mailing_list = MailingList.joins(:roles).where(roles: { role: 'Networks Officer' }).pluck(:email, :id)
 
-    @cc_list = MailingList.joins(:roles).where(roles: { role: ['Admin','Help Desk Officer', 'Networks Supervisor'] })
-                                        .pluck(:email, :id)
+    @cc_list = MailingList.joins(:roles).where(roles: { role: ['Admin', 'Zonal Coordinator', 'Systems Analyst Role', 'Help Desk Officer', 'HIS Officer'] })
+                               .pluck(:email, :id)
 
     @emails, @mailer_ids = @mailing_list.transpose unless @mailing_list.empty?
     @cc_emails, @cc_mailer_ids = @cc_list.transpose unless @cc_list.empty? 
