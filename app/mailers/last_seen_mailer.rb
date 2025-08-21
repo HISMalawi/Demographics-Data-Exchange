@@ -2,6 +2,7 @@
 
 # Class to send last seen notifications
 class LastSeenMailer < ApplicationMailer
+  include LastSeenLastSyncCsvHelper
   after_action :log_mail
 
   def summary_of_last_seen(last_seen)
@@ -34,6 +35,18 @@ class LastSeenMailer < ApplicationMailer
       host = Rails.application.routes.default_url_options[:host] || 'http://localhost:8050'
 
       @report_url = "#{host}/v1/reports/#{filename}"  # Used summary erb.html view
+
+      csv_data = csv = csv = generate_sites_csv(@last_seen_data, {
+                        days_field: 'days_since_last_seen',
+                        headers: ['region', 'district', 'site_name', 'ip_address', 'days_since_last_seen']
+                      })
+
+      csv_filename = "DDE_Sites Connectity_Issues_List#{Date.today.strftime('%Y%m%d')}.csv"
+
+      attachments[csv_filename] = {
+        mime_type: 'text/csv',
+        content: csv_data
+      }
   
       if @emails.present? || @cc_emails.present?
         mail(
