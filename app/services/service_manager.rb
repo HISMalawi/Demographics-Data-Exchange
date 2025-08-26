@@ -40,9 +40,9 @@ class ServiceManager
   def self.run(action, service)
     allowed_actions = %w[start stop restart status]
     raise "Invalid action: #{action}" unless allowed_actions.include?(action)
-    
+
     command = command_for(action, service)
-    output  = `#{command} 2>&1`.strip   # capture stderr too
+    output  = `#{command} 2>&1`.strip
     success = $?.success?
 
     if !success || output.empty?
@@ -52,4 +52,3 @@ class ServiceManager
     output
   end
 end
-

@@ -15,8 +15,6 @@
     </div>
 
     <%= form_with url: troubleshoot_path, method: :post, remote: true, id: "troubleshoot_form", class: "space-y-4" do |form| %>
-
-      <!-- Search Box -->
       <div>
         <%= form.label :error_type_search, "Search Error Type", class: "block text-sm font-medium text-gray-700 mb-1" %>
         <%= form.text_field :error_type_search, id: "error_search", autocomplete: "off",
@@ -24,12 +22,8 @@
         <ul id="search_results" class="mt-2 border border-gray-200 rounded-lg bg-white shadow-sm max-h-60 overflow-y-auto hidden"></ul>
       </div>
 
-      <!-- Hidden radio buttons (for form submission) -->
       <% error_options = {
-        'Database Issues' => { 'db_connection' => 'Connection Failed', 'db_migration' => 'Migration Errors', 'db_timeout' => 'Query Timeout' },
-        'Network Issues' => { 'api_timeout' => 'API Timeout', 'ssl_cert' => 'SSL Certificate', 'dns_resolution' => 'DNS Resolution' },
-        'Synchronization Issues' => { 'routing_error' => 'Routing Errors', 'asset_compilation' => 'Asset Compilation', 'dependency_error' => 'Dependency Issues' },
-        'Authentication Issues' => { 'login_failed' => 'Login Failures', 'session_timeout' => 'Session Timeout', 'permission_denied' => 'Permission Denied' }
+        'Synchronization Issues' => { 'resolve_sync_credentials' => 'Resolve Credentials', 'resolve_sync_configs' => 'Resolve Sync Configs' }
       } %>
 
       <% error_options.each do |category, errors| %>
@@ -38,59 +32,75 @@
         <% end %>
       <% end %>
 
-      <!-- Action Buttons -->
       <div class="flex items-center gap-4 pt-4 border-t border-gray-200">
-        <%= form.submit "Start Troubleshooting", 
-            class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-200 hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed",
-            id: "troubleshoot_btn",
-            disabled: true %>
-
-        <button type="button" id="clear_selection" 
-                class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-all duration-200">
-          Clear Selection
-        </button>
-
+        <%= form.submit "Start Troubleshooting", class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg", id: "troubleshoot_btn", disabled: true %>
+        <button type="button" id="clear_selection" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg">Clear Selection</button>
         <div class="flex items-center gap-2 text-sm text-gray-500 ml-auto">
           <div class="w-2 h-2 rounded-full bg-gray-400" id="status_indicator"></div>
           <span id="status_text">Select an error type to begin</span>
         </div>
       </div>
-
     <% end %>
   </div>
-    <!-- Troubleshooting Result -->
-    <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 space-y-6">
-    <div class="flex items-center gap-4">
-        <!-- Unicode Terminal/Output Icon -->
-        
 
-        <div class="flex-1">
-        <h3 class="text-2xl font-semibold text-gray-800 mb-2">Output</h3>
+  <!-- Troubleshooting Result -->
+  <div class="bg-white rounded-xl shadow-md border border-gray-200 p-6 space-y-6">
+    <h3 class="text-2xl font-semibold text-gray-800 mb-2">Output</h3>
 
-        <% if @result.present? %>
-            <% result_class = @result.downcase.include?("error") ? 
-                "bg-red-50 border-red-300 text-red-700" : 
-                "bg-green-50 border-green-300 text-green-700" %>
+    <% if @result.present? %>
+      <% result_class = @result_status.to_s == "auth_failed" ? "bg-red-50 border-red-300 text-red-700" : "bg-green-50 border-green-300 text-green-700" %>
+      <div class="p-4 rounded-lg border <%= result_class %> shadow-sm">
+        <strong class="block mb-1">Result:</strong>
+        <span class="whitespace-pre-line"><%= @result %></span>
+      </div>
+    <% else %>
+      <p class="text-gray-500 italic">No result available.</p>
+    <% end %>
 
-            <div class="p-4 rounded-lg border <%= result_class %> shadow-sm">
-            <strong class="block mb-1">Result:</strong>
-            <span class="whitespace-pre-line"><%= @result %></span>
-            </div>
-        <% else %>
-            <p class="text-gray-500 italic">No result available.</p>
+    <% if @result_status.to_s == "auth_failed" %>
+      <div class="mt-4 p-4 bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm space-y-3">
+        <p class="text-yellow-700"><%= @result %></p>
+
+        <%= form_with url: reset_sync_credentials_path, method: :post, local: false, id: "reset_sync_form", class: "space-y-3" do |f| %>
+          <div>
+            <%= f.label :username, "Sync Username", class: "block text-sm font-medium text-gray-700" %>
+            <%= f.text_field :username, class: "block w-full border border-gray-300 rounded-lg px-3 py-2" %>
+          </div>
+          <div>
+            <%= f.label :password, "Sync Password", class: "block text-sm font-medium text-gray-700" %>
+            <%= f.password_field :password, class: "block w-full border border-gray-300 rounded-lg px-3 py-2" %>
+          </div>
+          <div>
+            <%= f.label :location_id, "Location ID", class: "block text-sm font-medium text-gray-700" %>
+            <%= f.text_field :location_id, class: "block w-full border border-gray-300 rounded-lg px-3 py-2" %>
+          </div>
+
+          <%= f.submit "Reset / Update Sync Credentials", class: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg" %>
         <% end %>
-        </div>
-    </div>
 
-    <!-- Recent Activity -->
-    <div class="space-y-3" id="recent_activity">
-        <!-- Dynamically filled -->
-    </div>
-    </div>
+        <div id="reset_status" class="text-sm mt-2"></div>
+      </div>
 
-<style>
-#search_results li:hover { background-color: #e0f2fe; cursor: pointer; }
-</style>
+      <script>
+        document.addEventListener('turbo:load', function() {
+          const form = document.getElementById('reset_sync_form');
+          const statusDiv = document.getElementById('reset_status');
+
+          form.addEventListener('ajax:success', (event) => {
+            const [data, status, xhr] = event.detail;
+            statusDiv.textContent = data.message;
+            statusDiv.className = data.status === "success" ? "text-green-700" : "text-red-700";
+          });
+
+          form.addEventListener('ajax:error', (event) => {
+            statusDiv.textContent = "An error occurred while updating credentials.";
+            statusDiv.className = "text-red-700";
+          });
+        });
+      </script>
+    <% end %>
+  </div>
+</div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

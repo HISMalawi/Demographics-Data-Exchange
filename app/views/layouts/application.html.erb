@@ -43,13 +43,14 @@
       <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
         <ul class="space-y-1">
           
-           <li>
-            <%= link_to documentation_path , class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 hover:translate-x-1" do %>
-              <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#128187;</span>
-              <span class="sidebar-text font-medium">Documentation</span>
+            <li>
+            <%= link_to services_path, class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 hover:translate-x-1" do %>
+              <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#9881;</span>
+              <span class="sidebar-text font-medium">Service Control</span>
               <span class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200">→</span>
             <% end %>
           </li>
+        
           <li>
             <%= link_to troubleshooting_path, class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 hover:translate-x-1" do %>
               <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#128295;</span>
@@ -57,20 +58,19 @@
               <span class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200">→</span>
             <% end %>
           </li>
-        
-          <li>
-            <%= link_to services_path, class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 hover:translate-x-1" do %>
-              <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#9881;</span>
-              <span class="sidebar-text font-medium">Service Control</span>
-              <span class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200">→</span>
-            <% end %>
-          </li>
-
            <li>
             <%= link_to quick_links_path, class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 hover:translate-x-1" do %>
                 <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#9889;</span> <!-- ⚡ Lightning -->
                 <span class="sidebar-text font-medium">Quick Links</span>
                 <span class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200">→</span>
+            <% end %>
+          </li>
+
+             <li>
+            <%= link_to documentation_path , class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 hover:translate-x-1" do %>
+              <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#128187;</span>
+              <span class="sidebar-text font-medium">Documentation</span>
+              <span class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200">→</span>
             <% end %>
           </li>
           
