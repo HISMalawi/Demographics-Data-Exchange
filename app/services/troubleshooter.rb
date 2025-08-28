@@ -3,9 +3,13 @@ require "net/http"
 require "uri"
 
 class Troubleshooter
-  CONFIG_PATH = Rails.root.join("config", "database.yml")
+  CONFIG_FILE_PATH = Rails.root.join("config", "database.yml")
 
-  def self.select_solution(error_type)
+  def initialize
+    @config = load_config
+  end
+
+  def select_solution(error_type)
     case error_type
     when "Resolve Sync Credentials"
       resolve_sync_credentials
@@ -16,11 +20,26 @@ class Troubleshooter
     end
   end
 
+  def reset_sync_credentials(username:, password:, location_id:)
+    config = load_config
+    sync_config = config[:dde_sync_config] || config["dde_sync_config"]
+
+    if sync_config
+      sync_config[:username]   = username
+      sync_config[:password]   = password
+      sync_config[:location_id] = "#{username}_#{location_id}"
+
+      save_config(config)
+      { status: :ok, message: "Sync credentials updated successfully." }
+    else 
+      raise "Sync configuration not found"
+    end 
+  end
+
   private
 
-  def self.resolve_sync_configs
-    config_file = Rails.root.join("config", "database.yml")
-    config = YAML.load_file(config_file, aliases: true)
+  def resolve_sync_configs
+    config = load_config
     sync_config = config[:dde_sync_config] || config["dde_sync_config"]
     return { status: :error, message: "Sync configuration not found" } unless sync_config
 
@@ -30,7 +49,7 @@ class Troubleshooter
 
     updated = false
 
-    # Update protocol/host if incorrect
+    # Ensure correct protocol/host
     if (sync_config[:protocol] || sync_config["protocol"]).to_s.downcase != "https"
       sync_config[:protocol] = "https"
       updated = true
@@ -42,27 +61,38 @@ class Troubleshooter
     end
 
     if updated
-      File.open(config_file, "w") { |f| f.write(config.to_yaml) }
-      return { status: :ok, message: "Sync configuration values updated to correct protocol and host" }
+      save_config(config)
+      return { status: :ok, message: "Sync configuration updated with correct protocol/host" }
     end
 
-    # Remote authentication check
+    # Remote authentication
     remote_uri = URI("https://ddedashboard.hismalawi.org/v1/login?username=#{username}&password=#{password}")
     remote_response = Net::HTTP.post(remote_uri, "")
+    return { status: :auth_failed, type: :remote, message: "Remote auth failed: #{remote_response.code} #{remote_response.message}" } unless remote_response.is_a?(Net::HTTPSuccess)
 
-    return { status: :auth_failed, type: :remote, message: "Remote authentication failed: #{remote_response.code} #{remote_response.message}" } unless remote_response.is_a?(Net::HTTPSuccess)
-
-    # Local authentication check
+    # Local authentication
     port = ENV.fetch("PORT", 8050)
     local_uri = URI("http://localhost:#{port}/v1/login?username=#{username}&password=#{password}")
     local_response = Net::HTTP.post(local_uri, "")
-
-    return { status: :auth_failed, type: :local, message: "Local authentication failed: #{local_response.code} #{local_response.message}" } unless local_response.is_a?(Net::HTTPSuccess)
+    return { status: :auth_failed, type: :local, message: "Local auth failed: #{local_response.code} #{local_response.message}" } unless local_response.is_a?(Net::HTTPSuccess)
 
     { status: :ok, message: "Sync configuration is valid and authentication succeeded (proxy & master)" }
   end
 
   def self.resolve_sync_credentials
     { status: :ok, message: "Resolving sync credentials..." }
+  end
+
+  def get_sync_config
+    config = load_config
+    config[:dde_sync_config] || config["dde_sync_config"]
+  end
+
+  def load_config
+    YAML.load_file(CONFIG_FILE_PATH, aliases: true)
+  end
+
+  def save_config(config)
+    File.open(CONFIG_FILE_PATH, "w") { |f| f.write(config.to_yaml) }
   end
 end

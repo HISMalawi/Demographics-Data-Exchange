@@ -12,7 +12,7 @@ class Api::V1::TroubleshootingController < ActionController::Base
     Rails.logger.info "Params received: #{params.inspect}"
 
     begin 
-      result = Troubleshooter.select_solution(@error_type)
+      result = troubleshooting_service.select_solution(@error_type)
 
       if result.is_a?(Hash)
         @result_status = result[:status]
@@ -30,25 +30,31 @@ class Api::V1::TroubleshootingController < ActionController::Base
   end
 
   def reset_sync_credentials
-    username = params[:username]
-    password = params[:password]
-    location_id_param = params[:location_id]
+    begin 
+      username = params[:username]
+      password = params[:password]
+      location_id = params[:location_id]
 
-    config_file = Rails.root.join("config", "database.yml")
-    config = YAML.load_file(config_file, aliases: true)
-    sync_config = config[:dde_sync_config] || config["dde_sync_config"]
+      sync_config_updated = troubleshooting_service.reset_sync_credentials(
+                              username:,
+                              password:,
+                              location_id:
+                              )
 
-    if sync_config
-      # Update symbol keys
-      sync_config[:username] = "#{username}_#{location_id_param}"
-      sync_config[:password] = password
-
-      File.open(config_file, "w") { |f| f.write(config.to_yaml) }
-      render json: { status: "success", message: "Sync credentials updated successfully." }
-    else
-      render json: { status: "error", message: "Sync configuration not found." }
+      if sync_config_updated
+        redirect_to troubleshooting_path(result: "Output: Sync Credentials updated succesfully", status: :error)
+      else
+        redirect_to troubleshooting_path(result: "Error: #{e.message}", status: :error)
+      end
+      
+    rescue => e
+      redirect_to troubleshooting_path(result: "Error: #{e.message}", status: :error)
     end
-  rescue => e
-    render json: { status: "error", message: e.message }
+  end
+
+  private 
+
+  def troubleshooting_service
+    Troubleshooter.new
   end
 end
