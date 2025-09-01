@@ -50,6 +50,12 @@ class Api::V1::TroubleshootingController < ActionController::Base
     end
   end
 
+  def reset_location_id
+    debugger 
+    puts "Someone"
+    puts "Something here"
+  end 
+
   private
 
   def troubleshooting_service

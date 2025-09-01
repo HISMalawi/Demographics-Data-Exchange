@@ -1,6 +1,7 @@
 require "yaml"
 require "net/http"
 require "uri"
+require "socket"
 
 class Troubleshooter
   CONFIG_FILE_PATH = Rails.root.join("config", "database.yml")
@@ -13,6 +14,8 @@ class Troubleshooter
     case error_type
     when "resolve_sync_configs"
       resolve_sync_configs
+    when "detect_footprint_conflicts"
+      detect_footprint_conflicts
     else
       { status: :unknown, message: "Unknown error type" }
     end
@@ -32,6 +35,22 @@ class Troubleshooter
     else 
       raise "Sync configuration not found"
     end 
+  end
+
+  def detect_footprint_conflicts
+    # Fetch the count of footprints per location
+    footprints = FootPrint.group(:location_id).count
+    # footprints will be a hash: { location_id => count }
+
+    # Convert to array of hashes for easier handling
+    footprints_array = footprints.map { |loc_id, count| { location_id: loc_id, count: count } }
+
+    # Check if more than 2 rows exist
+    if footprints_array.size > 2
+      raise "foot_prints belonging to more than #{footprints_array.size} sites"
+    else
+      return { status: :ok, message: "Footprints resolved successfully", details: footprints_array }
+    end
   end
 
   private
@@ -89,4 +108,5 @@ class Troubleshooter
   def save_config(config)
     File.open(CONFIG_FILE_PATH, "w") { |f| f.write(config.to_yaml) }
   end
+
 end

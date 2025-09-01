@@ -120,6 +120,7 @@ Rails.application.routes.draw do
   get 'troubleshooting', to: 'api/v1/troubleshooting#index'
   post 'troubleshoot', to: 'api/v1/troubleshooting#troubleshoot'
   post "reset_sync_credentials", to: "api/v1/troubleshooting#reset_sync_credentials"
+  post "reset_foot_prints_location_id", to: "api/v1/troubleshooting#reset_location_id"
 
   get 'services', to: 'api/v1/services#index'
   post 'manage_services', to:  'api/v1/services#manage'
