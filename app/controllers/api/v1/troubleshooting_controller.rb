@@ -8,10 +8,10 @@ class Api::V1::TroubleshootingController < ActionController::Base
   end
 
   def troubleshoot
-    @error_type = params[:error_type_search]
+    @error_type = params[:error_type] 
     Rails.logger.info "Params received: #{params.inspect}"
 
-    begin 
+    begin
       result = troubleshooting_service.select_solution(@error_type)
 
       if result.is_a?(Hash)
@@ -22,7 +22,6 @@ class Api::V1::TroubleshootingController < ActionController::Base
         @result_message = result.to_s
       end
 
-
       redirect_to troubleshooting_path(result: @result_message, status: @result_status)
     rescue => e
       redirect_to troubleshooting_path(result: "Error: #{e.message}", status: :error)
@@ -30,29 +29,28 @@ class Api::V1::TroubleshootingController < ActionController::Base
   end
 
   def reset_sync_credentials
-    begin 
-      username = params[:username]
-      password = params[:password]
+    begin
+      username    = params[:username]
+      password    = params[:password]
       location_id = params[:location_id]
 
       sync_config_updated = troubleshooting_service.reset_sync_credentials(
-                              username:,
-                              password:,
-                              location_id:
-                              )
+        username: username,
+        password: password,
+        location_id: location_id
+      )
 
       if sync_config_updated
-        redirect_to troubleshooting_path(result: "Output: Sync Credentials updated succesfully", status: :error)
+        redirect_to troubleshooting_path(result: "Output: Sync Credentials updated successfully", status: :success)
       else
-        redirect_to troubleshooting_path(result: "Error: #{e.message}", status: :error)
+        redirect_to troubleshooting_path(result: "Error: Failed to update sync credentials", status: :error)
       end
-      
     rescue => e
       redirect_to troubleshooting_path(result: "Error: #{e.message}", status: :error)
     end
   end
 
-  private 
+  private
 
   def troubleshooting_service
     Troubleshooter.new
