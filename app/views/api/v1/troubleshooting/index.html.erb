@@ -2,7 +2,7 @@
 
 <div class="max-w-7xl mx-auto space-y-8">
 
-  <!-- Search-Based Error Selection -->
+  <!-- Error Selection -->
   <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
     <div class="flex items-center gap-3 mb-6">
       <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center">
@@ -10,31 +10,46 @@
       </div>
       <div>
         <h3 class="text-xl font-semibold text-gray-800">System Diagnostics</h3>
-        <p class="text-gray-600 text-sm">Type to search for an error type and begin troubleshooting</p>
+        <p class="text-gray-600 text-sm">Select an error type to begin troubleshooting</p>
       </div>
     </div>
 
-    <%= form_with url: troubleshoot_path, method: :post, remote: true, id: "troubleshoot_form", class: "space-y-4" do |form| %>
-      <div>
-        <%= form.label :error_type_search, "Search Error Type", class: "block text-sm font-medium text-gray-700 mb-1" %>
-        <%= form.text_field :error_type_search, id: "error_search", autocomplete: "off",
-            class: "block w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500" %>
-        <ul id="search_results" class="mt-2 border border-gray-200 rounded-lg bg-white shadow-sm max-h-60 overflow-y-auto hidden"></ul>
-      </div>
-
+    <%= form_with url: troubleshoot_path, method: :post, remote: true, id: "troubleshoot_form", class: "space-y-6" do |form| %>
+      
       <% error_options = {
-        'Synchronization Issues' => { 'resolve_sync_credentials' => 'Resolve Credentials', 'resolve_sync_configs' => 'Resolve Sync Configs' }
+        'Synchronization Issues' => {
+          'resolve_sync_configs' => 'Resolve Sync Configs'
+        }
       } %>
 
       <% error_options.each do |category, errors| %>
-        <% errors.each do |key, label| %>
-          <%= form.radio_button :error_type, key, id: key, class: "hidden" %>
-        <% end %>
+        <div>
+          <h4 class="text-gray-800 font-medium mb-3"><%= category %></h4>
+          <div class="grid gap-3 md:grid-cols-2">
+            <% errors.each do |key, label| %>
+              <label for="<%= key %>" 
+                     class="error-option block p-4 border rounded-xl cursor-pointer transition hover:border-blue-400 hover:shadow-sm">
+                <div class="flex items-center gap-3">
+                  <%= form.radio_button :error_type, key, id: key, class: "hidden peer" %>
+                  <div class="w-5 h-5 border border-gray-400 rounded-full flex items-center justify-center peer-checked:border-blue-600 peer-checked:bg-blue-600">
+                    <div class="w-2 h-2 bg-white rounded-full hidden peer-checked:block"></div>
+                  </div>
+                  <span class="text-gray-700 font-medium"><%= label %></span>
+                </div>
+              </label>
+            <% end %>
+          </div>
+        </div>
       <% end %>
 
       <div class="flex items-center gap-4 pt-4 border-t border-gray-200">
-        <%= form.submit "Start Troubleshooting", class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg", id: "troubleshoot_btn", disabled: true %>
-        <button type="button" id="clear_selection" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg">Clear Selection</button>
+        <%= form.submit "Start Troubleshooting", class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed", id: "troubleshoot_btn", disabled: true %>
+        
+        <button type="button" id="clear_selection" 
+          class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium shadow-sm">
+          Clear Selection
+        </button>
+        
         <div class="flex items-center gap-2 text-sm text-gray-500 ml-auto">
           <div class="w-2 h-2 rounded-full bg-gray-400" id="status_indicator"></div>
           <span id="status_text">Select an error type to begin</span>
@@ -75,7 +90,7 @@
             <%= f.text_field :location_id, class: "block w-full border border-gray-300 rounded-lg px-3 py-2" %>
           </div>
 
-          <%= f.submit "Reset / Update Sync Credentials", class: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg" %>
+          <%= f.submit "Reset / Update Sync Credentials", class: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm" %>
         <% end %>
 
         <div id="reset_status" class="text-sm mt-2"></div>
@@ -92,7 +107,7 @@
             statusDiv.className = data.status === "success" ? "text-green-700" : "text-red-700";
           });
 
-          form.addEventListener('ajax:error', (event) => {
+          form.addEventListener('ajax:error', () => {
             statusDiv.textContent = "An error occurred while updating credentials.";
             statusDiv.className = "text-red-700";
           });
@@ -104,45 +119,36 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const searchInput = document.getElementById('error_search');
-  const searchResults = document.getElementById('search_results');
+  const radioButtons = document.querySelectorAll('input[type="radio"]');
   const troubleshootBtn = document.getElementById('troubleshoot_btn');
   const clearBtn = document.getElementById('clear_selection');
-  const radioButtons = document.querySelectorAll('input[type="radio"]');
+  const statusText = document.getElementById('status_text');
+  const statusIndicator = document.getElementById('status_indicator');
+  const outputContainer = document.querySelector('.bg-white.rounded-xl.shadow-md'); // Output div
 
-  const errorMap = {
-    'resolve_sync_credentials': 'Resolve Credentials',
-    'resolve_sync_configs': 'Resolve Sync Configs',
-  };
-
-  searchInput.addEventListener('input', function() {
-    const query = this.value.toLowerCase();
-    searchResults.innerHTML = '';
-    if (!query) { searchResults.classList.add('hidden'); return; }
-
-    Object.entries(errorMap).forEach(([key, label]) => {
-      if (label.toLowerCase().includes(query)) {
-        const li = document.createElement('li');
-        li.textContent = label;
-        li.className = "px-3 py-2 text-sm text-gray-700";
-        li.addEventListener('click', () => {
-          radioButtons.forEach(r => r.checked = r.id === key);
-          troubleshootBtn.disabled = false;
-          searchInput.value = label;
-          searchResults.classList.add('hidden');
-        });
-        searchResults.appendChild(li);
-      }
+  // Enable submit when a radio button is selected
+  radioButtons.forEach(radio => {
+    radio.addEventListener('change', () => {
+      troubleshootBtn.disabled = false;
     });
-
-    searchResults.classList.toggle('hidden', searchResults.children.length === 0);
   });
 
+  // Clear selection and reset output
   clearBtn.addEventListener('click', function() {
-    searchInput.value = '';
-    searchResults.innerHTML = '';
     radioButtons.forEach(r => r.checked = false);
     troubleshootBtn.disabled = true;
+
+    // Reset status indicator and text
+    statusText.textContent = "Select an error type to begin";
+    statusIndicator.className = "w-2 h-2 rounded-full bg-gray-400";
+
+    // Clear output
+    if (outputContainer) {
+      outputContainer.innerHTML = `
+        <h3 class="text-2xl font-semibold text-gray-800 mb-2">Output</h3>
+        <p class="text-gray-500 italic">No result available.</p>
+      `;
+    }
   });
 });
 </script>

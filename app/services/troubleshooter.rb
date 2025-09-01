@@ -11,9 +11,7 @@ class Troubleshooter
 
   def select_solution(error_type)
     case error_type
-    when "Resolve Sync Credentials"
-      resolve_sync_credentials
-    when "Resolve Sync Configs"
+    when "resolve_sync_configs"
       resolve_sync_configs
     else
       { status: :unknown, message: "Unknown error type" }
@@ -77,10 +75,6 @@ class Troubleshooter
     return { status: :auth_failed, type: :local, message: "Local auth failed: #{local_response.code} #{local_response.message}" } unless local_response.is_a?(Net::HTTPSuccess)
 
     { status: :ok, message: "Sync configuration is valid and authentication succeeded (proxy & master)" }
-  end
-
-  def self.resolve_sync_credentials
-    { status: :ok, message: "Resolving sync credentials..." }
   end
 
   def get_sync_config
