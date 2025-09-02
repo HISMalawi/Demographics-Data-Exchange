@@ -1,86 +1,249 @@
-<div class="max-w-7xl mx-auto space-y-10">
+<div class="max-w-8xl mx-auto space-y-8">
 
-  <!-- Service Control Panel -->
-  <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 space-y-6">
-    <h2 class="text-2xl font-bold text-gray-800 border-b pb-4 flex items-center justify-between">
-      <span class="flex items-center gap-2">
-        <i class="fas fa-cogs text-gray-700 text-2xl"></i>
-        Service Control Panel
-      </span>
-      <div id="card-header-loader" class="w-6 h-6 border-4 border-blue-500 border-t-transparent border-solid rounded-full animate-spin hidden"></div>
-    </h2>
-
-    <% if @result.present? && params[:context] == "services" %>
-      <div class="p-4 rounded-lg border 
-        <%= @result.downcase.include?("error") ? "bg-red-50 border-red-300 text-red-700" : "bg-green-50 border-green-300 text-green-700" %>">
-        <strong>Result:</strong> <%= @result %>
+  <!-- Stats Overview Row -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    
+    <!-- NPID Status Stats -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+          <i class="fas fa-user-shield text-blue-600 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-800">NPID Status</h3>
+          <p class="text-gray-600 text-sm">National Patient Identifier Statistics</p>
+        </div>
       </div>
-    <% end %>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-green-600 text-sm font-medium">Active NPIDs</p>
+              <p class="text-2xl font-bold text-green-800" id="active-npids">-</p>
+            </div>
+            <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+          </div>
+        </div>
+        
+        <div class="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-yellow-600 text-sm font-medium">Pending</p>
+              <p class="text-2xl font-bold text-yellow-800" id="pending-npids">-</p>
+            </div>
+            <i class="fas fa-clock text-yellow-500 text-2xl"></i>
+          </div>
+        </div>
+        
+        <div class="bg-red-50 rounded-lg p-4 border border-red-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-red-600 text-sm font-medium">Failed</p>
+              <p class="text-2xl font-bold text-red-800" id="failed-npids">-</p>
+            </div>
+            <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+          </div>
+        </div>
+        
+        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-blue-600 text-sm font-medium">Total</p>
+              <p class="text-2xl font-bold text-blue-800" id="total-npids">-</p>
+            </div>
+            <i class="fas fa-database text-blue-500 text-2xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-4 text-xs text-gray-500 flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+        Last updated: <span id="npid-last-update">--:--</span>
+      </div>
+    </div>
 
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
-          <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-          </tr>
-        </thead>
-        <tbody class="bg-white divide-y divide-gray-200">
-          <% @services.each do |service| %>
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-700 flex items-center gap-2">
-                <i class="fas fa-server text-gray-500"></i>
-                <%= service %>
-              </td>
+    <!-- Sync Status Stats -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+          <i class="fas fa-sync-alt text-purple-600 text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-xl font-bold text-gray-800">Sync Status</h3>
+          <p class="text-gray-600 text-sm">Data Synchronization Statistics</p>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-4">
+        <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-green-600 text-sm font-medium">Successful</p>
+              <p class="text-2xl font-bold text-green-800" id="sync-success">-</p>
+            </div>
+            <i class="fas fa-check-double text-green-500 text-2xl"></i>
+          </div>
+        </div>
+        
+        <div class="bg-orange-50 rounded-lg p-4 border border-orange-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-orange-600 text-sm font-medium">In Progress</p>
+              <p class="text-2xl font-bold text-orange-800" id="sync-progress">-</p>
+            </div>
+            <i class="fas fa-spinner fa-spin text-orange-500 text-2xl"></i>
+          </div>
+        </div>
+        
+        <div class="bg-red-50 rounded-lg p-4 border border-red-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-red-600 text-sm font-medium">Errors</p>
+              <p class="text-2xl font-bold text-red-800" id="sync-errors">-</p>
+            </div>
+            <i class="fas fa-times-circle text-red-500 text-2xl"></i>
+          </div>
+        </div>
+        
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-gray-600 text-sm font-medium">Queue</p>
+              <p class="text-2xl font-bold text-gray-800" id="sync-queue">-</p>
+            </div>
+            <i class="fas fa-list text-gray-500 text-2xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="mt-4 text-xs text-gray-500 flex items-center gap-2">
+        <div class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+        Last sync: <span id="sync-last-update">--:--</span>
+      </div>
+    </div>
+  </div>
 
-              <td class="px-6 py-4 whitespace-nowrap">
-                <% status = @service_status[service] %>
-                <% if status == "running" %>
-                  <span class="flex items-center gap-2 text-green-600 font-medium">
-                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
-                    Running
-                  </span>
-                <% elsif status == "stopped" %>
-                  <span class="flex items-center gap-2 text-red-600 font-medium">
-                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
-                    Not Running
-                  </span>
-                <% else %>
-                  <span class="flex items-center gap-2 text-gray-500 font-medium">
-                    <span class="w-2 h-2 rounded-full bg-gray-400"></span>
-                    Unknown
-                  </span>
-                <% end %>
-              </td>
+  <!-- Service Control Panel and Quick Access Row -->
+  <div class="grid grid-cols-1 xl:grid-cols-4 gap-6">
+    
+    <!-- Service Control Panel (takes up 3/4 width on desktop) -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 space-y-6 xl:col-span-3">
+      <h2 class="text-2xl font-bold text-gray-800 border-b pb-4 flex items-center justify-between">
+        <span class="flex items-center gap-2">
+          <i class="fas fa-cogs text-gray-700 text-2xl"></i>
+          Service Control Panel
+        </span>
+        <div id="card-header-loader" class="w-6 h-6 border-4 border-blue-500 border-t-transparent border-solid rounded-full animate-spin hidden"></div>
+      </h2>
 
-              <td class="px-6 py-4 whitespace-nowrap space-x-2">
-                <% @actions.each do |action| %>
-                  <%= form_with url: manage_services_path, method: :post, remote: true, class: "inline-block service-form" do |f| %>
-                    <%= hidden_field_tag :service, service %>
-                    <%= hidden_field_tag :action_name, action %>
-                    <%= hidden_field_tag :context, "services" %>
+      <% if @result.present? && params[:context] == "services" %>
+        <div class="p-4 rounded-lg border 
+          <%= @result.downcase.include?("error") ? "bg-red-50 border-red-300 text-red-700" : "bg-green-50 border-green-300 text-green-700" %>">
+          <strong>Result:</strong> <%= @result %>
+        </div>
+      <% end %>
 
-                    <% icon_class = case action.downcase
-                      when "start" then "fas fa-play text-green-500"
-                      when "stop" then "fas fa-stop text-red-500"
-                      when "restart" then "fas fa-redo text-yellow-500"
-                      when "status" then "fas fa-info-circle text-blue-500"
-                      else "fas fa-question-circle text-gray-400"
-                    end %>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <% @services.each do |service| %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-700 flex items-center gap-2">
+                  <i class="fas fa-server text-gray-500"></i>
+                  <%= service %>
+                </td>
 
-                    <%= button_tag type: "submit", class: "bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold px-5 py-2 rounded-lg shadow transition transform hover:-translate-y-0.5 inline-flex items-center gap-2" do %>
-                      <i class="<%= icon_class %>"></i>
-                      <span><%= action.capitalize %></span>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <% status = @service_status[service] %>
+                  <% if status == "running" %>
+                    <span class="flex items-center gap-2 text-green-600 font-medium">
+                      <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                      Running
+                    </span>
+                  <% elsif status == "stopped" %>
+                    <span class="flex items-center gap-2 text-red-600 font-medium">
+                      <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                      Not Running
+                    </span>
+                  <% else %>
+                    <span class="flex items-center gap-2 text-gray-500 font-medium">
+                      <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                      Unknown
+                    </span>
+                  <% end %>
+                </td>
+
+                <td class="px-6 py-4 whitespace-nowrap space-x-2">
+                  <% @actions.each do |action| %>
+                    <%= form_with url: manage_services_path, method: :post, remote: true, class: "inline-block service-form" do |f| %>
+                      <%= hidden_field_tag :service, service %>
+                      <%= hidden_field_tag :action_name, action %>
+                      <%= hidden_field_tag :context, "services" %>
+
+                      <% icon_class = case action.downcase
+                        when "start" then "fas fa-play text-green-500"
+                        when "stop" then "fas fa-stop text-red-500"
+                        when "restart" then "fas fa-redo text-yellow-500"
+                        when "status" then "fas fa-info-circle text-blue-500"
+                        else "fas fa-question-circle text-gray-400"
+                      end %>
+
+                      <%= button_tag type: "submit", class: "bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold px-5 py-2 rounded-lg shadow transition transform hover:-translate-y-0.5 inline-flex items-center gap-2" do %>
+                        <i class="<%= icon_class %>"></i>
+                        <span><%= action.capitalize %></span>
+                      <% end %>
                     <% end %>
                   <% end %>
-                <% end %>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
     </div>
+
+    <!-- Quick Access Panel (takes up 1/4 width on desktop) -->
+    <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 xl:col-span-1">
+      <h2 class="text-xl font-semibold text-gray-800 border-b pb-3 mb-6">Quick Access</h2>
+      
+      <div class="space-y-4">
+        <!-- Dashboard -->
+        <%= link_to "https://ddedashboard.hismalawi.org", target: "_blank", class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-600 hover:text-white transition-all duration-200 hover:translate-x-1 bg-gray-100" do %>
+          <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#127970;</span>
+          <div class="flex-1 min-w-0">
+            <span class="sidebar-text font-medium text-sm block truncate">DDE Master Dashboard</span>
+          </div>
+          <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-200">→</span>
+        <% end %>
+
+        <!-- Sidekiq -->
+        <%= link_to "/v1/sidekiq", target: "_blank", class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-600 hover:text-white transition-all duration-200 hover:translate-x-1 bg-gray-100" do %>
+          <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#9881;</span>
+          <div class="flex-1 min-w-0">
+            <span class="sidebar-text font-medium text-sm block truncate">Proxy Sidekiq</span>
+          </div>
+          <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-200">→</span>
+        <% end %>
+
+        <!-- Swagger Docs -->
+        <%= link_to "/api-docs", target: "_blank", class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-purple-600 hover:text-white transition-all duration-200 hover:translate-x-1 bg-gray-100" do %>
+          <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#128196;</span>
+          <div class="flex-1 min-w-0">
+            <span class="sidebar-text font-medium text-sm block truncate">API Swagger Docs</span>
+          </div>
+          <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-200">→</span>
+        <% end %>
+      </div>
+    </div>
+
   </div>
 
   <!-- System Diagnostics -->
@@ -205,5 +368,42 @@
         `;
       }
     });
+
+    // Stats update functions (add your backend integration here)
+    function updateNPIDStats() {
+      // Example: Fetch NPID stats from your Rails backend
+      // fetch('/npid_stats')
+      //   .then(response => response.json())
+      //   .then(data => {
+      //     document.getElementById('active-npids').textContent = data.active;
+      //     document.getElementById('pending-npids').textContent = data.pending;
+      //     document.getElementById('failed-npids').textContent = data.failed;
+      //     document.getElementById('total-npids').textContent = data.total;
+      //     document.getElementById('npid-last-update').textContent = new Date().toLocaleTimeString();
+      //   });
+    }
+
+    function updateSyncStats() {
+      // Example: Fetch sync stats from your Rails backend
+      // fetch('/sync_stats')
+      //   .then(response => response.json())
+      //   .then(data => {
+      //     document.getElementById('sync-success').textContent = data.success;
+      //     document.getElementById('sync-progress').textContent = data.progress;
+      //     document.getElementById('sync-errors').textContent = data.errors;
+      //     document.getElementById('sync-queue').textContent = data.queue;
+      //     document.getElementById('sync-last-update').textContent = new Date().toLocaleTimeString();
+      //   });
+    }
+
+    // Initialize stats and set up periodic updates
+    updateNPIDStats();
+    updateSyncStats();
+    
+    // Update stats every 30 seconds
+    setInterval(() => {
+      updateNPIDStats();
+      updateSyncStats();
+    }, 30000);
   });
 </script>
