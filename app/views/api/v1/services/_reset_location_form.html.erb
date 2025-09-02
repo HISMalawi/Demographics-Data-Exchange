@@ -1,0 +1,14 @@
+<div class="mt-4 p-4 bg-yellow-50 border border-yellow-300 rounded-lg shadow-sm space-y-3">
+  <p class="text-yellow-700 font-medium">This system has footprint collisions. You can reset the location ID below:</p>
+
+  <%= form_with url: reset_foot_prints_location_id_path, method: :post, local: false, id: "reset_location_form", class: "space-y-3" do |f| %>
+    <div>
+      <%= f.label :location_id, "New Location ID", class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_field :location_id, class: "block w-full border border-gray-300 rounded-lg px-3 py-2" %>
+    </div>
+
+    <%= f.submit "Reset Location ID", class: "bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm" %>
+  <% end %>
+
+  <div id="reset_location_status" class="text-sm mt-2"></div>
+</div>

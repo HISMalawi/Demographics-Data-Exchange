@@ -16,7 +16,9 @@ class Troubleshooter
       resolve_sync_configs
     when "detect_footprint_conflicts"
       detect_footprint_conflicts
-    else
+    when "resolve_program_users_configs"
+      resolve_program_users_configs
+    when
       { status: :unknown, message: "Unknown error type" }
     end
   end
@@ -94,6 +96,10 @@ class Troubleshooter
     return { status: :auth_failed, type: :local, message: "Local auth failed: #{local_response.code} #{local_response.message}" } unless local_response.is_a?(Net::HTTPSuccess)
 
     { status: :ok, message: "Sync configuration is valid and authentication succeeded (proxy & master)" }
+  end
+
+  def resolve_program_users_configs
+    
   end
 
   def get_sync_config

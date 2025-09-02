@@ -8,15 +8,16 @@
       </div>
       <div>
         <h3 class="text-xl font-semibold text-gray-800">System Diagnostics</h3>
-        <p class="text-gray-600 text-sm">Select an error type to begin troubleshooting</p>
+        <p class="text-gray-600 text-sm">Select any diagonosis and begin troubleshooting</p>
       </div>
     </div>
 
     <%= form_with url: troubleshoot_path, method: :post, remote: true, id: "troubleshoot_form", class: "space-y-6" do |form| %>
       <% error_options = {
-        'Synchronization Issues' => {
+        'Diagnoses' => {
           'resolve_sync_configs' => 'Resolve Sync Configs',
-          'detect_footprint_conflicts' => 'Detect Footprint Conflicts'
+          'detect_footprint_conflicts' => 'Detect Footprint Conflicts',
+          'resolve_program_users_configs' => 'Resolve Program Users Configs'
         }
       } %>
 

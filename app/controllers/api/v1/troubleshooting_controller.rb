@@ -1,6 +1,8 @@
 class Api::V1::TroubleshootingController < ActionController::Base
   layout "application"
-  skip_before_action :verify_authenticity_token, only: [:troubleshoot, :reset_sync_credentials]
+  skip_before_action :verify_authenticity_token, only: [:troubleshoot, 
+                                                        :reset_sync_credentials,
+                                                        :reset_location_id ]
 
   def index
     @result = params[:result]
