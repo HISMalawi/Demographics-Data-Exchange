@@ -134,8 +134,10 @@
           <i class="fas fa-cogs text-gray-700 text-2xl"></i>
           Service Control Panel
         </span>
-        <div id="card-header-loader" class="w-6 h-6 border-4 border-blue-500 border-t-transparent border-solid rounded-full animate-spin hidden"></div>
+        <div id="service-loader" class="w-6 h-6 border-4 border-blue-500 border-t-transparent border-solid rounded-full animate-spin hidden"></div>
       </h2>
+
+      <div id="service-result-container" class="mt-4"></div>
 
       <% if @result.present? && params[:context] == "services" %>
         <div class="p-4 rounded-lg border 
@@ -328,82 +330,114 @@
 
 <!-- Scripts -->
 <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const loader = document.getElementById("card-header-loader");
+document.addEventListener("DOMContentLoaded", () => {
+  // ===== Service Control Panel Loader & Result =====
+  const serviceLoader = document.getElementById("service-loader");
+  const serviceResultContainer = document.getElementById("service-result-container");
 
-    // Show loader on Service form submit
-    document.querySelectorAll(".service-form").forEach(form => {
-      form.addEventListener("submit", () => {
-        loader.classList.remove("hidden");
-      });
+  document.querySelectorAll(".service-form").forEach(form => {
+    form.addEventListener("submit", () => {
+      serviceLoader.classList.remove("hidden");
+      serviceResultContainer.innerHTML = ""; // Clear previous result
     });
+  });
 
-    document.addEventListener("ajax:complete", () => {
-      loader.classList.add("hidden");
-    });
+  document.addEventListener("ajax:success", (event) => {
+    const [data, status, xhr] = event.detail;
 
-    // Diagnostics scripts
-    const radioButtons = document.querySelectorAll('input[type="radio"]');
-    const troubleshootBtn = document.getElementById('troubleshoot_btn');
-    const clearBtn = document.getElementById('clear_selection');
-    const statusText = document.getElementById('status_text');
-    const statusIndicator = document.getElementById('status_indicator');
-    const outputContainer = document.querySelector('.bg-white.rounded-xl.shadow-md');
-
-    radioButtons.forEach(radio => {
-      radio.addEventListener('change', () => {
-        troubleshootBtn.disabled = false;
-      });
-    });
-
-    clearBtn.addEventListener('click', () => {
-      radioButtons.forEach(r => r.checked = false);
-      troubleshootBtn.disabled = true;
-      statusText.textContent = "Select an error type to begin";
-      statusIndicator.className = "w-2 h-2 rounded-full bg-gray-400";
-      if (outputContainer) {
-        outputContainer.innerHTML = `
-          <h3 class="text-xl font-semibold text-gray-800 mb-2">Output</h3>
-          <p class="text-gray-500 italic">No result available.</p>
-        `;
-      }
-    });
-
-    // Stats update functions (add your backend integration here)
-    function updateNPIDStats() {
-      // Example: Fetch NPID stats from your Rails backend
-      // fetch('/npid_stats')
-      //   .then(response => response.json())
-      //   .then(data => {
-      //     document.getElementById('active-npids').textContent = data.active;
-      //     document.getElementById('pending-npids').textContent = data.pending;
-      //     document.getElementById('failed-npids').textContent = data.failed;
-      //     document.getElementById('total-npids').textContent = data.total;
-      //     document.getElementById('npid-last-update').textContent = new Date().toLocaleTimeString();
-      //   });
+    if (data && data.result) {
+      const isError = data.status === "error";
+      serviceResultContainer.innerHTML = `
+        <div class="p-4 rounded-lg border ${isError ? 'bg-red-50 border-red-300 text-red-700' : 'bg-green-50 border-green-300 text-green-700'} shadow-sm">
+          <strong>Result:</strong> <span class="whitespace-pre-line">${data.result}</span>
+        </div>
+      `;
     }
 
-    function updateSyncStats() {
-      // Example: Fetch sync stats from your Rails backend
-      // fetch('/sync_stats')
-      //   .then(response => response.json())
-      //   .then(data => {
-      //     document.getElementById('sync-success').textContent = data.success;
-      //     document.getElementById('sync-progress').textContent = data.progress;
-      //     document.getElementById('sync-errors').textContent = data.errors;
-      //     document.getElementById('sync-queue').textContent = data.queue;
-      //     document.getElementById('sync-last-update').textContent = new Date().toLocaleTimeString();
-      //   });
-    }
+    serviceLoader.classList.add("hidden");
+  });
 
-    // Initialize stats and set up periodic updates
+  document.addEventListener("ajax:error", () => {
+    serviceResultContainer.innerHTML = `
+      <div class="p-4 rounded-lg border bg-red-50 border-red-300 text-red-700 shadow-sm">
+        <strong>Error:</strong> Could not process the request.
+      </div>
+    `;
+    serviceLoader.classList.add("hidden");
+  });
+
+  // ===== Diagnostics Scripts =====
+  const radioButtons = document.querySelectorAll('input[type="radio"]');
+  const troubleshootBtn = document.getElementById('troubleshoot_btn');
+  const clearBtn = document.getElementById('clear_selection');
+  const statusText = document.getElementById('status_text');
+  const statusIndicator = document.getElementById('status_indicator');
+  const outputContainer = document.querySelector('.bg-white.rounded-xl.shadow-md');
+
+  radioButtons.forEach(radio => {
+    radio.addEventListener('change', () => {
+      troubleshootBtn.disabled = false;
+    });
+  });
+
+  clearBtn.addEventListener('click', () => {
+    radioButtons.forEach(r => r.checked = false);
+    troubleshootBtn.disabled = true;
+    statusText.textContent = "Select an error type to begin";
+    statusIndicator.className = "w-2 h-2 rounded-full bg-gray-400";
+    if (outputContainer) {
+      outputContainer.innerHTML = `
+        <h3 class="text-xl font-semibold text-gray-800 mb-2">Output</h3>
+        <p class="text-gray-500 italic">No result available.</p>
+      `;
+    }
+  });
+
+  // ===== Stats Update Functions =====
+  function updateNPIDStats() {
+    // Example: Fetch NPID stats from backend
+    // fetch('/npid_stats')
+    //   .then(response => response.json())
+    //   .then(data => {
+    //     document.getElementById('active-npids').textContent = data.active;
+    //     document.getElementById('pending-npids').textContent = data.pending;
+    //     document.getElementById('failed-npids').textContent = data.failed;
+    //     document.getElementById('total-npids').textContent = data.total;
+    //     document.getElementById('npid-last-update').textContent = new Date().toLocaleTimeString();
+    //   });
+  }
+
+  function updateSyncStats() {
+    // Example: Fetch sync stats from backend
+    // fetch('/sync_stats')
+    //   .then(response => response.json())
+    //   .then(data => {
+    //     document.getElementById('sync-success').textContent = data.success;
+    //     document.getElementById('sync-progress').textContent = data.progress;
+    //     document.getElementById('sync-errors').textContent = data.errors;
+    //     document.getElementById('sync-queue').textContent = data.queue;
+    //     document.getElementById('sync-last-update').textContent = new Date().toLocaleTimeString();
+    //   });
+  }
+
+  // Initialize stats and periodic updates
+  updateNPIDStats();
+  updateSyncStats();
+  setInterval(() => {
     updateNPIDStats();
     updateSyncStats();
-    
-    // Update stats every 30 seconds
-    setInterval(() => {
-      updateNPIDStats();
-      updateSyncStats();
-    }, 30000);
+  }, 30000);
+
+  // ===== Service Panel Header Loader =====
+  const cardLoader = document.getElementById("card-header-loader");
+  document.querySelectorAll(".service-form").forEach(form => {
+    form.addEventListener("submit", () => {
+      cardLoader.classList.remove("hidden");
+    });
   });
+  document.addEventListener("ajax:complete", () => {
+    cardLoader.classList.add("hidden");
+  });
+
+});
 </script>
