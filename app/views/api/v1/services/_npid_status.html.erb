@@ -1,0 +1,23 @@
+<div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
+  <div class="flex items-center gap-3 mb-6">
+    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+      <i class="fas fa-user-shield text-blue-600 text-xl"></i>
+    </div>
+    <div>
+      <h3 class="text-xl font-bold text-gray-800">NPID Status</h3>
+      <p class="text-gray-600 text-sm">National Patient Identifier Statistics</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4">
+    <%= render "stat_card", label: "Active NPIDs", id: "active-npids", color: "green", icon: "fas fa-check-circle" %>
+    <%= render "stat_card", label: "Pending", id: "pending-npids", color: "yellow", icon: "fas fa-clock" %>
+    <%= render "stat_card", label: "Failed", id: "failed-npids", color: "red", icon: "fas fa-exclamation-triangle" %>
+    <%= render "stat_card", label: "Total", id: "total-npids", color: "blue", icon: "fas fa-database" %>
+  </div>
+
+  <div class="mt-4 text-xs text-gray-500 flex items-center gap-2">
+    <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+    Last updated: <span id="npid-last-update">--:--</span>
+  </div>
+</div>

@@ -1,0 +1,28 @@
+<div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6 space-y-6 xl:col-span-3">
+  <h2 class="text-2xl font-bold text-gray-800 border-b pb-4 flex items-center justify-between">
+    <span class="flex items-center gap-2">
+      <i class="fas fa-cogs text-gray-700 text-2xl"></i>
+      Service Control Panel
+    </span>
+    <div id="service-loader" class="w-6 h-6 border-4 border-blue-500 border-t-transparent border-solid rounded-full animate-spin hidden"></div>
+  </h2>
+
+  <div id="service-result-container" class="mt-4"></div>
+
+  <div class="overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <% @services.each do |service| %>
+          <%= render "service_row", service: service, status: @service_status[service], actions: @actions %>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
