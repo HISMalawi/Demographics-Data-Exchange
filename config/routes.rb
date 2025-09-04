@@ -117,12 +117,25 @@ Rails.application.routes.draw do
   get "documentation", to: "api/v1/documentation#index"
   get "quick_links", to: "api/v1/quick_links#index"
 
-  get 'troubleshooting', to: 'api/v1/troubleshooting#index'
-  post 'troubleshoot', to: 'api/v1/troubleshooting#troubleshoot'
-  post "reset_sync_credentials", to: "api/v1/troubleshooting#reset_sync_credentials"
-  post "reset_foot_prints_location_id", to: "api/v1/troubleshooting#reset_location_id"
+  # Troubleshooting
+  namespace :api do
+    namespace :v1 do
+      # Troubleshooting with resources
+      resources :troubleshooting, only: [:index] do
+        collection do
+          post :troubleshoot
+          post :reset_sync_credentials
+          post :reset_foot_prints_location_id, as: :reset_location_id
+        end
+      end
 
-  get 'services', to: 'api/v1/services#index'
-  post 'manage_services', to:  'api/v1/services#manage'
+      # Services with resources
+      resources :services, only: [:index] do
+        collection do
+          post :manage_services, to: "services#manage"
+        end
+      end
+    end
+  end
   
 end

@@ -2,10 +2,9 @@ class Api::V1::ServicesController < ActionController::Base
   layout "application"
   skip_before_action :verify_authenticity_token, only: [:manage]
 
-  def index 
+  def index
     @services = ["dde4", "redis-server", "dde4_sidekiq", "mysql"]
     @actions  = ["start", "stop", "restart", "status"]
-    @result   = params[:result]
 
     @service_status = {}
     @services.each do |service|
@@ -18,17 +17,30 @@ class Api::V1::ServicesController < ActionController::Base
         @service_status[service] = "unknown"
       end
     end
-  end 
+  end
 
   def manage
     @service = params[:service]
     @action  = params[:action_name]
 
-    begin 
+    begin
       output = ServiceManager.run(@action, @service)
-      redirect_to services_path(result: "#{@action.capitalize} executed for #{@service}. Output: #{output}")
+      @status_value = output.downcase.include?("running") ? "running" :
+                      output.downcase.include?("stopped") ? "stopped" : "unknown"
+      @result = "#{@action.capitalize} executed for #{@service}. Output: #{output}"
+      @status = "ok"
+
+      respond_to do |format|
+        format.js { render 'manage.js.erb' }
+      end
     rescue => e
-      redirect_to services_path(result: "Error: #{e.message}")
+      @result = "Error: #{e.message}"
+      @status = "error"
+      @status_value = "unknown"
+      
+      respond_to do |format|
+        format.js { render 'manage.js.erb' }
+      end
     end
-  end 
+  end
 end

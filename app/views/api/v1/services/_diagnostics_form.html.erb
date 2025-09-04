@@ -1,4 +1,4 @@
-<%= form_with url: troubleshoot_path, method: :post, remote: true, id: "troubleshoot_form", class: "space-y-6" do |form| %>
+<%= form_with url: troubleshoot_api_v1_troubleshooting_index_path, method: :post, remote: true, id: "troubleshoot_form", class: "space-y-6" do |form| %>
   <% error_options = {
     'Diagnoses' => {
       'resolve_sync_configs' => 'Resolve Sync Configs',
