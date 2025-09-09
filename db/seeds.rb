@@ -41,7 +41,7 @@ DashboardStat.find_or_create_by(name: 'location_npid_balance',
 DashboardStat.find_or_create_by(name: 'dashboard_stats',
                                 value: {})
 
-if User.exists?
+unless User.exists?
 #Load proxy Meta data
 metadata_sql_files = %w[dde4_metadata dde4_locations]
 connection = ActiveRecord::Base.connection
