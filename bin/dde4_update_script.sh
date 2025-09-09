@@ -7,6 +7,20 @@ then
     APP_DIR="/var/www/dde4"
 fi
 
+# Update locations
+export RAILS_ENV=development
+
+# Run the Rails runner with your sync script
+echo "🔄 Starting missing locations sync..."
+rails runner bin/sync_missing_locations.rb
+
+# Run the Rails runner with your sync script
+if [ $? -eq 0 ]; then
+  echo "✅ Locations sync completed successfully!"
+else
+  echo "❌ Locations sync failed!"
+fi
+
 #username="$(whoami)"
 username="emr-user"
 
