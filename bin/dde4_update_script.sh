@@ -7,19 +7,38 @@ then
     APP_DIR="/var/www/dde4"
 fi
 
-# Update locations
-export RAILS_ENV=development
+
 
 # Run the Rails runner with your sync script
-echo "🔄 Starting missing locations sync..."
-rails runner bin/sync_missing_locations.rb
+echo "🔄 Adding missing locations sync..."
 
-# Run the Rails runner with your sync script
-if [ $? -eq 0 ]; then
-  echo "✅ Locations sync completed successfully!"
-else
-  echo "❌ Locations sync failed!"
+SQL_FILE="$APP_DIR/db/meta_data/missing_locations.sql"
+
+# Check if file exists
+if [ ! -f "$SQL_FILE" ]; then
+    tput setaf 1; echo "❌ SQL file not found at $SQL_FILE"; tput sgr0
+    exit 1
 fi
+
+# Prompt for MySQL credentials
+tput setaf 6; read -p "Enter MySQL username: " DB_USER
+tput setaf 6; read -s -p "Enter MySQL password: " DB_PASS
+echo ""
+tput setaf 6; read -p "Enter database name (default: dde4_production): " DB_NAME
+if [ -z "$DB_NAME" ]; then
+    DB_NAME="dde4_production"
+fi
+
+# Run the import
+mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$SQL_FILE"
+
+# Check if it worked
+if [ $? -eq 0 ]; then
+    tput setaf 2; echo "✅ Import of '$SQL_FILE' completed successfully into database '$DB_NAME'"; tput sgr0
+else
+    tput setaf 1; echo "❌ Import failed. Please check credentials or SQL file."; tput sgr0
+fi
+
 
 #username="$(whoami)"
 username="emr-user"
