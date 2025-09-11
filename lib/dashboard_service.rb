@@ -1,8 +1,7 @@
 module DashboardService
-
   def self.new_reg_by_site
-    PersonDetail.joins("JOIN locations l ON person_details.location_created_at = l.location_id").where('date_registered BETWEEN ? AND ?',
-      Date.today.strftime('%Y-%m-%d %H:%M:%S'),Date.today.strftime('%Y-%m-%d') + ' 23:59:59').group(:name).count
+    PersonDetail.joins('JOIN locations l ON person_details.location_created_at = l.location_id').where('date_registered BETWEEN ? AND ?',
+                                                                                                       Date.today.strftime('%Y-%m-%d %H:%M:%S'), Date.today.strftime('%Y-%m-%d') + ' 23:59:59').group(:name).count
   end
 
   def self.new_reg_past_30
@@ -13,24 +12,13 @@ module DashboardService
       AND activated = true
       GROUP BY l.name,date(date_registered)')
 
-    result.group_by{ |site| site[:name] }
+    result.group_by { |site| site[:name] }
   end
 
   def self.client_movements
-    sites = FootPrint.find_by_sql('SELECT
-        COUNT(*) AS number_of_pple,
-        sites_visited
-      FROM
-        (
-        SELECT
-          COUNT(DISTINCT location_id) AS sites_visited
-        FROM
-          foot_prints
-        GROUP BY
-          person_uuid
-      ) AS person_sites
-      GROUP BY
-        sites_visited;')
+    MovementCache
+      .select(:sites_visited, 'COUNT(*) AS number_of_pple')
+      .group(:sites_visited)
   end
 
   def self.npids
@@ -83,7 +71,7 @@ module DashboardService
       ")
   end
 
-  def self.location_npids(location_id)
+  def self.location_npids(_location_id)
     ActiveRecord::Base.connection.select_all("
       SELECT
       l.name location_name,
@@ -133,25 +121,25 @@ module DashboardService
       ")
   end
 
-
   def self.connected_sites
-    connected_sites = Location.where('ip_address is not null').select(:location_id, :name, :ip_address, :creator, :created_at, :updated_at, :last_seen, :activated)
+    connected_sites = Location.where('ip_address is not null').select(:location_id, :name, :ip_address, :creator,
+                                                                      :created_at, :updated_at, :last_seen, :activated)
     reachable_sites = ''
 
     ping_tested_sites = Parallel.map(connected_sites, in_threads: connected_sites.size.to_i) do |site|
       check = Net::Ping::External.new(site.ip_address)
-       #Add site to update list if it is reachable
-       created_at = site.created_at.to_datetime.strftime('%Y-%m-%d %H:%M:%S') unless site.created_at.blank?
-       updated_at = site.updated_at.to_datetime.strftime('%Y-%m-%d %H:%M:%S') unless site.updated_at.blank?
+      # Add site to update list if it is reachable
+      created_at = site.created_at.to_datetime.strftime('%Y-%m-%d %H:%M:%S') unless site.created_at.blank?
+      updated_at = site.updated_at.to_datetime.strftime('%Y-%m-%d %H:%M:%S') unless site.updated_at.blank?
 
-       reachable = false
+      reachable = false
 
-       if check.ping?
+      if check.ping?
         last_seen = Time.now.to_datetime.strftime('%Y-%m-%d %H:%M:%S')
         reachable_sites += " (#{site.location_id}, \"#{site.name}\", #{site.creator}, \"#{created_at}\", \"#{updated_at}\", \"#{last_seen}\"), "
         reachable = true
-       end
-       {site: site.name, reacheable: reachable, activated: site.activated}
+      end
+      { site: site.name, reacheable: reachable, activated: site.activated }
     end
 
     unless reachable_sites.blank?
@@ -160,7 +148,7 @@ module DashboardService
       reachable_sites += ' ON DUPLICATE KEY UPDATE last_seen = VALUES(last_seen);'
       ActiveRecord::Base.connection.execute(reachable_sites)
     end
-    return ping_tested_sites
+    ping_tested_sites
   end
 
   def self.site_activities
@@ -180,7 +168,7 @@ module DashboardService
       FROM locations l
       LEFT JOIN (SELECT location_id, max(fp.created_at) max_created_at FROM foot_prints fp
 			group by location_id) max_created
-		  ON l.location_id = max_created.location_id 
+		  ON l.location_id = max_created.location_id
       JOIN districts d ON l.district_id = d.district_id
       JOIN regions r ON r.id = d.region_id
       WHERE l.ip_address is not null

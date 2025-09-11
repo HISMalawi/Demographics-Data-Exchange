@@ -1,0 +1,2 @@
+class MovementCache < ApplicationRecord
+end
