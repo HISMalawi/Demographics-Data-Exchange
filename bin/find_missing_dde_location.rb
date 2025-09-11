@@ -93,7 +93,7 @@ File.open(output_file, "w") do |f|
 
     # Generate INSERT SQL
     insert_sql = <<-SQL
-      INSERT INTO locations (location_id, name, district_id, creator, created_at, updated_at)
+      INSERT INTO locations ( location_id, name, district_id, creator, created_at, updated_at)
       VALUES (#{openmrs_location.location_id}, #{DDEDatabase.connection.quote(openmrs_location.name)}, #{district.district_id}, 1, NOW(), NOW());
     SQL
 
