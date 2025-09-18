@@ -36,6 +36,9 @@ jobs:
       
       - name: Copy sidekiq.yml from example
         run: cp config/sidekiq.yml.example config/sidekiq.yml
+      
+      - name: Copy database.yml from example
+        run: cp config/database.yml.example config/database.yml
 
       - name: Wait for Redis
         run: |
