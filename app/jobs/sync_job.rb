@@ -322,9 +322,9 @@ class SyncJob < ApplicationJob
   private
 
   def log_error(error)
-    return if @location.blank? || error.to_s.blank?
+    return if @location_id.blank? || error.to_s.blank?
 
-    existing_error = SyncError.find_by(site_id: @location, error: error.to_s)
+    existing_error = SyncError.find_by(site_id: @location_id, error: error.to_s)
 
     if existing_error
       existing_error.update!(
