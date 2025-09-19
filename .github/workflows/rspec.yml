@@ -1,0 +1,79 @@
+name: Run Sync Job Spec
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  rspec:
+    runs-on: ubuntu-22.04
+
+    services:
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      mysql:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping --silent"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.0'
+          bundler-cache: true
+
+      - name: Install dependencies
+        run: bundle install --jobs 4 --retry 3
+
+      - name: Copy sidekiq.yml from example
+        run: cp config/sidekiq.yml.example config/sidekiq.yml
+
+      - name: Wait for Redis
+        run: |
+          for i in {1..10}; do
+            nc -z 127.0.0.1 6379 && echo "Redis is up!" && exit 0
+            echo "Waiting for Redis..."
+            sleep 2
+          done
+          echo "Redis did not start in time" && exit 1
+
+      - name: Wait for MySQL
+        run: |
+          for i in {1..20}; do
+            mysqladmin ping -h 127.0.0.1 -P 3306 -u root -ppassword && echo "MySQL is up!" && exit 0
+            echo "Waiting for MySQL..."
+            sleep 2
+          done
+          echo "MySQL did not start in time" && exit 1
+
+      - name: Set DATABASE_URL
+        run: echo "DATABASE_URL=mysql2://root:password@127.0.0.1:3306/test_db" >> $GITHUB_ENV
+
+      - name: Set up database
+        run: |
+          bin/rails db:create db:migrate RAILS_ENV=test
+
+      - name: Run Sync Job Spec
+        run: bundle exec rspec spec/jobs/sync_job_spec.rb
