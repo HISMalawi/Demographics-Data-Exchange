@@ -132,7 +132,7 @@ Rails.application.routes.draw do
       # Services with resources
       resources :services, only: [:index] do
         collection do
-          post :manage_services, to: "services#manage"
+          get :manage_services, to: "services#manage"
         end
       end
     end

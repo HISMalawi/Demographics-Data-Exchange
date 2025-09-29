@@ -31,7 +31,7 @@ class Api::V1::ServicesController < ActionController::Base
       @status = "ok"
 
       respond_to do |format|
-        format.js { render 'manage.js.erb' }
+        format.json { render json: { output: @result, status: @status, status_value: @status_value } }
       end
     rescue => e
       @result = "Error: #{e.message}"
@@ -39,8 +39,9 @@ class Api::V1::ServicesController < ActionController::Base
       @status_value = "unknown"
       
       respond_to do |format|
-        format.js { render 'manage.js.erb' }
+        format.json { render json: { output: @result, status: @status, status_value: @status_value } }
       end
+
     end
   end
 end

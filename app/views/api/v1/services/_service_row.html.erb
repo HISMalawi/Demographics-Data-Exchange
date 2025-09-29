@@ -22,7 +22,9 @@
 
   <td class="px-6 py-4 whitespace-nowrap space-x-2">
     <% actions.each do |action| %>
-      <%= form_with url:   manage_services_api_v1_services_path, method: :post, remote: true, class: "inline-block service-form" do |f| %>
+      <%= form_with url:   manage_services_api_v1_services_path,
+          method: :get, remote: true,
+          class: "inline-block service-form" do |f| %>
         <%= hidden_field_tag :service, service %>
         <%= hidden_field_tag :action_name, action %>
         <%= hidden_field_tag :context, "services" %>

@@ -1,3 +1,5 @@
+
+console.log("Something");
 document.addEventListener("DOMContentLoaded", () => {
   const serviceLoader = document.getElementById("service-loader");
   const serviceResultContainer = document.getElementById("service-result-container");
