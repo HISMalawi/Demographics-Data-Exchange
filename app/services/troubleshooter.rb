@@ -10,7 +10,7 @@ class Troubleshooter
     @config = load_config
   end
 
-  def select_solution(error_type)
+  def select_solution(error_type) 
     case error_type
     when "resolve_sync_configs"
       resolve_sync_configs
@@ -49,7 +49,7 @@ class Troubleshooter
 
     # Check if more than 2 rows exist
     if footprints_array.size > 2
-      raise "foot_prints belonging to more than #{footprints_array.size} sites"
+      return "foot_prints belonging to more than #{footprints_array.size} sites"
     else
       return { status: :ok, message: "Footprints resolved successfully", details: footprints_array }
     end

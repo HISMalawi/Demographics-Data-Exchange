@@ -10,26 +10,6 @@ class Api::V1::TroubleshootingController < ActionController::Base
   end
 
   def troubleshoot
-    @error_type = params[:error_type] 
-    Rails.logger.info "Params received: #{params.inspect}"
-
-    begin
-      result = troubleshooting_service.select_solution(@error_type)
-
-      response_data =
-        if result.is_a?(Hash)
-          { status: result[:status], message: result[:message] }
-        else
-          { status: "ok", message: result.to_s }
-        end
-
-      render json: response_data
-    rescue => e
-      render json: { status: "error", message: e.message }, status: :internal_server_error
-    end
-  end
-
-  def troubleshoot
     @error_type = params[:error_type]
     Rails.logger.info "Params received: #{params.inspect}"
 
@@ -38,9 +18,11 @@ class Api::V1::TroubleshootingController < ActionController::Base
 
       response_data =
         if result.is_a?(Hash)
-          { status: result[:status], message: result[:message] }
+          { error_type: @error_type, 
+            status: result[:status],
+            message: result[:message] }
         else
-          { status: "ok", message: result.to_s }
+          { error_type: @error_type, status: "ok", message: result.to_s }
         end
 
       respond_to do |format|
@@ -76,7 +58,6 @@ class Api::V1::TroubleshootingController < ActionController::Base
   end
 
   def reset_location_id
-    debugger 
     puts "Someone"
     puts "Something here"
   end 
