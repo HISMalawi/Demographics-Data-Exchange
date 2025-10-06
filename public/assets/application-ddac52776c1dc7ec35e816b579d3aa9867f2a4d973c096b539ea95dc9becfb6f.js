@@ -5,7 +5,8 @@ import { runTroubleshooting } from "./troubleshooting";
 document.addEventListener("DOMContentLoaded", () => {
   const troubleshootBtn = document.getElementById("troubleshoot_btn");
   if (troubleshootBtn) {
-    troubleshootBtn.addEventListener("click", runTroubleshooting);
+    //troubleshootBtn.addEventListener("click", runTroubleshooting);
+    console.log("Button has been clicked ");
   }
 });
 
