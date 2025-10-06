@@ -22,7 +22,7 @@ environment ENV.fetch('RAILS_ENV') { 'production' }
 # processes).
 #
 
-# workers ENV.fetch("WEB_CONCURRENCY") { 12/2 }
+workers ENV.fetch('WEB_CONCURRENCY') { 12 / 2 }
 
 # Use the `preload_app!` method when specifying a `workers` number.
 # This directive tells Puma to first boot the application and load code
