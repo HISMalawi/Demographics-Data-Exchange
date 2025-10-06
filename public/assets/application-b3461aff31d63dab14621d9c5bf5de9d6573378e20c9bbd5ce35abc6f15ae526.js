@@ -12,3 +12,4 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+console.log("Hahah Something");

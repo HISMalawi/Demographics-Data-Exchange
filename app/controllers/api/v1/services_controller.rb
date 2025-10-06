@@ -31,14 +31,17 @@ class Api::V1::ServicesController < ActionController::Base
       @status = "ok"
 
       respond_to do |format|
-        format.json { render json: { output: @result, status: @status, status_value: @status_value } }
+        format.html # renders normal index.html.erb
+        format.json { render json: { output: output, status_value: @status_value, status: status } }
       end
+
     rescue => e
       @result = "Error: #{e.message}"
       @status = "error"
       @status_value = "unknown"
       
       respond_to do |format|
+        format.html # renders normal index.html.erb
         format.json { render json: { output: @result, status: @status, status_value: @status_value } }
       end
 

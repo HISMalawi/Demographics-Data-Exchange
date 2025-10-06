@@ -10,5 +10,5 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     console.log("No button found")
   }
-});
-
+})
+;

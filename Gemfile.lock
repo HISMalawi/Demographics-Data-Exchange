@@ -337,7 +337,7 @@ DEPENDENCIES
   bundler
   byebug
   his_emr_user_management (~> 0.1.2)
-  importmap-rails (~> 2.2)
+  importmap-rails
   jwt
   kramdown
   listen

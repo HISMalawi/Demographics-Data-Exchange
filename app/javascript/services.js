@@ -1,5 +1,43 @@
+/*export function loadTasks() {
+  fetch("/services.json")
+    .then(response => response.json())
+    .then(data => {
+      const list = document.getElementById("tasks-list")
+      list.innerHTML = "" // clear old
+      data.forEach(task => {
+        const li = document.createElement("li")
+        li.textContent = `${task.name} - ${task.done ? "✅" : "❌"}`
+        console.log(`${task.name} - ${task.done ? "✅" : "❌"}`)
+        list.appendChild(li)
+      })
+    })
+    .catch(error => console.error("Error loading tasks:", error))
+}*/
 
-console.log("Something");
+
+export function runManage(service, action) {
+  fetch(`/api/v1/services/manage_services`, {
+    method: "POST",
+    headers: {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+    },
+    body: JSON.stringify({ service: service, action_name: action, context: "services" })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    return res.json();
+  })
+  .then(data => {
+    console.log("Controller response test:");
+    console.log("Output:", data.output);
+    console.log("Status:", data.status);
+    console.log("Status value:", data.status_value);
+  })
+  .catch(err => console.error("Error:", err));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const serviceLoader = document.getElementById("service-loader");
   const serviceResultContainer = document.getElementById("service-result-container");
@@ -69,3 +107,5 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+
