@@ -16,17 +16,40 @@ class Api::V1::TroubleshootingController < ActionController::Base
     begin
       result = troubleshooting_service.select_solution(@error_type)
 
-      if result.is_a?(Hash)
-        @result_status = result[:status]
-        @result_message = result[:message]
-      else
-        @result_status = :ok
-        @result_message = result.to_s
-      end
+      response_data =
+        if result.is_a?(Hash)
+          { status: result[:status], message: result[:message] }
+        else
+          { status: "ok", message: result.to_s }
+        end
 
-      redirect_to troubleshooting_path(result: @result_message, status: @result_status)
+      render json: response_data
     rescue => e
-      redirect_to troubleshooting_path(result: "Error: #{e.message}", status: :error)
+      render json: { status: "error", message: e.message }, status: :internal_server_error
+    end
+  end
+
+  def troubleshoot
+    @error_type = params[:error_type]
+    Rails.logger.info "Params received: #{params.inspect}"
+
+    begin
+      result = troubleshooting_service.select_solution(@error_type)
+
+      response_data =
+        if result.is_a?(Hash)
+          { status: result[:status], message: result[:message] }
+        else
+          { status: "ok", message: result.to_s }
+        end
+
+      respond_to do |format|
+        format.json { render json: response_data }    # used by JS fetch
+      end
+    rescue => e
+      respond_to do |format|
+        format.json { render json: { status: "error", message: e.message }, status: :internal_server_error }
+      end
     end
   end
 
