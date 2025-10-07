@@ -1,13 +1,10 @@
-// app/javascript/troubleshooting.js
-
-export async function autoRunTroubleshooting() {
+document.addEventListener("DOMContentLoaded", async () => {
   const outputDiv = document.getElementById("output");
   const statusText = document.getElementById("status_text");
   const statusIndicator = document.getElementById("status_indicator");
 
   if (!outputDiv) return;
 
-  // Default or list of error types
   const errorTypes = [
     "resolve_program_users_configs",
     "resolve_sync_configs",
@@ -15,7 +12,7 @@ export async function autoRunTroubleshooting() {
   ];
 
   for (const type of errorTypes) {
-    statusIndicator?.classList.replace("bg-gray-400", "bg-blue-500");
+    statusIndicator.classList.replace("bg-gray-400", "bg-blue-500");
     statusText.textContent = `Running ${type}...`;
 
     try {
@@ -29,7 +26,6 @@ export async function autoRunTroubleshooting() {
       });
 
       const result = await response.json();
-      console.log("Troubleshooting result:", result);
 
       let colorClass =
         result.status === "ok"
@@ -51,6 +47,6 @@ export async function autoRunTroubleshooting() {
     }
   }
 
-  statusIndicator?.classList.replace("bg-blue-500", "bg-gray-400");
+  statusIndicator.classList.replace("bg-blue-500", "bg-gray-400");
   statusText.textContent = "All diagnostics completed";
-}
+});

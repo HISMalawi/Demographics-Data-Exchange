@@ -4,45 +4,10 @@
               id: "troubleshoot_form",
               class: "space-y-6" do |form| %>
 
-  <% error_options = {
-    'Diagnoses' => {
-      'resolve_sync_configs' => 'Resolve Sync Configs',
-      'detect_footprint_conflicts' => 'Detect Footprint Conflicts',
-      'resolve_program_users_configs' => 'Resolve Program Users Configs'
-    }
-  } %>
 
-  <% error_options.each do |category, errors| %>
-    <div>
-      <h4 class="text-gray-800 font-medium mb-3"><%= category %></h4>
-      <div class="grid gap-3 md:grid-cols-2">
-        <% errors.each do |key, label| %>
-          <label for="<%= key %>" class="error-option block p-4 border rounded-xl cursor-pointer transition hover:border-blue-400 hover:shadow-sm">
-            <div class="flex items-center gap-3">
-              <%= form.radio_button :error_type, key, id: key, class: "hidden peer" %>
-              <div class="w-5 h-5 border border-gray-400 rounded-full flex items-center justify-center peer-checked:border-blue-600 peer-checked:bg-blue-600">
-                <div class="w-2 h-2 bg-white rounded-full hidden peer-checked:block"></div>
-              </div>
-              <span class="text-gray-700 font-medium"><%= label %></span>
-            </div>
-          </label>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
 
   <div class="flex items-center gap-4 pt-4 border-t border-gray-200">
-    <button type="button" id="troubleshoot_btn"
-      class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-      Troubleshoot
-    </button>
-
-    <button type="button" id="clear_selection"
-      class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium shadow-sm">
-      Clear Selection
-    </button>
-
-    <div class="flex items-center gap-2 text-sm text-gray-500 ml-auto">
+    <div class="flex items-center gap-2 text-md text-gray-500 ml-auto">
       <div class="w-2 h-2 rounded-full bg-gray-400" id="status_indicator"></div>
       <span id="status_text">Select an error type to begin</span>
     </div>
