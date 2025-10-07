@@ -40,18 +40,41 @@ class Troubleshooter
   end
 
   def detect_footprint_conflicts
-    # Fetch the count of footprints per location
-    footprints = FootPrint.group(:location_id).count
-    # footprints will be a hash: { location_id => count }
+    footprint_summary = FootPrint.group(:location_id).count
 
-    # Convert to array of hashes for easier handling
-    footprints_array = footprints.map { |loc_id, count| { location_id: loc_id, count: count } }
+    locations_with_footprints = footprint_summary.select { |_location_id, count| count > 0 }
 
-    # Check if more than 2 rows exist
-    if footprints_array.size > 2
-      return "foot_prints belonging to more than #{footprints_array.size} sites"
+    if locations_with_footprints.size > 1
+      ip_address = Socket.ip_address_list.detect(&:ipv4_private?)&.ip_address
+      matching_locations = Location.where(ip_address: ip_address)
+
+      if matching_locations.count > 1
+        raise "🚨 <strong>Conflict Detected:</strong> The IP address <strong>#{ip_address}</strong> is linked to <strong>multiple locations</strong>. Please verify your network configuration or update the location records."
+      elsif matching_locations.exists?
+        current_location_id = matching_locations.pick(:location_id)
+        updated_records_count = FootPrint.update_all(location_id: current_location_id)
+
+        if updated_records_count.positive?
+          return {
+            status: :ok,
+            message: "✅ <strong>Footprints successfully reassigned</strong> to location ID <strong>#{current_location_id}</strong> (IP: <strong>#{ip_address}</strong>).",
+            details: {
+              updated_records: updated_records_count,
+              involved_locations: locations_with_footprints.keys
+            }
+          }
+        else
+          raise "⚠️ <strong>Update Failed:</strong> Could not reassign footprints for IP <strong>#{ip_address}</strong>. Please check database integrity or permissions."
+        end
+      else
+        raise "🚨 <strong>Unresolved Footprint Conflict:</strong> Found <strong>#{locations_with_footprints.size}</strong> different locations with footprints, but the current IP address <strong>(#{ip_address})</strong> is not registered in the <strong>locations</strong> table. Unable to auto-resolve footprints."
+      end
     else
-      return { status: :ok, message: "Footprints resolved successfully", details: footprints_array }
+      {
+        status: :ok,
+        message: "✅ <strong>Footprints resolved successfully</strong> — all records belong to a single valid location.",
+        details: locations_with_footprints
+      }
     end
   end
 

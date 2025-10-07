@@ -21,7 +21,6 @@ class Api::V1::TroubleshootingController < ActionController::Base
           { error_type: @error_type, 
             status: result[:status],
             message: result[:message] }
-        else
           { error_type: @error_type, status: "ok", message: result.to_s }
         end
 
@@ -56,11 +55,6 @@ class Api::V1::TroubleshootingController < ActionController::Base
       redirect_to troubleshooting_path(result: "Error: #{e.message}", status: :error)
     end
   end
-
-  def reset_location_id
-    puts "Someone"
-    puts "Something here"
-  end 
 
   private
 
