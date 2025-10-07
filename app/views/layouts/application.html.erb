@@ -14,8 +14,8 @@
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
   <%= javascript_importmap_tags %>
 </head>
-<!-- 👇 Start collapsed by default -->
-<body class="bg-gray-100 text-gray-700 min-h-screen flex flex-col sidebar-collapsed">
+
+<body data-controller="page" class="bg-gray-100 text-gray-700 min-h-screen flex flex-col sidebar-collapsed">
 
   <!-- Fixed top header bar -->
   <header class="fixed top-0 left-0 right-0 bg-gray-50/95 backdrop-blur-md border-b border-gray-200/50 h-16 flex items-center justify-between px-6 z-50 shadow-sm transition-all duration-300">
@@ -38,30 +38,37 @@
     <!-- Fixed Sidebar (collapsed default) -->
     <aside id="sidebar" class="fixed left-0 top-16 bottom-12 bg-gray-800 text-gray-200 flex flex-col transition-all duration-300 w-16 shadow-lg z-40 border-r border-gray-700/50">
       
-      <!-- Sidebar content -->
       <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent">
         <ul class="space-y-1">
+          <!-- Service Control -->
           <li>
-            <%= link_to api_v1_services_path, class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 hover:translate-x-1" do %>
-              <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#9881;</span>
+            <button 
+              type="button"
+              class="nav-link group flex items-center gap-3 px-4 py-3 rounded-lg"
+              data-action="click->page#load"
+              data-page-url="<%= api_v1_services_path %>">
+              <span class="text-lg">&#9881;</span>
               <span class="sidebar-text font-medium hidden">Service Control</span>
-              <span class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200">→</span>
-            <% end %>
+            </button>
           </li>
+          <!-- Documentation -->
           <li>
-            <%= link_to documentation_path, class: "nav-link group flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-200 hover:translate-x-1" do %>
-              <span class="text-lg transition-transform duration-200 group-hover:scale-110">&#128187;</span>
-              <span class="sidebar-text font-medium hidden">Documentation</span>
-              <span class="ml-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200">→</span>
-            <% end %>
+           <button 
+            type="button"
+            class="nav-link group flex items-center gap-3 px-4 py-3 rounded-lg"
+            data-action="click->page#load"
+            data-page-url="<%= documentation_path %>">
+            <span class="text-lg">&#128187;</span>
+            <span class="sidebar-text font-medium hidden">Documentation</span>
+          </button>
           </li>
         </ul>
       </nav>
     
     </aside>
 
-    <!-- Main content area (shifted less when collapsed) -->
-    <main id="mainContent" class="flex-1 flex flex-col bg-white/50 backdrop-blur-sm ml-16 transition-all duration-300 min-h-0">
+    <!-- Main content area -->
+    <main data-page-target="content" id="mainContent" class="flex-1 flex flex-col bg-white/50 backdrop-blur-sm ml-16 transition-all duration-300 min-h-0">
       <div class="flex-1 flex flex-col p-8">
         <section class="flex-1 min-h-0">
           <div class="h-full overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent pr-2">
@@ -80,33 +87,40 @@
     </span>
   </footer>
 
-  <!-- Sidebar toggle script stays the same -->
+  <!-- Sidebar toggle script -->
   <script>
-    const hamburgerBtn = document.getElementById('hamburgerBtn');
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const sidebarTexts = document.querySelectorAll('.sidebar-text');
-    
-    let isCollapsed = true; // 👈 Start collapsed
+    document.addEventListener("turbo:load", () => {
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('mainContent');
+      const sidebarTexts = document.querySelectorAll('.sidebar-text');
 
-    hamburgerBtn.addEventListener('click', () => {
-      isCollapsed = !isCollapsed;
-      
-      if (isCollapsed) {
-        sidebar.classList.remove('w-64');
-        sidebar.classList.add('w-16');
-        mainContent.classList.remove('ml-64');
-        mainContent.classList.add('ml-16');
-        document.body.classList.add('sidebar-collapsed');
-        sidebarTexts.forEach(el => el.classList.add('hidden'));
-      } else {
-        sidebar.classList.remove('w-16');
-        sidebar.classList.add('w-64');
-        mainContent.classList.remove('ml-16');
-        mainContent.classList.add('ml-64');
-        document.body.classList.remove('sidebar-collapsed');
-        sidebarTexts.forEach(el => el.classList.remove('hidden'));
+      if (typeof document.body.dataset.isCollapsed === 'undefined') {
+        document.body.dataset.isCollapsed = "true";
       }
+
+      let isCollapsed = document.body.dataset.isCollapsed === "true";
+
+      hamburgerBtn?.addEventListener('click', () => {
+        isCollapsed = !isCollapsed;
+        document.body.dataset.isCollapsed = isCollapsed ? "true" : "false";
+
+        if (isCollapsed) {
+          sidebar.classList.remove('w-64');
+          sidebar.classList.add('w-16');
+          mainContent.classList.remove('ml-64');
+          mainContent.classList.add('ml-16');
+          document.body.classList.add('sidebar-collapsed');
+          sidebarTexts.forEach(el => el.classList.add('hidden'));
+        } else {
+          sidebar.classList.remove('w-16');
+          sidebar.classList.add('w-64');
+          mainContent.classList.remove('ml-16');
+          mainContent.classList.add('ml-64');
+          document.body.classList.remove('sidebar-collapsed');
+          sidebarTexts.forEach(el => el.classList.remove('hidden'));
+        }
+      });
     });
   </script>
 

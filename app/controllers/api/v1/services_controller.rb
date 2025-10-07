@@ -3,20 +3,7 @@ class Api::V1::ServicesController < ActionController::Base
   skip_before_action :verify_authenticity_token, only: [:manage]
 
   def index
-    @services = ["dde4", "redis-server", "dde4_sidekiq", "mysql"]
-    @actions  = ["start", "stop", "restart", "status"]
-
-    @service_status = {}
-    @services.each do |service|
-      begin
-        output = ServiceManager.run("status", service)
-        @service_status[service] =
-          output.downcase.include?("running") ? "running" :
-          output.downcase.include?("stopped") ? "stopped" : "unknown"
-      rescue => e
-        @service_status[service] = "unknown"
-      end
-    end
+    
   end
 
   def manage
