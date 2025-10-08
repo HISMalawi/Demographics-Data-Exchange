@@ -16,8 +16,6 @@ class Troubleshooter
       resolve_sync_configs
     when "detect_footprint_conflicts"
       detect_footprint_conflicts
-    when "resolve_program_users_configs"
-      resolve_program_users_configs
     when
       { status: :unknown, message: "Unknown error type" }
     end

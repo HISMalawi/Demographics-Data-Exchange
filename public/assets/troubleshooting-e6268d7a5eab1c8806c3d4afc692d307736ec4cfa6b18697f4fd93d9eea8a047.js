@@ -51,4 +51,4 @@ export async function autoRunTroubleshooting() {
 
   statusIndicator?.classList.replace("bg-blue-500", "bg-gray-400");
   statusText.textContent = "All diagnostics completed";
-}
+};
