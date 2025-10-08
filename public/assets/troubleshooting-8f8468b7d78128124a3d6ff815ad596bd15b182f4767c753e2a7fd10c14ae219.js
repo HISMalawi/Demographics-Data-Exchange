@@ -1,11 +1,9 @@
-// app/javascript/troubleshooting.js
-
 export async function autoRunTroubleshooting() {
   const outputDiv = document.getElementById("output");
   const statusText = document.getElementById("status_text");
   const statusIndicator = document.getElementById("status_indicator");
 
-  if (!outputDiv) return; // Only run if the output div exists
+  if (!outputDiv) return;
 
   // Clear old output
   outputDiv.innerHTML = `<h3 class="text-xl font-semibold text-gray-800 mb-2">Diagnostics Output</h3>`;
@@ -37,23 +35,36 @@ export async function autoRunTroubleshooting() {
           : "bg-red-50 border-red-300 text-red-700";
 
       const section = document.createElement("div");
-      section.className = `p-4 mb-4 rounded-lg border ${colorClass} shadow-sm`;
+      section.className = `p-4 mb-4 rounded-lg border ${colorClass} shadow-sm transition-all duration-500 hover:shadow-md`;
       section.innerHTML = `
-        <strong class="block mb-1">${type}</strong>
+        <strong class="block mb-1 capitalize">${type.replaceAll("_", " ")}</strong>
         <span class="whitespace-pre-line">${result.message || "No message"}</span>
       `;
 
-      // If auth failed, add a "Reset Sync User" link
+      // ✅ If authentication failed, show Reset Sync User button
       if (result.status === "auth_failed") {
-        const resetLink = document.createElement("a");
-        resetLink.href = "#";
-        resetLink.textContent = "Reset Sync User";
-        resetLink.className = "inline-block mt-2 text-blue-600 hover:text-blue-800 underline";
-        resetLink.addEventListener("click", (e) => {
-          e.preventDefault();
-          resetSyncUser(); // call your existing reset function
-        });
-        section.appendChild(resetLink);
+        const resetButton = document.createElement("button");
+        resetButton.textContent = "Reset Sync User";
+        resetButton.className =
+          "mt-3 inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-2 rounded-lg shadow transition-all duration-300 hover:scale-105 active:scale-95";
+        resetButton.onclick = async () => {
+          resetButton.disabled = true;
+          resetButton.textContent = "Resetting...";
+          try {
+            const resetResponse = await fetch("/api/v1/troubleshooting/reset_sync_user", {
+              method: "POST",
+              headers: { "Accept": "application/json" },
+            });
+            const resetResult = await resetResponse.json();
+            alert(resetResult.message || "Sync user has been reset successfully!");
+          } catch (err) {
+            alert("Failed to reset sync user: " + err);
+          } finally {
+            resetButton.disabled = false;
+            resetButton.textContent = "Reset Sync User";
+          }
+        };
+        section.appendChild(resetButton);
       }
 
       outputDiv.appendChild(section);
@@ -67,11 +78,4 @@ export async function autoRunTroubleshooting() {
 
   statusIndicator?.classList.replace("bg-blue-500", "bg-gray-400");
   statusText.textContent = "All diagnostics completed";
-}
-
-// Example resetSyncUser function (you can move it elsewhere)
-function resetSyncUser() {
-  console.log("Resetting sync user...");
-  // Your existing logic to reset the sync user
-  alert("Sync user reset. Please rerun troubleshooting.");
-}
+};

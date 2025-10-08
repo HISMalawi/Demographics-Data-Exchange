@@ -16,12 +16,19 @@ class Api::V1::TroubleshootingController < ActionController::Base
     begin
       result = troubleshooting_service.select_solution(@error_type)
 
-      response_data =
+      response_data = 
         if result.is_a?(Hash)
-          { error_type: @error_type, 
-            status: result[:status],
-            message: result[:message] }
-          { error_type: @error_type, status: "ok", message: result.to_s }
+          { 
+            error_type: @error_type, 
+            status: result[:status], 
+            message: result[:message] 
+          }
+        else
+          { 
+            error_type: @error_type, 
+            status: result.respond_to?(:status) ? result.status : :unknown, 
+            message: result.to_s 
+          }
         end
 
       respond_to do |format|

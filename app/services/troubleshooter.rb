@@ -119,10 +119,6 @@ class Troubleshooter
     { status: :ok, message: "Sync configuration is valid and authentication succeeded (proxy & master)" }
   end
 
-  def resolve_program_users_configs
-    
-  end
-
   def get_sync_config
     config = load_config
     config[:dde_sync_config] || config["dde_sync_config"]
