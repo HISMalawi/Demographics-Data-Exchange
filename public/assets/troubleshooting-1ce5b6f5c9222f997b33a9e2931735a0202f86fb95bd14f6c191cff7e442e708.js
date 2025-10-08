@@ -131,4 +131,4 @@ async function resetSyncUser(username, password, container, formDiv) {
     alertDiv.textContent = `Error: ${error}`;
     alertDiv.className = "mt-2 p-2 border border-red-300 rounded bg-red-50 text-red-700";
   }
-}
+};
