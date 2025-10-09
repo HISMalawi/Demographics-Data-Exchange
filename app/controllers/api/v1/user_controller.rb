@@ -32,6 +32,26 @@ class Api::V1::UserController < ApplicationController
     end
   end
 
+  def update_password
+    user = User.find_by(username: params[:username])
+
+    unless user
+      return render json: { status: 404, message: "User not found" }, status: :not_found
+    end
+
+    new_password = params[:password]
+
+    if new_password.blank?
+      return render json: { status: 422, message: "Password cannot be blank" }, status: :unprocessable_entity
+    end
+
+    if user.update(password: new_password)
+      render json: { status: 200, message: "Password updated successfully" }, status: :ok
+    else
+      render json: { status: 422, message: "Failed to update password", errors: user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   def index
     #render plain: {name: "john"}.to_json
     render file: Rails.root.join("public", "index.html")
