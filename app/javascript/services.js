@@ -1,19 +1,3 @@
-/*export function loadTasks() {
-  fetch("/services.json")
-    .then(response => response.json())
-    .then(data => {
-      const list = document.getElementById("tasks-list")
-      list.innerHTML = "" // clear old
-      data.forEach(task => {
-        const li = document.createElement("li")
-        li.textContent = `${task.name} - ${task.done ? "✅" : "❌"}`
-        console.log(`${task.name} - ${task.done ? "✅" : "❌"}`)
-        list.appendChild(li)
-      })
-    })
-    .catch(error => console.error("Error loading tasks:", error))
-}*/
-
 
 export function runManage(service, action) {
   fetch(`/api/v1/services/manage_services`, {
