@@ -1,5 +1,7 @@
 class LastSyncedMailer < ApplicationMailer
+    include LastSeenLastSyncCsvHelper
     after_action :log_mail
+
 
     def summary_of_last_synced(last_synced)
       @last_synced_data = last_synced
@@ -29,6 +31,15 @@ class LastSyncedMailer < ApplicationMailer
         host = Rails.application.routes.default_url_options[:host] || 'http://localhost:8050'
 
         @report_url = "#{host}/v1/reports/#{filename}"  # Used summary erb.html view  
+
+        # Generate and attach CSV file
+        csv_data = generate_sites_csv(@last_synced_data, { days_field: 'days_since_last_activity'})
+        csv_filename = "DDE_Sites_Synchronization_Issues#{Date.today.strftime('%Y%m%d')}.csv"
+  
+        attachments[csv_filename] = {
+          mime_type: 'text/csv',
+          content: csv_data
+        }
 
         if @emails.present? || @cc_emails.present?
           mail(

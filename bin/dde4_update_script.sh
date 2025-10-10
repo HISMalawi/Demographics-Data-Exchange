@@ -7,6 +7,45 @@ then
     APP_DIR="/var/www/dde4"
 fi
 
+
+
+# Run the Rails runner with your sync script
+echo "🔄 Adding missing locations sync..."
+
+SQL_FILE="$APP_DIR/db/meta_data/missing_locations.sql"
+
+# Check if file exists
+if [ ! -f "$SQL_FILE" ]; then
+    tput setaf 1; echo "❌ SQL file not found at $SQL_FILE"; tput sgr0
+    exit 1
+fi
+
+
+# Extract production block
+PROD_BLOCK=$(sed -n '/^production:/,/^[^[:space:]]/p' "$APP_DIR/config/database.yml")
+
+DB_NAME=$(echo "$PROD_BLOCK" | grep "database:" | sed 's/.*database:[[:space:]]*//')
+DB_USER=$(echo "$PROD_BLOCK" | grep "username:" | sed 's/.*username:[[:space:]]*//')
+DB_PASS=$(echo "$PROD_BLOCK" | grep "password:" | sed 's/.*password:[[:space:]]*//')
+
+if [ -z "$DB_NAME" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASS" ]; then
+    tput setaf 1; echo "❌ Could not extract DB credentials from $APP_DIR/config/database.yml"; tput sgr0
+    echo "👉 Debug info:"
+    echo "DB_NAME='$DB_NAME'"
+    echo "DB_USER='$DB_USER'"
+    echo "DB_PASS='$DB_PASS'"
+    exit 1
+fi
+
+echo "🔄 Adding missing locations sync into $DB_NAME..."
+mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < "$SQL_FILE"
+
+if [ $? -eq 0 ]; then
+    tput setaf 2; echo "✅ Import completed successfully"; tput sgr0
+else
+    tput setaf 1; echo "❌ Import failed"; tput sgr0
+fi
+
 #username="$(whoami)"
 username="emr-user"
 

@@ -61,6 +61,8 @@ connection = ActiveRecord::Base.connection
   end
 end
 
+return unless ENV['MASTER'] == 'true' # Do not add contraints if it is not a master
+  
 # === Add foreign key constraints ===
 connection = ActiveRecord::Base.connection
 

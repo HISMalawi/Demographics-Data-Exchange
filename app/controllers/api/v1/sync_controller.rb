@@ -1,4 +1,3 @@
-
 # frozen_string_literal: true
 
 require 'syncing_service/sync_service'
@@ -10,7 +9,7 @@ module Api
       before_action :validate_pull_source, only: %i[pull_updates_new pull_updates pull_npids]
       before_action :validate_push_source, only: %i[pushed_updates_new pushed_updates]
       before_action :validate_foot_print_source, only: [:pushed_footprints]
-      
+      after_action :update_movement_cache, only: [:pushed_footprints]
 
       def pull_updates_new
         records_changed = SyncService.person_changes_new(update_params)
@@ -29,7 +28,7 @@ module Api
         if update
           render json: update, status: :created
         else
-          render json: { msg: 'Something went wrong' },status: :internal_server_error
+          render json: { msg: 'Something went wrong' }, status: :internal_server_error
         end
       end
 
@@ -68,10 +67,10 @@ module Api
       def sync_errors
         sync_errors = SyncService.sync_errors
 
-        unless sync_errors.blank?  
-          render json: sync_errors, status: :ok
-        else 
+        if sync_errors.blank?
           render json: {}, status: :not_found
+        else
+          render json: sync_errors, status: :ok
         end
       end
 
@@ -100,7 +99,7 @@ module Api
                       :home_district,
                       :birthdate,
                       :birthdate_estimated,
-                      :person_uuid ,
+                      :person_uuid,
                       :npid,
                       :national_id,
                       :date_registered,
@@ -118,8 +117,7 @@ module Api
                       :void_reason,
                       :first_name_soundex,
                       :last_name_soundex,
-                      :update_seq
-                      )
+                      :update_seq)
       end
 
       def validate_pull_source
@@ -160,11 +158,11 @@ module Api
         params.permit(:user_id, :person_uuid, :program_id, :location_id, :uuid, :encounter_datetime, :created_at,
                       :updated_at)
 
-        { user_id: params[:user_id],person_uuid: params[:person_uuid],encounter_datetime: params[:encounter_datetime],
+        { user_id: params[:user_id], person_uuid: params[:person_uuid], encounter_datetime: params[:encounter_datetime],
           program_id: params[:program_id], location_id: params[:location_id], uuid: params[:uuid],
           app_date_created: params[:created_at], app_date_updated: params[:updated_at] }
       end
-      
+
       def error_params
         params.permit(:site_id, :incident_time, :error, :synced, :uuid, :created_at, :updated_at)
       end
@@ -172,6 +170,11 @@ module Api
       def send_mail
         LowNpidNotificationJob.perform_later(params[:location_updated_at].to_i)
         LastSeenLastSyncedJob.perform_later
+      end
+
+      def update_movement_cache
+        person_uuid = foot_print_params[:person_uuid]
+        UpdateMovementJob.perform_later(person_uuid)
       end
     end
   end
