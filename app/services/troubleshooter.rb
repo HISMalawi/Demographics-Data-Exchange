@@ -79,17 +79,17 @@ class Troubleshooter
   private
 
   def resolve_sync_configs
-    config = load_config
-    sync_config = config[:dde_sync_config] || config["dde_sync_config"]
+    sync_config = get_sync_config
     return { status: :error, message: "Sync configuration not found" } unless sync_config
 
-    username = sync_config[:username] || sync_config["username"]
-    password = sync_config[:password] || sync_config["password"]
+    username  = sync_config[:username] || sync_config["username"]
+    password  = sync_config[:password] || sync_config["password"]
+
     return { status: :auth_failed, message: "Sync username and password not available" } unless username && password
 
     updated = false
 
-    # Ensure correct protocol/host
+    # Ensure correct protocol/host 
     if (sync_config[:protocol] || sync_config["protocol"]).to_s.downcase != "https"
       sync_config[:protocol] = "https"
       updated = true
@@ -100,23 +100,56 @@ class Troubleshooter
       updated = true
     end
 
-    if updated
-      save_config(config)
-      return { status: :ok, message: "Sync configuration updated with correct protocol/host" }
-    end
+    save_config(sync_config) if updated
+    return { status: :ok, message: "Sync configuration updated with correct protocol/host" } if updated
 
-    # Remote authentication
-    remote_uri = URI("https://ddedashboard.hismalawi.org/v1/login?username=#{username}&password=#{password}")
-    remote_response = Net::HTTP.post(remote_uri, "")
-    return { status: :auth_failed, type: :remote, message: "Remote auth failed: #{remote_response.code} #{remote_response.message}" } unless remote_response.is_a?(Net::HTTPSuccess)
+    # Try authentication
+    remote_success = authenticate_remote(username, password)
+    local_success  = authenticate_local(username, password)
 
-    # Local authentication
+    # All good if both auths succeed
+    return { status: :ok, message: "✅ Sync authentication succeeded (proxy & master)" } if remote_success && local_success
+
+    # Auto-reset password using default user
+    new_password = SecureRandom.hex(12)
+    reset_result = reset_sync_password_via_default_user(username, new_password)
+  
+
+    if reset_result[:status] == :ok
+      sync_config[:password] = new_password
+      save_config(sync_config)
+
+      # Retry authentication
+      remote_success = authenticate_remote(username, new_password)
+      local_success = authenticate_local(username, new_password)
+
+
+      if remote_success && local_success
+        { status: :ok, message: "✅ Sync password automatically reset and authentication succeeded" }
+      else
+        { status: :auth_failed, message: "⚠️ Password reset attempted but authentication still failed. Manual intervention needed." }
+      end
+    else
+      { status: :auth_failed, message: "⚠️ Automatic password reset failed: #{reset_result[:message]}. Please reset manually." }
+    end 
+  end
+
+  def authenticate_remote(username, password)
     port = ENV.fetch("PORT", 8050)
-    local_uri = URI("http://localhost:#{port}/v1/login?username=#{username}&password=#{password}")
-    local_response = Net::HTTP.post(local_uri, "")
-    return { status: :auth_failed, type: :local, message: "Local auth failed: #{local_response.code} #{local_response.message}" } unless local_response.is_a?(Net::HTTPSuccess)
+    uri =  URI("http://localhost:#{port}/v1/login?username=#{username}&password=#{password}")
+    response = Net::HTTP.post(uri, "")
+    response.is_a?(Net::HTTPSuccess)
+  rescue
+    false
+  end
 
-    { status: :ok, message: "Sync configuration is valid and authentication succeeded (proxy & master)" }
+  def authenticate_local(username, password)
+     port = ENV.fetch("PORT", 8050)
+     uri = URI("http://localhost:#{port}/v1/login?username=#{username}&password=#{password}")
+     response = Net::HTTP.post(uri, "")
+     response.is_a?(Net::HTTPSuccess)
+  rescue
+    false
   end
 
   def get_sync_config
@@ -128,8 +161,66 @@ class Troubleshooter
     YAML.load_file(CONFIG_FILE_PATH, aliases: true)
   end
 
-  def save_config(config)
-    File.open(CONFIG_FILE_PATH, "w") { |f| f.write(config.to_yaml) }
+  def save_config(new_sync_config)
+    full_config = load_config
+    full_config[:dde_sync_config] ||= {}
+    full_config[:dde_sync_config].merge!(new_sync_config.symbolize_keys)
+
+    File.open(CONFIG_FILE_PATH, "w") do |f|
+      f.write(full_config.to_yaml)
+    end
+  end
+
+  def reset_sync_password_via_default_user(sync_username, new_password)
+
+    admin_username = Rails.application.credentials.admin_username
+    admin_password = Rails.application.credentials.admin_password
+
+    unless admin_username && admin_password
+      return { status: :error, message: "Admin credentials missing in Rails credentials" }
+    end
+
+    login_uri = URI("http://localhost:8050/v1/login")
+    login_request = Net::HTTP::Post.new(login_uri)
+    login_request.set_form_data(username: admin_username, password: admin_password)
+
+    login_response = Net::HTTP.start(login_uri.hostname, login_uri.port) do |http|
+      http.request(login_request)
+    end
+
+    unless login_response.is_a?(Net::HTTPSuccess)
+      return { status: :error, message: "Failed to login as default admin: #{login_response.body}" }
+    end
+
+    token = JSON.parse(login_response.body)["access_token"]
+    unless token
+      return { status: :error, message: "Login succeeded but no access token returned" }
+    end
+
+    sync_user = User.find_by(username: sync_username)
+    return { status: :error, message: "Sync user not found locally" } unless sync_user
+
+    sync_user.password = new_password
+    unless sync_user.save
+      return { status: :error, message: "Failed to update local password: #{sync_user.errors.full_messages.join(', ')}" }
+    end
+
+    update_uri = URI("http://localhost:8050/v1/update_password")
+    update_request = Net::HTTP::Post.new(update_uri)
+    update_request["Authorization"] = "Bearer #{token}"
+    update_request.set_form_data(username: sync_username, password: new_password)
+
+    update_response = Net::HTTP.start(update_uri.hostname, update_uri.port) do |http|
+      http.request(update_request)
+    end
+
+    if update_response.is_a?(Net::HTTPSuccess)
+      { status: :ok, message: "Password reset successfully locally and remotely" }
+    else
+      { status: :error, message: "Password reset locally but failed remotely: #{update_response.body}" }
+    end
+  rescue => e
+    { status: :error, message: e.message }
   end
 
 end
