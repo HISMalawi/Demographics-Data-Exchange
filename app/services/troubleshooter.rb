@@ -76,6 +76,15 @@ class Troubleshooter
     end
   end
 
+  def attempt_sync_job_unlocking
+    unless sync_job_running?
+      File.delete(LOCK_FILE_PATH) if File.exist?(LOCK_FILE_PATH)
+      true
+    else
+      false
+    end 
+  end 
+
   private
 
   def resolve_sync_configs
@@ -222,5 +231,12 @@ class Troubleshooter
   rescue => e
     { status: :error, message: e.message }
   end
+
+  def sync_job_running?
+    Sidekiq::Workers.new.any? do |process_id, thread_id, work|
+      work["payload"]["class"] == SyncJob
+    end
+  end
+
 
 end
