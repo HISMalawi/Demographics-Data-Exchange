@@ -5,6 +5,7 @@ require "socket"
 
 class Troubleshooter
   CONFIG_FILE_PATH = Rails.root.join("config", "database.yml")
+  LOCK_FILE_PATH = "/tmp/dde_sync.lock"
 
   def initialize
     @config = load_config
@@ -12,6 +13,8 @@ class Troubleshooter
 
   def select_solution(error_type) 
     case error_type
+    when "unlock_sync_job"
+      unlock_sync_job
     when "resolve_sync_configs"
       resolve_sync_configs
     when "detect_footprint_conflicts"
@@ -76,14 +79,16 @@ class Troubleshooter
     end
   end
 
-  def attempt_sync_job_unlocking
-    unless sync_job_running?
-      File.delete(LOCK_FILE_PATH) if File.exist?(LOCK_FILE_PATH)
-      true
+  def unlock_sync_job
+    if sync_job_running?
+      { status: :ok, message: "Sync is currently running" }
+    elsif File.exist?(LOCK_FILE_PATH)
+      File.delete(LOCK_FILE_PATH)
+      { status: :ok, message: "Removed sync lock file" }
     else
-      false
-    end 
-  end 
+      { status: :ok, message: "Sync lock already removed" }
+    end
+  end
 
   private
 
