@@ -2,18 +2,24 @@
   <div class="flex items-center justify-between">
     <div>
       <p class="text-<%= color %>-600 text-sm font-medium"><%= label %></p>
-      
+
       <%# Show count only if passed %>
       <% if local_assigns[:count] %>
         <p class="text-2xl font-bold text-<%= color %>-800" id="<%= id %>">
           <%= count %>
         </p>
+
+        <%# Spinner for count cards only %>
+        <div id="<%= id %>-spinner" class="mt-2 flex justify-center">
+          <i class="fas fa-spinner fa-spin text-<%= color %>-500"></i>
+        </div>
       <% end %>
     </div>
+
     <i class="<%= icon %> text-<%= color %>-500 text-2xl"></i>
   </div>
 
-  <%# Allow block content like a button %>
+  <%# Allow block content like a button (no spinner) %>
   <% if block_given? %>
     <div class="mt-4 text-center">
       <%= yield %>

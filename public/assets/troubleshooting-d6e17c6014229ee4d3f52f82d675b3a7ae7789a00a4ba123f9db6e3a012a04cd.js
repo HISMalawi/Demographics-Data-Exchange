@@ -101,4 +101,4 @@ export async function autoRunTroubleshooting() {
 function getMetaValue(name) {
   const element = document.querySelector(`meta[name='${name}']`);
   return element && element.getAttribute("content");
-}
+};

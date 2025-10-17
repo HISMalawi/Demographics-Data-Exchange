@@ -5,13 +5,7 @@ export async function fetchStats() {
   const totalEl = document.getElementById("total-footprints");
   const syncedEl = document.getElementById("synced_footprints");
   const unsyncedEl = document.getElementById("unsynced_footprints");
-
-  // Spinners for count cards only
-  const spinners = {
-    total: document.getElementById("total-footprints-spinner"),
-    synced: document.getElementById("synced_footprints-spinner"),
-    unsynced: document.getElementById("unsynced_footprints-spinner")
-  };
+  const testBtn = document.getElementById("btn-test-sync");
 
   try {
     const response = await fetch("/v1/sync_stats", { headers: { "Accept": "application/json" } });
@@ -21,20 +15,45 @@ export async function fetchStats() {
     const { stats = {}, location = {} } = data;
     const { total = 0, synced = 0, unsynced = 0 } = stats;
 
-    // Update counts
     if (totalEl) totalEl.textContent = total.toLocaleString();
     if (syncedEl) syncedEl.textContent = synced.toLocaleString();
     if (unsyncedEl) unsyncedEl.textContent = unsynced.toLocaleString();
-
-    // Hide spinners after data loads
-    Object.values(spinners).forEach(spinner => spinner?.classList.add("hidden"));
 
     console.log(`Location: ${location.name || "Unknown"} (${location.ip || "N/A"})`);
   } catch (error) {
     console.error("Error fetching footprint stats:", error);
   }
-}
 
+  if (testBtn) {
+    testBtn.addEventListener("click", async () => {
+      testBtn.disabled = true;
+      const originalText = testBtn.innerHTML;
+      testBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Syncing...`;
+
+      try {
+        const response = await fetch("/footprints/test_sync", {
+          method: "POST",
+          headers: {
+            "X-CSRF-Token": getMetaValue("csrf-token"),
+            "Accept": "application/json"
+          }
+        });
+
+        if (!response.ok) throw new Error("Sync failed");
+
+        const result = await response.json();
+        alert(result.message || "Test sync completed!");
+        await fetchStats(); // refresh counts after sync
+      } catch (error) {
+        console.error("Error running test sync:", error);
+        alert("Failed to run test sync.");
+      } finally {
+        testBtn.disabled = false;
+        testBtn.innerHTML = originalText;
+      }
+    });
+  }
+}
 
 // --- Troubleshooting ---
 export async function autoRunTroubleshooting() {
@@ -101,4 +120,4 @@ export async function autoRunTroubleshooting() {
 function getMetaValue(name) {
   const element = document.querySelector(`meta[name='${name}']`);
   return element && element.getAttribute("content");
-}
+};
