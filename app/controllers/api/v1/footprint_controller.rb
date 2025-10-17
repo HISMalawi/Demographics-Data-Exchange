@@ -1,4 +1,8 @@
+require 'foot_print_service'
+
 class Api::V1::FootprintController < ApplicationController
+   skip_before_action :authenticate_request, only: [:stats]
+
   def update_footprint
     footprint = FootPrintService.create(foot_params)
     render json: footprint
@@ -8,6 +12,11 @@ class Api::V1::FootprintController < ApplicationController
     footprint = FootPrintService.by_category(params[:category])
     render json: footprint
   end
+
+  def stats 
+    sync_stats = FootPrintService.stats
+    render json: sync_stats
+  end   
 
   private
    def foot_params

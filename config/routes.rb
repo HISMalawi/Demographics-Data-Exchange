@@ -58,6 +58,7 @@ Rails.application.routes.draw do
 
   #footprint
   post "v1/update_footprint/", to: "api/v1/footprint#update_footprint"
+  get  "/v1/sync_stats", to: "api/v1/footprint#stats"
 
   #merging
   post "v1/merge_people", to: "api/v1/merge#merge"

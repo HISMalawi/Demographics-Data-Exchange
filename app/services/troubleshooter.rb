@@ -1,9 +1,10 @@
 require "yaml"
 require "net/http"
 require "uri"
-require "socket"
 
 class Troubleshooter
+  include NetworkHelper
+
   CONFIG_FILE_PATH = Rails.root.join("config", "database.yml")
   LOCK_FILE_PATH = "/tmp/dde_sync.lock"
 
@@ -46,34 +47,31 @@ class Troubleshooter
     locations_with_footprints = footprint_summary.select { |_location_id, count| count > 0 }
 
     if locations_with_footprints.size > 1
-      ip_address = Socket.ip_address_list.detect(&:ipv4_private?)&.ip_address
-      matching_locations = Location.where(ip_address: ip_address)
+      
+      location = check_ip_conflict!  # ← comes from NetworkHelper
+      ip_address = current_private_ip
 
-      if matching_locations.count > 1
-        raise "🚨 <strong>Conflict Detected:</strong> The IP address <strong>#{ip_address}</strong> is linked to <strong>multiple locations</strong>. Please verify your network configuration or update the location records."
-      elsif matching_locations.exists?
-        current_location_id = matching_locations.pick(:location_id)
-        updated_records_count = FootPrint.update_all(location_id: current_location_id)
-
+      if location
+        updated_records_count = FootPrint.update_all(location_id: location.id)
         if updated_records_count.positive?
-          return {
+          {
             status: :ok,
-            message: "✅ <strong>Footprints successfully reassigned</strong> to location ID <strong>#{current_location_id}</strong> (IP: <strong>#{ip_address}</strong>).",
+            message: "<strong>Footprints reassigned</strong> to <strong>#{location.name}</strong> (IP: #{ip_address}).",
             details: {
               updated_records: updated_records_count,
               involved_locations: locations_with_footprints.keys
             }
           }
         else
-          raise "⚠️ <strong>Update Failed:</strong> Could not reassign footprints for IP <strong>#{ip_address}</strong>. Please check database integrity or permissions."
+          raise "<strong>Update Failed:</strong> Could not reassign footprints for IP #{ip_address}."
         end
       else
-        raise "🚨 <strong>Unresolved Footprint Conflict:</strong> Found <strong>#{locations_with_footprints.size}</strong> different locations with footprints, but the current IP address <strong>(#{ip_address})</strong> is not registered in the <strong>locations</strong> table. Unable to auto-resolve footprints."
+        raise "<strong>Unresolved Conflict:</strong> Found multiple locations but IP <strong>#{ip_address}</strong> not registered."
       end
     else
       {
         status: :ok,
-        message: "✅ <strong>Footprints resolved successfully</strong> — all records belong to a single valid location.",
+        message: "<strong>Footprints resolved successfully</strong> — all records belong to a single valid location.",
         details: locations_with_footprints
       }
     end
@@ -139,12 +137,12 @@ class Troubleshooter
 
 
       if remote_success && local_success
-        { status: :ok, message: "✅ Sync password automatically reset and authentication succeeded" }
+        { status: :ok, message: "Sync password automatically reset and authentication succeeded" }
       else
-        { status: :auth_failed, message: "⚠️ Password reset attempted but authentication still failed. Manual intervention needed." }
+        { status: :auth_failed, message: "Password reset attempted but authentication still failed. Manual intervention needed." }
       end
     else
-      { status: :auth_failed, message: "⚠️ Automatic password reset failed: #{reset_result[:message]}. Please reset manually." }
+      { status: :auth_failed, message: "Automatic password reset failed: #{reset_result[:message]}. Please reset manually." }
     end 
   end
 
