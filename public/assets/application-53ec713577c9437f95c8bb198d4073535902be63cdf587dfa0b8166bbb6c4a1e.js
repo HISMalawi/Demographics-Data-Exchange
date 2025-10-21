@@ -3,7 +3,7 @@ import "@hotwired/turbo-rails"
 import { Application } from "@hotwired/stimulus"
 import PageController from "./controllers/page_controller"
 
-import { fetchStats, autoRunTroubleshooting, runTestSync } from "./troubleshooting";
+import { fetchStats, autoRunTroubleshooting } from "./troubleshooting";
 
 const application = Application.start()
 application.register("page", PageController)
@@ -18,5 +18,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.getElementById("btn-test-sync").addEventListener("click", function() {
   // your code here
-  runTestSync();
+  console.log("This comeback is personal");
 });

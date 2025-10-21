@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalEl = document.getElementById("total-footprints");
   const syncedEl = document.getElementById("synced_footprints");
   const unsyncedEl = document.getElementById("unsynced_footprints");
-  const testBtn = document.getElementById("btn-test-sync");
+  const testBtn = document.getElementById("test_sync");
 
   // --- 1. Fetch stats and populate UI ---
   async function fetchStats() {
@@ -30,6 +30,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- 2. Trigger test sync ---
   async function runTestSync() {
+    console.log("Damn you clicked me");
+    
     if (!testBtn) return;
 
     testBtn.disabled = true;
