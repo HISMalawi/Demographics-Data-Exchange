@@ -127,7 +127,7 @@ Rails.application.routes.draw do
         collection do
           post :troubleshoot
           post :reset_sync_credentials
-          post :reset_foot_prints_location_id, as: :reset_location_id
+          post :test_sync
         end
       end
 

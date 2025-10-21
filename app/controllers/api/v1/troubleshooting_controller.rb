@@ -2,7 +2,7 @@ class Api::V1::TroubleshootingController < ActionController::Base
   layout "application"
   skip_before_action :verify_authenticity_token, only: [:troubleshoot, 
                                                         :reset_sync_credentials,
-                                                        :reset_location_id ]
+                                                        :reset_location_id, :test_sync ]
 
   def index
     @result = params[:result]
@@ -62,6 +62,12 @@ class Api::V1::TroubleshootingController < ActionController::Base
       redirect_to troubleshooting_path(result: "Error: #{e.message}", status: :error)
     end
   end
+
+  def test_sync
+    result = SyncJob.new.test_sync_flow
+    
+    render json: result
+  end 
 
   private
 

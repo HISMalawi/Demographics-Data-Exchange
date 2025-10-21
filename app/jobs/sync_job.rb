@@ -4,8 +4,9 @@ require 'yaml'
 class SyncJob < ApplicationJob
   queue_as :sync
 
-  def perform(*_args)
-    # Do something later
+  def initialize
+    super()
+
     sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"), aliases: true)[:dde_sync_config]
 
     @protocol = sync_configs[:protocol]
@@ -30,7 +31,10 @@ class SyncJob < ApplicationJob
     @location = @user['location_id'].to_i
 
     @token = ''
+  end 
 
+  def perform(*_args)
+    # Do something later
     start_syncing
   end
 
@@ -319,6 +323,37 @@ class SyncJob < ApplicationJob
     end
   end
 
+  def test_sync_flow
+    begin
+      token = authenticate
+
+      # Try pulling one record 
+      url = "#{@base_url}/person_changes_new?site_id=#{@location}&pull_seq=0&limit=1"
+      response = RestClient::Request.execute(
+        method: :get,
+        url: url,
+        headers: { Authorization: token },
+        open_timeout: 3,  # seconds
+        read_timeout: 5  # seconds
+      )
+
+      data = JSON.parse(response) rescue []
+
+      if data.present?
+        { status: 'success', message: 'Sync working: Able to fetch test record from remote server.' }
+      else
+        { status: 'warning', message: 'Connected and authenticated, but no records returned (pull working but no new data).' }
+      end
+
+    rescue RestClient::Exceptions::OpenTimeout, RestClient::Exceptions::ReadTimeout
+      { status: 'failed', message: 'Sync failed: Connection timed out.' }
+    rescue RestClient::ExceptionWithResponse => e
+      { status: 'failed', message: "Sync failed at API layer: #{e.response}" }
+    rescue StandardError => e
+      { status: 'failed', message: "Unexpected Error: #{e.message}" }
+    end
+  end
+   
   private
 
   def log_error(error)

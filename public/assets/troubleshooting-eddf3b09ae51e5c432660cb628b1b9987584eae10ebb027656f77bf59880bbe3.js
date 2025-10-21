@@ -118,13 +118,11 @@ export async function runTestSync(){
       if (!response.ok) throw new Error("Sync failed");
 
       const result = await response.json();
-      if (!response.ok) throw new Error(result.message || "Sync failed");
-
-      showModal("Sync Test ", result.message || "Test sync completed!");
+      alert(result.message || "Test sync completed!");
 
     } catch (error) {
       console.error("Error running test sync:", error);
-      showModal("Sync Failed", error.message || "Failed to run test sync.");
+      alert("Failed to run test sync.");
     } finally {
       testBtn.disabled = false;
       testBtn.innerHTML = originalText;
@@ -135,16 +133,4 @@ export async function runTestSync(){
 function getMetaValue(name) {
   const element = document.querySelector(`meta[name='${name}']`);
   return element && element.getAttribute("content");
-}
-
-function showModal(title, message) {
-  document.getElementById("sync-modal-title").innerText = title;
-  document.getElementById("sync-modal-message").innerText = message;
-  document.getElementById("sync-modal").classList.remove("hidden");
-}
-
-function closeModal() {
-  document.getElementById("sync-modal").classList.add("hidden");
-}
-
-document.getElementById("sync-modal-close").addEventListener("click", closeModal);
+};
