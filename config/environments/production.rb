@@ -45,10 +45,11 @@ Rails.application.configure do
 
   # Use the lowest log level to ensure availability of diagnostic information
   # when problems arise.
-  config.log_level = :debug
+  config.logger = ActiveSupport::Logger.new('log/production.log', 10, 100 * 1024 * 1024)
+  config.log_level = :info
 
   # Prepend all log lines with the following tags.
-  config.log_tags = [ :request_id ]
+  config.log_tags = [:request_id]
 
   # Use a different cache store in production.
   # config.cache_store = :mem_cache_store
@@ -57,8 +58,8 @@ Rails.application.configure do
   # config.active_job.queue_adapter     = :resque
   # config.active_job.queue_name_prefix = "Demographics-Data-Exchange_#{Rails.env}"
 
-    # SMTP Settings
-  config.action_mailer.delivery_method = :smtp 
+  # SMTP Settings
+  config.action_mailer.delivery_method = :smtp
 
   smtp_config_path = Rails.root.join('config', 'smtp_settings.yml')
 
@@ -78,11 +79,11 @@ Rails.application.configure do
       read_timeout: 60
     }
   else
-     puts "WARNING: SMTP config file not found at #{smtp_config_path}. Skipping SMTP setup."
+    puts "WARNING: SMTP config file not found at #{smtp_config_path}. Skipping SMTP setup."
     # You can choose to set default SMTP settings here or skip entirely.
     # config.action_mailer.smtp_settings = { ...default values... }
   end
-  
+
   config.action_mailer.perform_caching = true
 
   # Ignore bad email addresses and do not raise email delivery errors.
@@ -103,7 +104,7 @@ Rails.application.configure do
   # require 'syslog/logger'
   # config.logger = ActiveSupport::TaggedLogging.new(Syslog::Logger.new 'app-name')
 
-  if ENV["RAILS_LOG_TO_STDOUT"].present?
+  if ENV['RAILS_LOG_TO_STDOUT'].present?
     logger           = ActiveSupport::Logger.new(STDOUT)
     logger.formatter = config.log_formatter
     config.logger    = ActiveSupport::TaggedLogging.new(logger)
@@ -111,5 +112,5 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
-  Rails.application.routes.default_url_options[:host] = ENV.fetch("DDE_HOST_URL")
+  Rails.application.routes.default_url_options[:host] = ENV.fetch('DDE_HOST_URL')
 end
