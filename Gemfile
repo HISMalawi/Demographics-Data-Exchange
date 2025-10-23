@@ -78,4 +78,4 @@ gem "importmap-rails"
 
 gem "sprockets-rails"
 
-gem "tailwindcss-rails", "~> 4.3"
+gem "tailwindcss-rails"

@@ -1,20 +1,23 @@
 <div class="max-w-8xl mx-auto space-y-8">
+<div id="sync-alert" class="fixed top-2 right-5 hidden w-100 p-4 rounded-lg shadow-lg bg-white bg-opacity-90 backdrop-blur transform transition-all duration-300 z-50">
+  <div class="flex justify-between items-start">
+    <div>
+      <h4 id="sync-alert-title" class="text-lg font-semibold text-gray-900"></h4>
+      <p id="sync-alert-message" class="text-gray-700 mt-1 text-sm"></p>
+    </div>
+    <button id="sync-alert-close" class="ml-4 text-gray-500 hover:text-gray-900 font-bold text-xl leading-none">&times;</button>
+  </div>
+</div>
+
   <!-- Stats Overview -->
   <%= render "stats_overview" %>
 
   <!-- System Diagnostics -->
   <%= render "system_diagnostics" %>
 
-  <div id="sync-modal" class="fixed inset-0 hidden bg-black bg-opacity-50 flex items-center justify-center z-50">
-  <div class="bg-white rounded-lg shadow-lg p-6 w-96 text-center">
-      <h2 id="sync-modal-title" class="text-lg font-semibold mb-3">Status</h2>
-      <p id="sync-modal-message" class="text-gray-700 mb-5">...</p>
-      <button id="sync-modal-close" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-        Close
-      </button>
-    </div>
-  </div>
   
+</div>
+
 </div>
 
 <!-- Scripts -->

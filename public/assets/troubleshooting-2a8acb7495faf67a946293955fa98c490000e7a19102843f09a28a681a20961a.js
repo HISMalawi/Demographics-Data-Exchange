@@ -98,7 +98,9 @@ export async function autoRunTroubleshooting() {
 }
 
 export async function runTestSync(){
-    const testBtn = document.getElementById("btn-test-sync");
+    showAlert("Sync Test ", "Test sync completed!", "info");
+   
+    /*const testBtn = document.getElementById("btn-test-sync");
 
     if (!testBtn) return;
 
@@ -120,15 +122,15 @@ export async function runTestSync(){
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || "Sync failed");
 
-      showAlert("Sync Test ", result.message || "Test sync completed!","success");
+      showAlert("Sync Test ", result.message || "Test sync completed!");
 
     } catch (error) {
       console.error("Error running test sync:", error);
-      showAlert("Sync Test ", error.message || "Failed to run test sync.", "error");
+      showAlert("Sync Failed", error.message || "Failed to run test sync.");
     } finally {
       testBtn.disabled = false;
       testBtn.innerHTML = originalText;
-    }
+    }*/
 }
 
 // --- Helper ---

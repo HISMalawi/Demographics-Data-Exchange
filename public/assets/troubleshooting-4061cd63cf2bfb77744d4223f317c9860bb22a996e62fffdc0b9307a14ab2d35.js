@@ -120,11 +120,11 @@ export async function runTestSync(){
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || "Sync failed");
 
-      showAlert("Sync Test ", result.message || "Test sync completed!","success");
+      showModal("Sync Test ", result.message || "Test sync completed!");
 
     } catch (error) {
       console.error("Error running test sync:", error);
-      showAlert("Sync Test ", error.message || "Failed to run test sync.", "error");
+      showModal("Sync Failed", error.message || "Failed to run test sync.");
     } finally {
       testBtn.disabled = false;
       testBtn.innerHTML = originalText;
@@ -137,55 +137,14 @@ function getMetaValue(name) {
   return element && element.getAttribute("content");
 }
 
-function showAlert(title, message, type = "info", duration = 5000) {
-  const alertEl = document.getElementById("sync-alert");
-  const titleEl = document.getElementById("sync-alert-title");
-  const messageEl = document.getElementById("sync-alert-message");
-
-  // Set text
-  titleEl.innerText = title;
-  messageEl.innerText = message;
-
-  // Set color based on type
-  let bgColor = "bg-white";
-  let titleColor = "text-gray-900";
-  switch(type) {
-    case "success":
-      bgColor = "bg-green-100";
-      titleColor = "text-green-800";
-      break;
-    case "error":
-      bgColor = "bg-red-100";
-      titleColor = "text-red-800";
-      break;
-    case "warning":
-      bgColor = "bg-yellow-100";
-      titleColor = "text-yellow-800";
-      break;
-    case "info":
-    default:
-      bgColor = "bg-blue-100";
-      titleColor = "text-blue-800";
-  }
-
-  alertEl.className = `fixed top-5 right-5 hidden w-80 p-4 rounded-lg shadow-lg ${bgColor} backdrop-blur transform transition-all duration-300 z-50 flex justify-between items-start`;
-  titleEl.className = `text-lg font-semibold ${titleColor}`;
-
-  // Show alert
-  alertEl.classList.remove("hidden");
-  alertEl.classList.add("opacity-100", "translate-x-0");
-
-  // Auto-hide
-  if (duration > 0) {
-    setTimeout(() => closeAlert(), duration);
-  }
+function showModal(title, message) {
+  document.getElementById("sync-modal-title").innerText = title;
+  document.getElementById("sync-modal-message").innerText = message;
+  document.getElementById("sync-modal").classList.remove("hidden");
 }
 
-function closeAlert() {
-  const alertEl = document.getElementById("sync-alert");
-  alertEl.classList.add("opacity-0", "translate-x-10");
-  setTimeout(() => alertEl.classList.add("hidden"), 300);
+function closeModal() {
+  document.getElementById("sync-modal").classList.add("hidden");
 }
 
-// Close button
-document.getElementById("sync-alert-close").addEventListener("click", closeAlert);
+document.getElementById("sync-modal-close").addEventListener("click", closeModal);
