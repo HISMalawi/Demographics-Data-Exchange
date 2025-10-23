@@ -1,5 +1,5 @@
 /*!
-Turbo 8.0.13
+Turbo 8.0.17
 Copyright © 2025 37signals LLC
  */
 (function (global, factory) {
@@ -561,7 +561,13 @@ Copyright © 2025 37signals LLC
   }
 
   function findLinkFromClickTarget(target) {
-    return findClosestRecursively(target, "a[href]:not([target^=_]):not([download])")
+    const link = findClosestRecursively(target, "a[href], a[xlink\\:href]");
+
+    if (!link) return null
+    if (link.hasAttribute("download")) return null
+    if (link.hasAttribute("target") && link.target !== "_self") return null
+
+    return link
   }
 
   function getLocationForLink(link) {
@@ -648,8 +654,8 @@ Copyright © 2025 37signals LLC
   }
 
   function isPrefixedBy(baseURL, url) {
-    const prefix = getPrefix(url);
-    return baseURL.href === expandURL(prefix).href || baseURL.href.startsWith(prefix)
+    const prefix = addTrailingSlash(url.origin + url.pathname);
+    return addTrailingSlash(baseURL.href) === prefix || baseURL.href.startsWith(prefix)
   }
 
   function locationIsVisitable(location, rootLocation) {
@@ -675,10 +681,6 @@ Copyright © 2025 37signals LLC
 
   function getLastPathComponent(url) {
     return getPathComponents(url).slice(-1)[0]
-  }
-
-  function getPrefix(url) {
-    return addTrailingSlash(url.origin + url.pathname)
   }
 
   function addTrailingSlash(value) {
@@ -761,15 +763,13 @@ Copyright © 2025 37signals LLC
 
   const recentRequests = new LimitedSet(20);
 
-  const nativeFetch = window.fetch;
-
   function fetchWithTurboHeaders(url, options = {}) {
     const modifiedHeaders = new Headers(options.headers || {});
     const requestUID = uuid();
     recentRequests.add(requestUID);
     modifiedHeaders.append("X-Turbo-Request-Id", requestUID);
 
-    return nativeFetch(url, {
+    return window.fetch(url, {
       ...options,
       headers: modifiedHeaders
     })
@@ -1505,8 +1505,8 @@ Copyright © 2025 37signals LLC
     scrollToAnchor(anchor) {
       const element = this.snapshot.getElementForAnchor(anchor);
       if (element) {
-        this.scrollToElement(element);
         this.focusElement(element);
+        this.scrollToElement(element);
       } else {
         this.scrollToPosition({ x: 0, y: 0 });
       }
@@ -3338,6 +3338,14 @@ Copyright © 2025 37signals LLC
     };
   })();
 
+  /**
+   * Morph the state of the currentElement based on the attributes and contents of
+   * the newElement. Morphing may dispatch turbo:before-morph-element,
+   * turbo:before-morph-attribute, and turbo:morph-element events.
+   *
+   * @param currentElement Element destination of morphing changes
+   * @param newElement Element source of morphing changes
+   */
   function morphElements(currentElement, newElement, { callbacks, ...options } = {}) {
     Idiomorph.morph(currentElement, newElement, {
       ...options,
@@ -3345,10 +3353,35 @@ Copyright © 2025 37signals LLC
     });
   }
 
-  function morphChildren(currentElement, newElement) {
+  /**
+   * Morph the child elements of the currentElement based on the child elements of
+   * the newElement. Morphing children may dispatch turbo:before-morph-element,
+   * turbo:before-morph-attribute, and turbo:morph-element events.
+   *
+   * @param currentElement Element destination of morphing children changes
+   * @param newElement Element source of morphing children changes
+   */
+  function morphChildren(currentElement, newElement, options = {}) {
     morphElements(currentElement, newElement.childNodes, {
+      ...options,
       morphStyle: "innerHTML"
     });
+  }
+
+  function shouldRefreshFrameWithMorphing(currentFrame, newFrame) {
+    return currentFrame instanceof FrameElement &&
+      // newFrame cannot yet be an instance of FrameElement because custom
+      // elements don't get initialized until they're attached to the DOM, so
+      // test its Element#nodeName instead
+      newFrame instanceof Element && newFrame.nodeName === "TURBO-FRAME" &&
+      currentFrame.shouldReloadWithMorph &&
+      currentFrame.id === newFrame.id &&
+      (!newFrame.getAttribute("src") || urlsAreEqual(currentFrame.src, newFrame.getAttribute("src"))) &&
+      !currentFrame.closest("[data-turbo-permanent]")
+  }
+
+  function closestFrameReloadableWithMorphing(node) {
+    return node.parentElement.closest("turbo-frame[src][refresh=morph]")
   }
 
   class DefaultIdiomorphCallbacks {
@@ -3409,7 +3442,20 @@ Copyright © 2025 37signals LLC
         detail: { currentElement, newElement }
       });
 
-      morphChildren(currentElement, newElement);
+      morphChildren(currentElement, newElement, {
+        callbacks: {
+          beforeNodeMorphed: (node, newNode) => {
+            if (
+              shouldRefreshFrameWithMorphing(node, newNode) &&
+                closestFrameReloadableWithMorphing(node) === currentElement
+            ) {
+              node.reload();
+              return false
+            }
+            return true
+          }
+        }
+      });
     }
 
     async preservingPermanentElements(callback) {
@@ -3718,7 +3764,8 @@ Copyright © 2025 37signals LLC
     }
 
     get prefersViewTransitions() {
-      return this.headSnapshot.getMetaValue("view-transition") === "same-origin"
+      const viewTransitionEnabled = this.getSetting("view-transition") === "true" || this.headSnapshot.getMetaValue("view-transition") === "same-origin";
+      return viewTransitionEnabled && !window.matchMedia("(prefers-reduced-motion: reduce)").matches
     }
 
     get shouldMorphPage() {
@@ -4206,6 +4253,8 @@ Copyright © 2025 37signals LLC
 
     visitStarted(visit) {
       this.location = visit.location;
+      this.redirectedToLocation = null;
+
       visit.loadCachedSnapshot();
       visit.issueRequest();
       visit.goToSamePageAnchor();
@@ -4222,6 +4271,10 @@ Copyright © 2025 37signals LLC
 
     visitRequestCompleted(visit) {
       visit.loadResponse();
+
+      if (visit.response.redirected) {
+        this.redirectedToLocation = visit.redirectedToLocation;
+      }
     }
 
     visitRequestFailedWithStatusCode(visit, statusCode) {
@@ -4311,7 +4364,7 @@ Copyright © 2025 37signals LLC
     reload(reason) {
       dispatch("turbo:reload", { detail: reason });
 
-      window.location.href = this.location?.toString() || window.location.href;
+      window.location.href = (this.redirectedToLocation || this.location)?.toString() || window.location.href;
     }
 
     get navigator() {
@@ -4623,6 +4676,8 @@ Copyright © 2025 37signals LLC
             new URLSearchParams(),
             target
           );
+
+          fetchRequest.fetchOptions.priority = "low";
 
           prefetchCache.setLater(location.toString(), fetchRequest, this.#cacheTtl);
         }
@@ -5433,13 +5488,18 @@ Copyright © 2025 37signals LLC
     static renderElement(currentElement, newElement) {
       morphElements(currentElement, newElement, {
         callbacks: {
-          beforeNodeMorphed: element => !canRefreshFrame(element)
+          beforeNodeMorphed: (node, newNode) => {
+            if (
+              shouldRefreshFrameWithMorphing(node, newNode) &&
+                !closestFrameReloadableWithMorphing(node)
+            ) {
+              node.reload();
+              return false
+            }
+            return true
+          }
         }
       });
-
-      for (const frame of currentElement.querySelectorAll("turbo-frame")) {
-        if (canRefreshFrame(frame)) frame.reload();
-      }
 
       dispatch("turbo:morph", { detail: { currentElement, newElement } });
     }
@@ -5455,13 +5515,6 @@ Copyright © 2025 37signals LLC
     get shouldAutofocus() {
       return false
     }
-  }
-
-  function canRefreshFrame(frame) {
-    return frame instanceof FrameElement &&
-      frame.src &&
-      frame.refresh === "morph" &&
-      !frame.closest("[data-turbo-permanent]")
   }
 
   class SnapshotCache {
@@ -6287,6 +6340,32 @@ Copyright © 2025 37signals LLC
     config.forms.mode = mode;
   }
 
+  /**
+   * Morph the state of the currentBody based on the attributes and contents of
+   * the newBody. Morphing body elements may dispatch turbo:morph,
+   * turbo:before-morph-element, turbo:before-morph-attribute, and
+   * turbo:morph-element events.
+   *
+   * @param currentBody HTMLBodyElement destination of morphing changes
+   * @param newBody HTMLBodyElement source of morphing changes
+   */
+  function morphBodyElements(currentBody, newBody) {
+    MorphingPageRenderer.renderElement(currentBody, newBody);
+  }
+
+  /**
+   * Morph the child elements of the currentFrame based on the child elements of
+   * the newFrame. Morphing turbo-frame elements may dispatch turbo:before-frame-morph,
+   * turbo:before-morph-element, turbo:before-morph-attribute, and
+   * turbo:morph-element events.
+   *
+   * @param currentFrame FrameElement destination of morphing children changes
+   * @param newFrame FrameElement source of morphing children changes
+   */
+  function morphTurboFrameElements(currentFrame, newFrame) {
+    MorphingFrameRenderer.renderElement(currentFrame, newFrame);
+  }
+
   var Turbo = /*#__PURE__*/Object.freeze({
     __proto__: null,
     navigator: navigator$1,
@@ -6306,7 +6385,11 @@ Copyright © 2025 37signals LLC
     clearCache: clearCache,
     setProgressBarDelay: setProgressBarDelay,
     setConfirmMethod: setConfirmMethod,
-    setFormMode: setFormMode
+    setFormMode: setFormMode,
+    morphBodyElements: morphBodyElements,
+    morphTurboFrameElements: morphTurboFrameElements,
+    morphChildren: morphChildren,
+    morphElements: morphElements
   });
 
   class TurboFrameMissingError extends Error {}
@@ -7202,6 +7285,10 @@ Copyright © 2025 37signals LLC
   exports.fetchEnctypeFromString = fetchEnctypeFromString;
   exports.fetchMethodFromString = fetchMethodFromString;
   exports.isSafe = isSafe;
+  exports.morphBodyElements = morphBodyElements;
+  exports.morphChildren = morphChildren;
+  exports.morphElements = morphElements;
+  exports.morphTurboFrameElements = morphTurboFrameElements;
   exports.navigator = navigator$1;
   exports.registerAdapter = registerAdapter;
   exports.renderStreamMessage = renderStreamMessage;

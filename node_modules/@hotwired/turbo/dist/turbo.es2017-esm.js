@@ -1,5 +1,5 @@
 /*!
-Turbo 8.0.13
+Turbo 8.0.17
 Copyright © 2025 37signals LLC
  */
 /**
@@ -555,7 +555,13 @@ function doesNotTargetIFrame(name) {
 }
 
 function findLinkFromClickTarget(target) {
-  return findClosestRecursively(target, "a[href]:not([target^=_]):not([download])")
+  const link = findClosestRecursively(target, "a[href], a[xlink\\:href]");
+
+  if (!link) return null
+  if (link.hasAttribute("download")) return null
+  if (link.hasAttribute("target") && link.target !== "_self") return null
+
+  return link
 }
 
 function getLocationForLink(link) {
@@ -642,8 +648,8 @@ function getExtension(url) {
 }
 
 function isPrefixedBy(baseURL, url) {
-  const prefix = getPrefix(url);
-  return baseURL.href === expandURL(prefix).href || baseURL.href.startsWith(prefix)
+  const prefix = addTrailingSlash(url.origin + url.pathname);
+  return addTrailingSlash(baseURL.href) === prefix || baseURL.href.startsWith(prefix)
 }
 
 function locationIsVisitable(location, rootLocation) {
@@ -669,10 +675,6 @@ function getPathComponents(url) {
 
 function getLastPathComponent(url) {
   return getPathComponents(url).slice(-1)[0]
-}
-
-function getPrefix(url) {
-  return addTrailingSlash(url.origin + url.pathname)
 }
 
 function addTrailingSlash(value) {
@@ -755,15 +757,13 @@ class LimitedSet extends Set {
 
 const recentRequests = new LimitedSet(20);
 
-const nativeFetch = window.fetch;
-
 function fetchWithTurboHeaders(url, options = {}) {
   const modifiedHeaders = new Headers(options.headers || {});
   const requestUID = uuid();
   recentRequests.add(requestUID);
   modifiedHeaders.append("X-Turbo-Request-Id", requestUID);
 
-  return nativeFetch(url, {
+  return window.fetch(url, {
     ...options,
     headers: modifiedHeaders
   })
@@ -1499,8 +1499,8 @@ class View {
   scrollToAnchor(anchor) {
     const element = this.snapshot.getElementForAnchor(anchor);
     if (element) {
-      this.scrollToElement(element);
       this.focusElement(element);
+      this.scrollToElement(element);
     } else {
       this.scrollToPosition({ x: 0, y: 0 });
     }
@@ -3332,6 +3332,14 @@ var Idiomorph = (function () {
   };
 })();
 
+/**
+ * Morph the state of the currentElement based on the attributes and contents of
+ * the newElement. Morphing may dispatch turbo:before-morph-element,
+ * turbo:before-morph-attribute, and turbo:morph-element events.
+ *
+ * @param currentElement Element destination of morphing changes
+ * @param newElement Element source of morphing changes
+ */
 function morphElements(currentElement, newElement, { callbacks, ...options } = {}) {
   Idiomorph.morph(currentElement, newElement, {
     ...options,
@@ -3339,10 +3347,35 @@ function morphElements(currentElement, newElement, { callbacks, ...options } = {
   });
 }
 
-function morphChildren(currentElement, newElement) {
+/**
+ * Morph the child elements of the currentElement based on the child elements of
+ * the newElement. Morphing children may dispatch turbo:before-morph-element,
+ * turbo:before-morph-attribute, and turbo:morph-element events.
+ *
+ * @param currentElement Element destination of morphing children changes
+ * @param newElement Element source of morphing children changes
+ */
+function morphChildren(currentElement, newElement, options = {}) {
   morphElements(currentElement, newElement.childNodes, {
+    ...options,
     morphStyle: "innerHTML"
   });
+}
+
+function shouldRefreshFrameWithMorphing(currentFrame, newFrame) {
+  return currentFrame instanceof FrameElement &&
+    // newFrame cannot yet be an instance of FrameElement because custom
+    // elements don't get initialized until they're attached to the DOM, so
+    // test its Element#nodeName instead
+    newFrame instanceof Element && newFrame.nodeName === "TURBO-FRAME" &&
+    currentFrame.shouldReloadWithMorph &&
+    currentFrame.id === newFrame.id &&
+    (!newFrame.getAttribute("src") || urlsAreEqual(currentFrame.src, newFrame.getAttribute("src"))) &&
+    !currentFrame.closest("[data-turbo-permanent]")
+}
+
+function closestFrameReloadableWithMorphing(node) {
+  return node.parentElement.closest("turbo-frame[src][refresh=morph]")
 }
 
 class DefaultIdiomorphCallbacks {
@@ -3403,7 +3436,20 @@ class MorphingFrameRenderer extends FrameRenderer {
       detail: { currentElement, newElement }
     });
 
-    morphChildren(currentElement, newElement);
+    morphChildren(currentElement, newElement, {
+      callbacks: {
+        beforeNodeMorphed: (node, newNode) => {
+          if (
+            shouldRefreshFrameWithMorphing(node, newNode) &&
+              closestFrameReloadableWithMorphing(node) === currentElement
+          ) {
+            node.reload();
+            return false
+          }
+          return true
+        }
+      }
+    });
   }
 
   async preservingPermanentElements(callback) {
@@ -3712,7 +3758,8 @@ class PageSnapshot extends Snapshot {
   }
 
   get prefersViewTransitions() {
-    return this.headSnapshot.getMetaValue("view-transition") === "same-origin"
+    const viewTransitionEnabled = this.getSetting("view-transition") === "true" || this.headSnapshot.getMetaValue("view-transition") === "same-origin";
+    return viewTransitionEnabled && !window.matchMedia("(prefers-reduced-motion: reduce)").matches
   }
 
   get shouldMorphPage() {
@@ -4200,6 +4247,8 @@ class BrowserAdapter {
 
   visitStarted(visit) {
     this.location = visit.location;
+    this.redirectedToLocation = null;
+
     visit.loadCachedSnapshot();
     visit.issueRequest();
     visit.goToSamePageAnchor();
@@ -4216,6 +4265,10 @@ class BrowserAdapter {
 
   visitRequestCompleted(visit) {
     visit.loadResponse();
+
+    if (visit.response.redirected) {
+      this.redirectedToLocation = visit.redirectedToLocation;
+    }
   }
 
   visitRequestFailedWithStatusCode(visit, statusCode) {
@@ -4305,7 +4358,7 @@ class BrowserAdapter {
   reload(reason) {
     dispatch("turbo:reload", { detail: reason });
 
-    window.location.href = this.location?.toString() || window.location.href;
+    window.location.href = (this.redirectedToLocation || this.location)?.toString() || window.location.href;
   }
 
   get navigator() {
@@ -4617,6 +4670,8 @@ class LinkPrefetchObserver {
           new URLSearchParams(),
           target
         );
+
+        fetchRequest.fetchOptions.priority = "low";
 
         prefetchCache.setLater(location.toString(), fetchRequest, this.#cacheTtl);
       }
@@ -5427,13 +5482,18 @@ class MorphingPageRenderer extends PageRenderer {
   static renderElement(currentElement, newElement) {
     morphElements(currentElement, newElement, {
       callbacks: {
-        beforeNodeMorphed: element => !canRefreshFrame(element)
+        beforeNodeMorphed: (node, newNode) => {
+          if (
+            shouldRefreshFrameWithMorphing(node, newNode) &&
+              !closestFrameReloadableWithMorphing(node)
+          ) {
+            node.reload();
+            return false
+          }
+          return true
+        }
       }
     });
-
-    for (const frame of currentElement.querySelectorAll("turbo-frame")) {
-      if (canRefreshFrame(frame)) frame.reload();
-    }
 
     dispatch("turbo:morph", { detail: { currentElement, newElement } });
   }
@@ -5449,13 +5509,6 @@ class MorphingPageRenderer extends PageRenderer {
   get shouldAutofocus() {
     return false
   }
-}
-
-function canRefreshFrame(frame) {
-  return frame instanceof FrameElement &&
-    frame.src &&
-    frame.refresh === "morph" &&
-    !frame.closest("[data-turbo-permanent]")
 }
 
 class SnapshotCache {
@@ -6281,6 +6334,32 @@ function setFormMode(mode) {
   config.forms.mode = mode;
 }
 
+/**
+ * Morph the state of the currentBody based on the attributes and contents of
+ * the newBody. Morphing body elements may dispatch turbo:morph,
+ * turbo:before-morph-element, turbo:before-morph-attribute, and
+ * turbo:morph-element events.
+ *
+ * @param currentBody HTMLBodyElement destination of morphing changes
+ * @param newBody HTMLBodyElement source of morphing changes
+ */
+function morphBodyElements(currentBody, newBody) {
+  MorphingPageRenderer.renderElement(currentBody, newBody);
+}
+
+/**
+ * Morph the child elements of the currentFrame based on the child elements of
+ * the newFrame. Morphing turbo-frame elements may dispatch turbo:before-frame-morph,
+ * turbo:before-morph-element, turbo:before-morph-attribute, and
+ * turbo:morph-element events.
+ *
+ * @param currentFrame FrameElement destination of morphing children changes
+ * @param newFrame FrameElement source of morphing children changes
+ */
+function morphTurboFrameElements(currentFrame, newFrame) {
+  MorphingFrameRenderer.renderElement(currentFrame, newFrame);
+}
+
 var Turbo = /*#__PURE__*/Object.freeze({
   __proto__: null,
   navigator: navigator$1,
@@ -6300,7 +6379,11 @@ var Turbo = /*#__PURE__*/Object.freeze({
   clearCache: clearCache,
   setProgressBarDelay: setProgressBarDelay,
   setConfirmMethod: setConfirmMethod,
-  setFormMode: setFormMode
+  setFormMode: setFormMode,
+  morphBodyElements: morphBodyElements,
+  morphTurboFrameElements: morphTurboFrameElements,
+  morphChildren: morphChildren,
+  morphElements: morphElements
 });
 
 class TurboFrameMissingError extends Error {}
@@ -7175,4 +7258,4 @@ if (customElements.get("turbo-stream-source") === undefined) {
 window.Turbo = { ...Turbo, StreamActions };
 start();
 
-export { FetchEnctype, FetchMethod, FetchRequest, FetchResponse, FrameElement, FrameLoadingStyle, FrameRenderer, PageRenderer, PageSnapshot, StreamActions, StreamElement, StreamSourceElement, cache, clearCache, config, connectStreamSource, disconnectStreamSource, fetchWithTurboHeaders as fetch, fetchEnctypeFromString, fetchMethodFromString, isSafe, navigator$1 as navigator, registerAdapter, renderStreamMessage, session, setConfirmMethod, setFormMode, setProgressBarDelay, start, visit };
+export { FetchEnctype, FetchMethod, FetchRequest, FetchResponse, FrameElement, FrameLoadingStyle, FrameRenderer, PageRenderer, PageSnapshot, StreamActions, StreamElement, StreamSourceElement, cache, clearCache, config, connectStreamSource, disconnectStreamSource, fetchWithTurboHeaders as fetch, fetchEnctypeFromString, fetchMethodFromString, isSafe, morphBodyElements, morphChildren, morphElements, morphTurboFrameElements, navigator$1 as navigator, registerAdapter, renderStreamMessage, session, setConfirmMethod, setFormMode, setProgressBarDelay, start, visit };
