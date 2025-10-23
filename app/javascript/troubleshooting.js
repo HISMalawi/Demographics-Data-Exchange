@@ -29,7 +29,8 @@ export async function fetchStats() {
     // Hide spinners after data loads
     Object.values(spinners).forEach(spinner => spinner?.classList.add("hidden"));
 
-    console.log(`Location: ${location.name || "Unknown"} (${location.ip || "N/A"})`);
+    document.getElementById("facility-name").textContent = `${location.name || "Unknown"} (${location.ip || "N/A"})`
+
   } catch (error) {
     console.error("Error fetching footprint stats:", error);
   }

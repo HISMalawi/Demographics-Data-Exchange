@@ -18,21 +18,32 @@
 
 <body data-controller="page" class="bg-gray-100 text-gray-700 min-h-screen flex flex-col sidebar-collapsed">
 
-  <!-- Fixed top header bar -->
-  <header class="fixed top-0 left-0 right-0 bg-gray-50/95 backdrop-blur-md border-b border-gray-200/50 h-16 flex items-center justify-between px-6 z-50 shadow-sm transition-all duration-300">
-    <div class="flex items-center gap-4">
-      <button id="hamburgerBtn" aria-label="Toggle sidebar" class="text-gray-600 hover:text-gray-900 focus:outline-none text-xl transition-all duration-200 hover:scale-110 active:scale-95">
-        <span class="block w-6 h-0.5 bg-current mb-1.5 transition-all duration-300 hamburger-line-1"></span>
-        <span class="block w-6 h-0.5 bg-current mb-1.5 transition-all duration-300 hamburger-line-2"></span>
-        <span class="block w-6 h-0.5 bg-current transition-all duration-300 hamburger-line-3"></span>
-      </button>
-      <h1 class="text-xl font-bold text-gray-800 tracking-tight">Demographics Data Exchange</h1>
+ <!-- Fixed top header bar -->
+<header class="fixed top-0 left-0 right-0 bg-gray-50/95 backdrop-blur-md border-b border-gray-200/50 h-16 flex items-center justify-between px-6 z-50 shadow-sm transition-all duration-300">
+  <div class="flex items-center gap-4">
+    <button id="hamburgerBtn" aria-label="Toggle sidebar" class="text-gray-600 hover:text-gray-900 focus:outline-none text-xl transition-all duration-200 hover:scale-110 active:scale-95">
+      <span class="block w-6 h-0.5 bg-current mb-1.5 transition-all duration-300 hamburger-line-1"></span>
+      <span class="block w-6 h-0.5 bg-current mb-1.5 transition-all duration-300 hamburger-line-2"></span>
+      <span class="block w-6 h-0.5 bg-current transition-all duration-300 hamburger-line-3"></span>
+    </button>
+    <h1 class="text-xl font-bold text-gray-800 tracking-tight">Demographics Data Exchange</h1>
+  </div>
+
+  <!-- Right side: facility + version -->
+  <div class="flex items-center gap-6 text-sm text-gray-700">
+    <!-- Facility name with icon -->
+    <div class="flex items-center gap-2">
+      <i class="fa-solid fa-location-dot text-red-500"></i>
+      <span id="facility-name" class="font-medium">Loading...</span>
     </div>
-    <div class="flex items-center gap-2 text-sm text-gray-600">
+
+    <!-- Version info -->
+    <div class="flex items-center gap-2">
       <i class="fab fa-git-alt text-gray-500"></i>
-      <span class="hidden sm:inline">Version <%= git_version %></span>
+      <span>Version <%= git_version %></span>
     </div>
-  </header>
+  </div>
+</header>
 
   <div class="flex flex-1 pt-16 pb-12">
 
