@@ -325,21 +325,15 @@ class SyncJob < ApplicationJob
 
   def test_sync_flow
     begin
-      token = authenticate
+      authorize
 
       # Try pulling one record 
       url = "#{@base_url}/person_changes_new?site_id=#{@location}&pull_seq=0&limit=1"
-      response = RestClient::Request.execute(
-        method: :get,
-        url: url,
-        headers: { Authorization: token },
-        open_timeout: 3,  # seconds
-        read_timeout: 5  # seconds
-      )
+      updates = JSON.parse(RestClient.get(url, { Authorization: @token }))
 
-      data = JSON.parse(response) rescue []
+      updates = JSON.parse(response) rescue []
 
-      if data.present?
+      if updates.present?
         { status: 'success', message: 'Sync working: Able to fetch test record from remote server.' }
       else
         { status: 'warning', message: 'Connected and authenticated, but no records returned (pull working but no new data).' }
