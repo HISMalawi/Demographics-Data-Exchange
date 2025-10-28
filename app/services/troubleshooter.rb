@@ -1,5 +1,6 @@
 require "yaml"
 require "net/http"
+require 'rest-client'
 require "uri"
 require "securerandom"
 
@@ -101,7 +102,7 @@ class Troubleshooter
   end
 
   def remote_base_url
-    "https://#{remote_host}:#{remote_port}/v1"
+    "https://#{remote_host}/v1"
   end
 
   # -----------------------------
@@ -136,7 +137,7 @@ class Troubleshooter
     remote_success = authenticate_remote(username, password)
     local_success  = authenticate_local(username, password)
 
-    return { status: :ok, message: "✅ Sync authentication succeeded (proxy & master)" } if remote_success && local_success
+    return { status: :ok, message: "Sync authentication succeeded (proxy & master)" } if remote_success && local_success
 
     # Auto-reset password using default user
     new_password = SecureRandom.hex(12)
@@ -148,6 +149,7 @@ class Troubleshooter
 
       remote_success = authenticate_remote(username, new_password)
       local_success = authenticate_local(username, new_password)
+
 
       if remote_success && local_success
         { status: :ok, message: "Sync password automatically reset and authentication succeeded" }
@@ -162,30 +164,16 @@ class Troubleshooter
   # -----------------------------
   # Remote authentication
   # -----------------------------
-  def authenticate_remote(username, password)
-    uri = URI("#{remote_base_url}/login?username=#{username}&password=#{password}")
-
-    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == "https") do |http|
-      http.post(uri.path + "?" + uri.query.to_s, "")
-    end
-
-    response.is_a?(Net::HTTPSuccess)
-  rescue => e
-    Rails.logger.error("Remote authentication failed: #{e.message}")
-    false
+   def authenticate_remote(username, password)
+    url = "#{remote_base_url}/login?username=#{username}&password=#{password}"
+    response = RestClient.post(url, {}) rescue nil
+    response && response.code == 200
   end
 
   def authenticate_local(username, password)
-    port = 8050
-    uri = URI("https://localhost:#{port}/v1/login?username=#{username}&password=#{password}")
-
-    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: uri.scheme == "https") do |http|
-      http.post(uri.path + "?" + uri.query.to_s, "")
-    end
-
-    response.is_a?(Net::HTTPSuccess)
-  rescue
-    false
+    url = "http://localhost:8050/v1/login?username=#{username}&password=#{password}"
+    response = RestClient.post(url, {}) rescue nil
+    response && response.code == 200
   end
 
   # -----------------------------
@@ -213,55 +201,38 @@ class Troubleshooter
   # -----------------------------
   # Reset password via default user
   # -----------------------------
+
   def reset_sync_password_via_default_user(sync_username, new_password)
     admin_username = Rails.application.credentials.admin_username
     admin_password = Rails.application.credentials.admin_password
 
-    unless admin_username && admin_password
-      return { status: :error, message: "Admin credentials missing in Rails credentials" }
+    return { status: :error, message: "Admin credentials missing" } unless admin_username && admin_password
+
+    # Authenticate admin
+    login_url = "#{remote_base_url}/login"
+    begin
+      login_resp = RestClient.post(login_url, { username: admin_username, password: admin_password })
+      token = JSON.parse(login_resp.body)["access_token"]
+    rescue => e
+      return { status: :error, message: "Admin login failed: #{e.message}" }
     end
 
-    login_uri = URI("#{remote_base_url}/login")
-    login_request = Net::HTTP::Post.new(login_uri)
-    login_request.set_form_data(username: admin_username, password: admin_password)
-
-    login_response = Net::HTTP.start(login_uri.hostname, login_uri.port, use_ssl: login_uri.scheme == "https") do |http|
-      http.request(login_request)
-    end
-
-    unless login_response.is_a?(Net::HTTPSuccess)
-      return { status: :error, message: "Failed to login as default admin: #{login_response.body}" }
-    end
-
-    token = JSON.parse(login_response.body)["access_token"]
-    return { status: :error, message: "Login succeeded but no access token returned" } unless token
-
+    # Update locally
     sync_user = User.find_by(username: sync_username)
     return { status: :error, message: "Sync user not found locally" } unless sync_user
+    sync_user.update(password: new_password)
 
-    sync_user.password = new_password
-    unless sync_user.save
-      return { status: :error, message: "Failed to update local password: #{sync_user.errors.full_messages.join(', ')}" }
+    # Update remotely
+    update_url = "#{remote_base_url}/update_password"
+    begin
+      update_resp = RestClient.post(update_url, { username: sync_username, password: new_password }, 
+                                    { Authorization: token })
+
+      return { status: :ok, message: "Password reset successfully locally and remotely" }
+    rescue RestClient::ExceptionWithResponse => e
+      return { status: :error, message: "Remote password reset failed: #{e.response}" }
     end
-
-    update_uri = URI("#{remote_base_url}/update_password")
-    update_request = Net::HTTP::Post.new(update_uri)
-    update_request["Authorization"] = "Bearer #{token}"
-    update_request.set_form_data(username: sync_username, password: new_password)
-
-    update_response = Net::HTTP.start(update_uri.hostname, update_uri.port, use_ssl: update_uri.scheme == "https") do |http|
-      http.request(update_request)
-    end
-
-    if update_response.is_a?(Net::HTTPSuccess)
-      { status: :ok, message: "Password reset successfully locally and remotely" }
-    else
-      { status: :error, message: "Password reset locally but failed remotely: #{update_response.body}" }
-    end
-  rescue => e
-    { status: :error, message: e.message }
   end
-
   # -----------------------------
   # Sync job helpers
   # -----------------------------
