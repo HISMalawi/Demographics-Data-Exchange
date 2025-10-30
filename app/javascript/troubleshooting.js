@@ -46,6 +46,7 @@ export async function autoRunTroubleshooting() {
 
   if (!outputDiv) return;
 
+  outputDiv.innerHTML = "";
   outputDiv.innerHTML = `<h3 class="text-xl font-semibold text-gray-800 mb-2">Diagnostics Output</h3>`;
   progressBar.style.width = "0%";
 

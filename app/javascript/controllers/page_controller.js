@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { autoRunTroubleshooting } from "../troubleshooting" // <-- import function
+import { autoRunTroubleshooting, fetchStats } from "../troubleshooting" // <-- import function
 
 export default class extends Controller {
   static targets = ["content"]
@@ -35,9 +35,15 @@ export default class extends Controller {
 
           this.hideLoading()
 
-          // ✅ Run diagnostics if services page
+          // Run diagnostics if services page
           if (url.includes("/api/v1/services")) {
-            autoRunTroubleshooting()
+            autoRunTroubleshooting();
+            fetchStats();
+
+            document.getElementById("rerun-diagnostics").addEventListener("click", function() {
+              // your code here
+              autoRunTroubleshooting();
+            });
           }
         }, 150)
       })
@@ -72,3 +78,4 @@ export default class extends Controller {
     setTimeout(() => errorDiv.remove(), 5000)
   }
 }
+
