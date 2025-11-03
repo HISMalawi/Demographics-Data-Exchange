@@ -1,6 +1,7 @@
 class Api::V1::ServicesController < ActionController::Base
   layout "application"
   skip_before_action :verify_authenticity_token, only: [:manage]
+  before_action :block_index_in_master, only: [:index]
 
   def index
     
@@ -32,4 +33,13 @@ class Api::V1::ServicesController < ActionController::Base
 
     end
   end
+
+  private 
+
+  def block_index_in_master
+    if ENV['MASTER'] == 'true'
+      render plain: "Access forbidden in MASTER mode", status: :forbidden
+    end
+  end
+
 end
