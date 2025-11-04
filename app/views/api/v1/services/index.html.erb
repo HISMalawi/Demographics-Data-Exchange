@@ -12,9 +12,18 @@
   <!-- Stats Overview -->
   <%= render "stats_overview" %>
 
-  <!-- System Diagnostics -->
-  <%= render "system_diagnostics" %>
 
+  <% unless ENV['MASTER'].to_s.downcase == 'true' %>
+      <!-- System Diagnostics -->
+    <%= render "system_diagnostics" %>
+  <% end %>
+
+
+</div>
+   
+
+
+ 
   
 </div>
 

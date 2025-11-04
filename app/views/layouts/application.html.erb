@@ -134,6 +134,8 @@
         }
       });
     });
+    
+    window.IS_MASTER = <%= ENV['MASTER'].to_s.downcase == 'true' ? 'true' : 'false' %>;
   </script>
 
 </body>

@@ -1,7 +1,7 @@
 class Api::V1::ServicesController < ActionController::Base
   layout "application"
   skip_before_action :verify_authenticity_token, only: [:manage]
-  before_action :block_index_in_master, only: [:index]
+  #before_action :block_index_in_master, only: [:index]
 
   def index
     
