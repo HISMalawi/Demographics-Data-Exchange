@@ -93,14 +93,11 @@ GEM
     erubi (1.13.1)
     et-orbi (1.4.0)
       tzinfo
-    ffi (1.17.2-aarch64-linux-gnu)
-    ffi (1.17.2-aarch64-linux-musl)
-    ffi (1.17.2-arm-linux-gnu)
-    ffi (1.17.2-arm-linux-musl)
+    ffi (1.17.2-aarch64-linux)
+    ffi (1.17.2-arm-linux)
     ffi (1.17.2-arm64-darwin)
     ffi (1.17.2-x86_64-darwin)
-    ffi (1.17.2-x86_64-linux-gnu)
-    ffi (1.17.2-x86_64-linux-musl)
+    ffi (1.17.2-x86_64-linux)
     fugit (1.12.1)
       et-orbi (~> 1.4)
       raabro (~> 1.4)
@@ -163,21 +160,15 @@ GEM
       net-protocol
     netrc (0.11.0)
     nio4r (2.7.4)
-    nokogiri (1.18.10-aarch64-linux-gnu)
+    nokogiri (1.18.10-aarch64-linux)
       racc (~> 1.4)
-    nokogiri (1.18.10-aarch64-linux-musl)
-      racc (~> 1.4)
-    nokogiri (1.18.10-arm-linux-gnu)
-      racc (~> 1.4)
-    nokogiri (1.18.10-arm-linux-musl)
+    nokogiri (1.18.10-arm-linux)
       racc (~> 1.4)
     nokogiri (1.18.10-arm64-darwin)
       racc (~> 1.4)
     nokogiri (1.18.10-x86_64-darwin)
       racc (~> 1.4)
-    nokogiri (1.18.10-x86_64-linux-gnu)
-      racc (~> 1.4)
-    nokogiri (1.18.10-x86_64-linux-musl)
+    nokogiri (1.18.10-x86_64-linux)
       racc (~> 1.4)
     parallel (1.27.0)
     public_suffix (6.0.2)
@@ -185,7 +176,7 @@ GEM
       nio4r (~> 2.0)
     raabro (1.4.0)
     racc (1.8.1)
-    rack (2.2.20)
+    rack (2.2.21)
     rack-cors (2.0.2)
       rack (>= 2.0.0)
     rack-test (2.2.0)
@@ -218,7 +209,7 @@ GEM
       rake (>= 12.2)
       thor (~> 1.0)
       zeitwerk (~> 2.5)
-    rake (13.3.0)
+    rake (13.3.1)
     rb-fsevent (0.11.2)
     rb-inotify (0.11.1)
       ffi (~> 1.0)
@@ -293,16 +284,14 @@ GEM
       actionpack (>= 6.1)
       activesupport (>= 6.1)
       sprockets (>= 3.0.0)
-    tailwindcss-rails (4.3.0)
+    tailwindcss-rails (4.4.0)
       railties (>= 7.0.0)
       tailwindcss-ruby (~> 4.0)
-    tailwindcss-ruby (4.1.13)
-    tailwindcss-ruby (4.1.13-aarch64-linux-gnu)
-    tailwindcss-ruby (4.1.13-aarch64-linux-musl)
-    tailwindcss-ruby (4.1.13-arm64-darwin)
-    tailwindcss-ruby (4.1.13-x86_64-darwin)
-    tailwindcss-ruby (4.1.13-x86_64-linux-gnu)
-    tailwindcss-ruby (4.1.13-x86_64-linux-musl)
+    tailwindcss-ruby (4.1.16)
+    tailwindcss-ruby (4.1.16-aarch64-linux-gnu)
+    tailwindcss-ruby (4.1.16-arm64-darwin)
+    tailwindcss-ruby (4.1.16-x86_64-darwin)
+    tailwindcss-ruby (4.1.16-x86_64-linux-gnu)
     thor (1.4.0)
     timeout (0.4.3)
     turbo-rails (2.0.12)
@@ -321,14 +310,11 @@ GEM
     zeitwerk (2.7.3)
 
 PLATFORMS
-  aarch64-linux-gnu
-  aarch64-linux-musl
-  arm-linux-gnu
-  arm-linux-musl
+  aarch64-linux
+  arm-linux
   arm64-darwin
   x86_64-darwin
-  x86_64-linux-gnu
-  x86_64-linux-musl
+  x86_64-linux
 
 DEPENDENCIES
   activejob-uniqueness
@@ -371,4 +357,4 @@ RUBY VERSION
    ruby 3.2.0p0
 
 BUNDLED WITH
-   2.5.16
+   2.6.9
