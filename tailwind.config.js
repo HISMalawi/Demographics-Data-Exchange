@@ -10,4 +10,5 @@ module.exports = {
     extend: {},
   },
   plugins: [],
+  output: './app/assets/builds/application.css'
 }
