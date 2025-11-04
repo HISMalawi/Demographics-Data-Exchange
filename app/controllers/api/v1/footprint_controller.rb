@@ -15,7 +15,12 @@ class Api::V1::FootprintController < ApplicationController
 
   def stats 
     sync_stats = FootPrintService.stats
-    render json: sync_stats
+    
+    if sync_stats[:status] == :error
+      render json: sync_stats, status: :unprocessable_entity
+    else
+      render json: sync_stats, status: :ok
+    end 
   end   
 
   private

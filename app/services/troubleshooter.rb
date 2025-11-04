@@ -48,26 +48,30 @@ class Troubleshooter
     locations_with_footprints = footprint_summary.select { |_location_id, count| count > 0 }
 
     if locations_with_footprints.size > 1
-      location = check_ip_conflict!  # From NetworkHelper
-      ip_address = current_private_ip
+      begin
+        location = User.non_default_location! # this enforces one valid non-default user location
+      rescue StandardError => e
+        raise "<strong>Footprint Conflict:</strong> #{e.message}"
+      end
 
       if location
-        updated_records_count = FootPrint.update_all(location_id: location.id)
+        updated_records_count = FootPrint.update_all(location_id: location.location_id)
         if updated_records_count.positive?
           {
             status: :ok,
-            message: "<strong>Footprints reassigned</strong> to <strong>#{location.name}</strong> (IP: #{ip_address}).",
+            message: "<strong>Footprints reassigned</strong> to <strong>#{location.name}</strong>.",
             details: {
               updated_records: updated_records_count,
               involved_locations: locations_with_footprints.keys
             }
           }
         else
-          raise "<strong>Update Failed:</strong> Could not reassign footprints for IP #{ip_address}."
+          raise "<strong>Update Failed:</strong> Could not reassign footprints for <strong>#{location.name}</strong>."
         end
       else
-        raise "<strong>Unresolved Conflict:</strong> Found multiple locations but IP <strong>#{ip_address}</strong> not registered."
+        raise "<strong>Unresolved Conflict:</strong> Found multiple locations but no valid non-default user location available."
       end
+
     else
       {
         status: :ok,

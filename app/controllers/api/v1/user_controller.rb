@@ -24,11 +24,11 @@ class Api::V1::UserController < ApplicationController
     user = User.create(username: params[:username],
                        email: params[:email], password: params[:password],
                        location_id: location_id)
-    if user
+    if user.save
       response = {status: 200, message: "User created successfully"}
       render json: response, status: :created
     else
-      render json: user.errors, status: :bad
+      render json: user.errors, status: :ok
     end
   end
 

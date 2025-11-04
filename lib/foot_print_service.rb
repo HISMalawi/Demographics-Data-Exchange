@@ -1,5 +1,4 @@
 module FootPrintService
-  extend NetworkHelper
 
   def self.create(person)
    footprint = FootPrint.where('person_uuid = ? AND
@@ -82,30 +81,36 @@ EOF
   end
 
   def self.stats
-    location = check_ip_conflict! # from NetworkHelper
-    ip_address = current_private_ip
+    location = User.non_default_location!
 
     unless location
-      raise "<strong>Unresolved Conflict:</strong> Found multiple locations but IP <strong>#{ip_address}</strong> not registered."
+      return {
+        status: :error,
+        message: "<strong>Unresolved Conflict:</strong> No non-default user location found. Please ensure users are registered."
+      }
     end
 
-    # Use ActiveRecord instead of raw SQL
-    total_count    = FootPrint.where(location_id: location.location_id ).count
+    total_count    = FootPrint.where(location_id: location.location_id).count
     synced_count   = FootPrint.where(location_id: location.location_id, synced: true).count
     unsynced_count = FootPrint.where(location_id: location.location_id, synced: false).count
 
-    return  {
+    {
       status: :ok,
       location: {
         id: location.location_id,
-        name: location.name,
-        ip: ip_address
+        name: location.name
       },
       stats: {
         total: total_count,
         synced: synced_count,
         unsynced: unsynced_count
       }
+    }
+
+  rescue StandardError => e
+    {
+      status: :error,
+      message: e.message
     }
   end
 
