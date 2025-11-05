@@ -32,7 +32,7 @@ Config.create!(config: 'npid_seq',
                description: 'NPID pull vector clock',
                uuid: 'ebc28cab-b7d8-11eb-8cf6-dc41a91e235e') unless Config.find_by_config('npid_seq')
 
-if  ENV['MASTER'] == 'true' {
+if  ENV['MASTER'] == 'true' 
   DashboardStat.find_or_create_by(name: 'npid_balance',
                                 value: {})
 
@@ -41,7 +41,7 @@ if  ENV['MASTER'] == 'true' {
 
   DashboardStat.find_or_create_by(name: 'dashboard_stats',
                                   value: {})
-}               
+end               
 
 
 
