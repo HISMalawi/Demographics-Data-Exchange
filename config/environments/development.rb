@@ -87,5 +87,9 @@ Rails.application.configure do
 
   #Activate Logrotate
   config.logger = Logger.new("#{Rails.root}/log/#{ENV['RAILS_ENV']}.log", 10, 1048576)
-   Rails.application.routes.default_url_options[:host] =  ENV.fetch('DDE_HOST_URL') || "http://127.0.0.1:#{ENV.fetch('PORT')}"
+  if ENV['MASTER'] == 'true'
+    Rails.application.routes.default_url_options[:host] = ENV.fetch('DDE_HOST_URL')
+  else 
+    Rails.application.routes.default_url_options[:host] = "http://127.0.0.1:8050"
+  end
 end

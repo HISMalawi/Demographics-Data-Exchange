@@ -112,5 +112,9 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
-  Rails.application.routes.default_url_options[:host] = ENV.fetch('DDE_HOST_URL') || "http://127.0.0.1:#{ENV.fetch('PORT')}"
+  if ENV['MASTER'] == 'true'
+    Rails.application.routes.default_url_options[:host] = ENV.fetch('DDE_HOST_URL')
+  else 
+    Rails.application.routes.default_url_options[:host] = "http://127.0.0.1:8050"
+  end 
 end
