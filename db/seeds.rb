@@ -63,7 +63,10 @@ connection = ActiveRecord::Base.connection
     puts "Loaded #{metadata_sql_file} metadata sql file successfully"
     puts ''
   end
-end
+else
+  # Set admin as a default user
+  User.where(username: "admin").update(default_user: true)
+end 
 
 return unless ENV['MASTER'] == 'true' # Do not add contraints if it is not a master
   
