@@ -46,6 +46,7 @@ class SyncJob < ApplicationJob
       FileUtils.touch '/tmp/dde_sync.lock'
     end
     begin
+      clear_errors
       authorize
       pull_new_records
       pull_updated_records
@@ -368,4 +369,8 @@ class SyncJob < ApplicationJob
       )
     end
   end
+
+  def clear_errors
+      ActiveRecord::Base.connection.execute("TRUNCATE TABLE sync_errors;")
+  end 
 end
