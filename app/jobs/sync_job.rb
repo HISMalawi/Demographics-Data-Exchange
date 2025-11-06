@@ -301,7 +301,7 @@ class SyncJob < ApplicationJob
   def push_footprints
     url = "#{@base_url}/push_footprints"
 
-    FootPrint.where(synced: false, location_id: @location).find_in_batches(batch_size: 10) do |batch|
+    FootPrint.where(synced: false, location_id: @location).find_in_batches(batch_size: 50) do |batch|
       responses = Parallel.map(batch, in_threads: 10) do |foot|
         response = RestClient.post(url, foot.as_json, { Authorization: @token })
         foot.foot_print_id if response.code == 201 # Collect successful IDs
