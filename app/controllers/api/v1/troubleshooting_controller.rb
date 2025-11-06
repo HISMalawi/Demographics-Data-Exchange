@@ -63,11 +63,15 @@ class Api::V1::TroubleshootingController < ActionController::Base
     end
   end
 
-  def test_sync
-    result = SyncJob.new.test_sync_flow
-    
-    render json: result
-  end 
+ def test_sync
+  SyncJob.unlock!      
+
+    begin
+      SyncJob.perform_now  
+    ensure
+      SyncJob.unlock! 
+    end
+  end
 
   private
 

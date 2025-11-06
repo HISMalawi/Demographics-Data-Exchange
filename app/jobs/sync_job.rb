@@ -47,14 +47,32 @@ class SyncJob < ApplicationJob
     end
     begin
       clear_errors
+      broadcast("Starting synchronization...", level: :info)
       authorize
+      broadcast("Authorized successfully.", level: :success)
+
       pull_new_records
+      broadcast("Pull new records.", level: :info)
+
       pull_updated_records
+      broadcast("Pull updated records.", level: :info)
+
       push_records_new
+      broadcast("Push new records.", level: :info)
+
       push_records_updates
+      broadcast("Push updated records.", level: :info)
+
       push_footprints
+      broadcast("Push footprints.", level: :info)
+
       pull_npids
+      broadcast("Pull NPIDs.", level: :info)
+
       push_errors
+      broadcast("Push sync errors.", level: :info)
+
+      broadcast("Synchronization completed successfully!", level: :success)
     rescue StandardError => e
       log_error(e.message)
     ensure
@@ -283,7 +301,7 @@ class SyncJob < ApplicationJob
   def push_footprints
     url = "#{@base_url}/push_footprints"
 
-    FootPrint.where(synced: false, location_id: 8).find_in_batches(batch_size: 500) do |batch|
+    FootPrint.where(synced: false, location_id: @location).find_in_batches(batch_size: 10) do |batch|
       responses = Parallel.map(batch, in_threads: 10) do |foot|
         response = RestClient.post(url, foot.as_json, { Authorization: @token })
         foot.foot_print_id if response.code == 201 # Collect successful IDs
@@ -373,4 +391,11 @@ class SyncJob < ApplicationJob
   def clear_errors
       ActiveRecord::Base.connection.execute("TRUNCATE TABLE sync_errors;")
   end 
+
+  def broadcast(message, level: :info)
+    ActionCable.server.broadcast(
+      "sync_channel",
+      { message: message, level: level, timestamp: Time.now.strftime("%H:%M:%S") }
+    )
+  end
 end

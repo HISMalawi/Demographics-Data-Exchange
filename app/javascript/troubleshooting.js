@@ -117,13 +117,7 @@ export async function runTestSync(){
         }
       });
 
-      if (!response.ok) throw new Error("Sync failed");
-
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.message || "Sync failed");
-
-      showAlert("Sync Test ", result.message || "Test sync completed!","success");
-
+    
     } catch (error) {
       console.error("Error running test sync:", error);
       showAlert("Sync Test ", error.message || "Failed to run test sync.", "error");

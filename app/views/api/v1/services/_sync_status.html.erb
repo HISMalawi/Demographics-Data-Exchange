@@ -10,21 +10,19 @@
   </div>
 
   <div class="grid grid-cols-2 gap-4">
-    <%= render "stat_card", label: "Total Footprints", id: "total-footprints", color: "green", icon: "fas fa-shoe-prints", count: 0 %>
-    <%= render "stat_card", label: "Synced Footprints", id: "synced_footprints", color: "green", icon: "fas fa-check-double", count: 0 %>
+    <%= render "stat_card", label: "Total Footprints", id: "total-footprints", color: "orange", icon: "fas fa-shoe-prints", count: 0 %>
+    <%= render "stat_card", label: "Synced Footprints", id: "synced_footprints", color: "orange", icon: "fas fa-check-double", count: 0 %>
     <%= render "stat_card", label: "Unsynced Footprints", id: "unsynced_footprints", color: "orange", icon: "fas fa-exclamation-circle", count: 0 %>
 
-    <%= render "stat_card", label: "Test Sync", id: "test_sync", color: "orange", icon: "fas fa-sync-alt" do %>
+    <%= render "stat_card", label: "", id: "test_sync", color: "white", icon: "" do %>
+        <p id="sync-status-message" class=" text-sm text-gray-600 font-semibold text-center">
+      </p>
       <button 
         id="btn-test-sync" 
-        class="px-4 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition duration-200"
+        class="px-4 py-2 bg-blue-600 text-white  mt-4 rounded-xl  transition duration-200 "
       >
-        <i class="fas fa-sync-alt mr-2"></i>Run Sync
+        <i class="fas fa-sync-alt mr-2"></i>Synchronize
       </button>
     <% end %>
-  </div>
-  
-
-  <div class="mt-4 text-xs text-gray-500 flex items-center gap-2">
   </div>
 </div>
