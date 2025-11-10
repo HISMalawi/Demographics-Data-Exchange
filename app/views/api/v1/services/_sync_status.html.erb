@@ -1,11 +1,20 @@
 <div class="bg-white rounded-2xl shadow-lg border border-gray-200 p-6">
-  <div class="flex items-center gap-3 mb-6">
-    <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
-      <i class="fas fa-sync-alt text-purple-600 text-xl"></i>
+  <div class="flex items-center justify-between gap-3 mb-6">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+        <i class="fas fa-sync-alt text-purple-600 text-xl"></i>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold text-gray-800">Sync Status</h3>
+        <p class="text-gray-600 text-sm">Data Synchronization Statistics</p>
+      </div>
     </div>
-    <div>
-      <h3 class="text-xl font-bold text-gray-800">Sync Status</h3>
-      <p class="text-gray-600 text-sm">Data Synchronization Statistics</p>
+
+    <!-- Last Synced Label -->
+    <div class="text-right">
+      <p class="text-gray-500 text-sm font-semibold">
+        Last Synced: <span id="last-synced-date"></span>
+      </p>
     </div>
   </div>
 
@@ -15,14 +24,15 @@
     <%= render "stat_card", label: "Unsynced Footprints", id: "unsynced_footprints", color: "orange", icon: "fas fa-exclamation-circle", count: 0 %>
 
     <%= render "stat_card", label: "", id: "test_sync", color: "white", icon: "" do %>
-        <p id="sync-status-message" class=" text-sm text-gray-600 font-semibold text-center">
-      </p>
-      <button 
-        id="btn-test-sync" 
-        class="px-4 py-2 bg-blue-600 text-white  mt-4 rounded-xl  transition duration-200 "
-      >
-        <i class="fas fa-sync-alt mr-2"></i>Synchronize
-      </button>
+      <div class="flex flex-col items-center">
+        <p id="sync-status-message" class="text-sm text-gray-600 font-semibold text-center mb-2"></p>
+        <button 
+          id="btn-test-sync" 
+          class="px-4 py-2 bg-blue-600 text-white mt-2 rounded-xl transition duration-200 flex items-center"
+        >
+          <i class="fas fa-sync-alt mr-2"></i>Synchronize
+        </button>
+      </div>
     <% end %>
   </div>
 </div>

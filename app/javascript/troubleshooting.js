@@ -5,6 +5,7 @@ export async function fetchStats() {
   const totalEl = document.getElementById("total-footprints");
   const syncedEl = document.getElementById("synced_footprints");
   const unsyncedEl = document.getElementById("unsynced_footprints");
+  const lastSyncedEl = document.getElementById("last-synced-date");
 
   // Spinners for count cards only
   const spinners = {
@@ -19,12 +20,14 @@ export async function fetchStats() {
 
     const data = await response.json();
     const { stats = {}, location = {} } = data;
-    const { total = 0, synced = 0, unsynced = 0 } = stats;
+    const { total = 0, synced = 0, unsynced = 0, last_updated = "" } = stats;
+
 
     // Update counts
     if (totalEl) totalEl.textContent = total.toLocaleString();
     if (syncedEl) syncedEl.textContent = synced.toLocaleString();
     if (unsyncedEl) unsyncedEl.textContent = unsynced.toLocaleString();
+    if (lastSyncedEl) lastSyncedEl.textContent = last_updated.toLocaleString();
 
     // Hide spinners after data loads
     Object.values(spinners).forEach(spinner => spinner?.classList.add("hidden"));
