@@ -3,4 +3,7 @@
 
 import { createConsumer } from "@rails/actioncable"
 
-export default createConsumer("ws://127.0.0.1:8050/v1/cable")
+const protocol = "ws"
+const host = window.location.host
+const cableUrl = `${protocol}://${host}/v1/cable`
+export default createConsumer(cableUrl)
