@@ -90,9 +90,13 @@ EOF
       }
     end
 
-    total_count    = FootPrint.where(location_id: location.location_id).count
-    synced_count   = FootPrint.where(location_id: location.location_id, synced: true).count
-    unsynced_count = FootPrint.where(location_id: location.location_id, synced: false).count
+    footprints = FootPrint.where(location_id: location.location_id)
+    total_count    = footprints.count
+    synced_count   = footprints.where(synced: true).count
+    unsynced_count = footprints.where(synced: false).count
+
+    # Get the last updated footprint 
+    last_updated = footprints.where(synced: true).maximum(:updated_at)
 
     {
       status: :ok,
@@ -103,7 +107,8 @@ EOF
       stats: {
         total: total_count,
         synced: synced_count,
-        unsynced: unsynced_count
+        unsynced: unsynced_count,
+        last_updated: last_updated&.strftime("%d/%b/%Y %H:%M:%S")
       }
     }
 
