@@ -113,4 +113,8 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
   Rails.application.routes.default_url_options[:host] = ENV.fetch('DDE_HOST_URL')
+
+  config.action_cable.allowed_request_origins = [
+    /https?:\/\/.*/  # Allows any HTTP or HTTPS origin
+  ]
 end
