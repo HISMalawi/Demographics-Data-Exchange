@@ -193,7 +193,7 @@ After=network.target
 Type=simple
 User=$username
 WorkingDirectory=$APP_DIR
-
+Environment="DDE_HOST_URL=http://127.0.0.1:8050"
 Environment=RAILS_ENV=production
 ExecStart=$new_exec_start
 Restart=always
