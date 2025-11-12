@@ -4,7 +4,7 @@ require 'yaml'
 class SyncJob < ApplicationJob
   queue_as :sync
 
-  def initialize
+  def initialize(*args)
     super()
 
     sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"), aliases: true)[:dde_sync_config]
