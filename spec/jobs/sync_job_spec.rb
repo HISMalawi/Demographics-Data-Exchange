@@ -7,6 +7,18 @@ RSpec.describe SyncJob do
     let(:token) { 'Bearer test-token' }
 
     before do
+      # Stub out the missing database.yml
+      fake_yml = { dde_sync_config: { adapter: 'mysql2', database: 'test' } }.to_yaml
+      allow(File).to receive(:read)
+        .with("#{Rails.root}/config/database.yml")
+        .and_return(fake_yml)
+
+      # Allow YAML.load to work with our fake config
+      allow(YAML).to receive(:load).and_call_original
+      allow(YAML).to receive(:load)
+        .with(fake_yml, aliases: true)
+        .and_return(YAML.safe_load(fake_yml, permitted_classes: [Symbol], aliases: true))
+
       # Setup job with necessary instance variables
       subject.instance_variable_set(:@location_id, location_id)
       subject.instance_variable_set(:@base_url, base_url)
@@ -79,6 +91,7 @@ RSpec.describe SyncJob do
         date_registered: Date.today,
         last_edited: Date.today
       )
+
       # Override the stubbed response with a unique NPID
       response = [
         {
