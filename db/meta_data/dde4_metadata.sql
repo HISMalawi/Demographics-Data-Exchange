@@ -214,6 +214,7 @@ CREATE TABLE `users` (
   `location_id` int(11) NOT NULL DEFAULT '0',
   `created_at` datetime NOT NULL,
   `updated_at` datetime NOT NULL,
+  `default_user` BOOLEAN NOT NULL DEFAULT FALSE,
   PRIMARY KEY (`user_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=417 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -224,7 +225,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'admin','admin@baobabhealth.org','$2a$10$TlhUteYXazpQKPaneKZp1.U1hGgASlPUW.eRPFKtuy3yAgt2sU5Sa','0',NULL,1077,'2018-07-23 05:29:35','2018-07-23 05:34:26');
+INSERT INTO `users` VALUES (1,'admin','admin@baobabhealth.org','$2a$10$TlhUteYXazpQKPaneKZp1.U1hGgASlPUW.eRPFKtuy3yAgt2sU5Sa','0',NULL,1077,'2018-07-23 05:29:35','2018-07-23 05:34:26',1);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

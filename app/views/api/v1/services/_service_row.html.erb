@@ -1,0 +1,47 @@
+<tr class="hover:bg-gray-50" data-service="<%= service %>">
+  <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-700 flex items-center gap-2">
+    <i class="fas fa-server text-gray-500"></i>
+    <%= service %>
+  </td>
+
+ <td class="px-6 py-4 whitespace-nowrap status-cell">
+  <% if status == "running" %>
+    <span class="flex items-center gap-2 text-green-600 font-medium">
+      <span class="w-2 h-2 rounded-full bg-green-500"></span> Running
+    </span>
+  <% elsif status == "stopped" %>
+    <span class="flex items-center gap-2 text-red-600 font-medium">
+      <span class="w-2 h-2 rounded-full bg-red-500"></span> Not Running
+    </span>
+  <% else %>
+    <span class="flex items-center gap-2 text-gray-500 font-medium">
+      <span class="w-2 h-2 rounded-full bg-gray-400"></span> Unknown
+    </span>
+  <% end %>
+</td>
+
+  <td class="px-6 py-4 whitespace-nowrap space-x-2">
+    <% actions.each do |action| %>
+      <%= form_with url:   manage_services_api_v1_services_path,
+          method: :get, remote: true,
+          class: "inline-block service-form" do |f| %>
+        <%= hidden_field_tag :service, service %>
+        <%= hidden_field_tag :action_name, action %>
+        <%= hidden_field_tag :context, "services" %>
+
+        <% icon_class = case action.downcase
+          when "start" then "fas fa-play text-green-500"
+          when "stop" then "fas fa-stop text-red-500"
+          when "restart" then "fas fa-redo text-yellow-500"
+          when "status" then "fas fa-info-circle text-blue-500"
+          else "fas fa-question-circle text-gray-400"
+        end %>
+
+        <%= button_tag type: "submit", class: "bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-semibold px-5 py-2 rounded-lg shadow transition transform hover:-translate-y-0.5 inline-flex items-center gap-2" do %>
+          <i class="<%= icon_class %>"></i>
+          <span><%= action.capitalize %></span>
+        <% end %>
+      <% end %>
+    <% end %>
+  </td>
+</tr>

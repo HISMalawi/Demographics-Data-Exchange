@@ -1,0 +1,21 @@
+.iti {
+    width: 100%;
+  }
+  
+  .iti__flag-container {
+    z-index: 10;
+  }
+  
+  .iti__country-list {
+    max-height: 200px;
+    z-index: 11;
+  }
+  
+  /* Fix for Tailwind conflicts */
+  .iti__selected-flag {
+    padding: 0 6px 0 8px;
+  }
+  
+  .iti__flag-container:hover .iti__selected-flag {
+    background-color: rgba(0, 0, 0, 0.05);
+  }

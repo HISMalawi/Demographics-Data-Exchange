@@ -80,4 +80,43 @@ EOF
     return people
   end
 
+  def self.stats
+    location = User.non_default_location!
+
+    unless location
+      return {
+        status: :error,
+        message: "<strong>Unresolved Conflict:</strong> No non-default user location found. Please ensure users are registered."
+      }
+    end
+
+    footprints = FootPrint.where(location_id: location.location_id)
+    total_count    = footprints.count
+    synced_count   = footprints.where(synced: true).count
+    unsynced_count = footprints.where(synced: false).count
+
+    # Get the last updated footprint 
+    last_updated = footprints.where(synced: true).maximum(:updated_at)
+
+    {
+      status: :ok,
+      location: {
+        id: location.location_id,
+        name: location.name
+      },
+      stats: {
+        total: total_count,
+        synced: synced_count,
+        unsynced: unsynced_count,
+        last_updated: last_updated&.strftime("%d/%b/%Y %H:%M:%S")
+      }
+    }
+
+  rescue StandardError => e
+    {
+      status: :error,
+      message: e.message
+    }
+  end
+
 end

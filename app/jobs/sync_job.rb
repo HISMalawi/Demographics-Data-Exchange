@@ -4,8 +4,9 @@ require 'yaml'
 class SyncJob < ApplicationJob
   queue_as :sync
 
-  def perform(*_args)
-    # Do something later
+  def initialize(*args)
+    super()
+
     sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"), aliases: true)[:dde_sync_config]
 
     @protocol = sync_configs[:protocol]
@@ -30,7 +31,10 @@ class SyncJob < ApplicationJob
     @location = @user['location_id'].to_i
 
     @token = ''
+  end 
 
+  def perform(*_args)
+    # Do something later
     start_syncing
   end
 
@@ -42,14 +46,33 @@ class SyncJob < ApplicationJob
       FileUtils.touch '/tmp/dde_sync.lock'
     end
     begin
+      clear_errors
+      broadcast("Starting synchronization...", level: :info)
       authorize
+      broadcast("Authorized successfully.", level: :success)
+
       pull_new_records
+      broadcast("Pull new records.", level: :info)
+
       pull_updated_records
+      broadcast("Pull updated records.", level: :info)
+
       push_records_new
+      broadcast("Push new records.", level: :info)
+
       push_records_updates
+      broadcast("Push updated records.", level: :info)
+
       push_footprints
+      broadcast("Push footprints.", level: :info)
+
       pull_npids
+      broadcast("Pull NPIDs.", level: :info)
+
       push_errors
+      broadcast("Push sync errors.", level: :info)
+
+      broadcast("Synchronization completed successfully!", level: :success)
     rescue StandardError => e
       log_error(e.message)
     ensure
@@ -278,7 +301,7 @@ class SyncJob < ApplicationJob
   def push_footprints
     url = "#{@base_url}/push_footprints"
 
-    FootPrint.where(synced: false, location_id: 8).find_in_batches(batch_size: 500) do |batch|
+    FootPrint.where(synced: false, location_id: @location).find_in_batches(batch_size: 50) do |batch|
       responses = Parallel.map(batch, in_threads: 10) do |foot|
         response = RestClient.post(url, foot.as_json, { Authorization: @token })
         foot.foot_print_id if response.code == 201 # Collect successful IDs
@@ -319,6 +342,31 @@ class SyncJob < ApplicationJob
     end
   end
 
+  def test_sync_flow
+    begin
+      authorize
+
+      # Try pulling one record 
+      url = "#{@base_url}/person_changes_new?site_id=#{@location}&pull_seq=0&limit=1"
+      updates = JSON.parse(RestClient.get(url, { Authorization: @token }))
+
+      updates = JSON.parse(response) rescue []
+
+      if updates.present?
+        { status: 'success', message: 'Sync working: Able to fetch test record from remote server.' }
+      else
+        { status: 'warning', message: 'Connected and authenticated, but no records returned (pull working but no new data).' }
+      end
+
+    rescue RestClient::Exceptions::OpenTimeout, RestClient::Exceptions::ReadTimeout
+      { status: 'failed', message: 'Sync failed: Connection timed out.' }
+    rescue RestClient::ExceptionWithResponse => e
+      { status: 'failed', message: "Sync failed at API layer: #{e.response}" }
+    rescue StandardError => e
+      { status: 'failed', message: "Unexpected Error: #{e.message}" }
+    end
+  end
+   
   private
 
   def log_error(error)
@@ -338,5 +386,16 @@ class SyncJob < ApplicationJob
         error: error.to_s
       )
     end
+  end
+
+  def clear_errors
+      ActiveRecord::Base.connection.execute("TRUNCATE TABLE sync_errors;")
+  end 
+
+  def broadcast(message, level: :info)
+    ActionCable.server.broadcast(
+      "sync_channel",
+      { message: message, level: level, timestamp: Time.now.strftime("%H:%M:%S") }
+    )
   end
 end

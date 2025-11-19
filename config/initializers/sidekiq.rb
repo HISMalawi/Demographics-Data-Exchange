@@ -11,6 +11,10 @@ end
 # Save the Redis DB choice to sidekiq.yml
 def store_db_choice(db)
   config = load_sidekiq_config
+
+  # Ensure config is a hash and :redis key exists
+  config = {} unless config.is_a? (Hash)
+  config[:redis] ||= {}
   config[:redis][:url] = "redis://localhost:6379/#{db}"
   
   File.open(Rails.root.join('config', 'sidekiq.yml'), 'w') do |f|

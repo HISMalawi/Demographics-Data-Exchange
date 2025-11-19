@@ -24,11 +24,31 @@ class Api::V1::UserController < ApplicationController
     user = User.create(username: params[:username],
                        email: params[:email], password: params[:password],
                        location_id: location_id)
-    if user
+    if user.save
       response = {status: 200, message: "User created successfully"}
       render json: response, status: :created
     else
-      render json: user.errors, status: :bad
+      render json: user.errors, status: :ok
+    end
+  end
+
+  def update_password
+    user = User.find_by(username: params[:username])
+
+    unless user
+      return render json: { status: 404, message: "User not found" }, status: :not_found
+    end
+
+    new_password = params[:password]
+
+    if new_password.blank?
+      return render json: { status: 422, message: "Password cannot be blank" }, status: :unprocessable_entity
+    end
+
+    if user.update(password: new_password)
+      render json: { status: 200, message: "Password updated successfully" }, status: :ok
+    else
+      render json: { status: 422, message: "Failed to update password", errors: user.errors.full_messages }, status: :unprocessable_entity
     end
   end
 

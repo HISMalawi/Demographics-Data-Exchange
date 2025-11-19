@@ -1,0 +1,15 @@
+<%= form_with url: troubleshoot_api_v1_troubleshooting_index_path,
+              method: :post,
+              remote: true, 
+              id: "troubleshoot_form",
+              class: "space-y-6" do |form| %>
+
+
+
+  <div class="flex items-center gap-4 pt-4 border-t border-gray-200">
+    <div class="flex items-center gap-2 text-md text-gray-500 ml-auto">
+      <div class="w-2 h-2 rounded-full bg-gray-400" id="status_indicator"></div>
+      <span id="status_text">Select an error type to begin</span>
+    </div>
+  </div>
+<% end %>

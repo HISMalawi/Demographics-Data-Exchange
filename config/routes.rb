@@ -6,6 +6,7 @@ Sidekiq::Web.use ActionDispatch::Cookies
 Sidekiq::Web.use ActionDispatch::Session::CookieStore, key: "_interslice_session"
 
 Rails.application.routes.draw do
+  get 'dashboard/index'
   mount UserManagement::Engine, at: '/v1' 
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
@@ -27,6 +28,7 @@ Rails.application.routes.draw do
   post "v1/login", to: "api/v1/user#login"
   post "v1/add_user", to: "api/v1/user#add_user"
   post "v1/verify_token/", to: "api/v1/user#verify_token"
+  post "v1/update_password", to: "api/v1/user#update_password"
 
   #people controller routes
   post "v1/add_person", to: "api/v1/people_details#create"
@@ -56,6 +58,7 @@ Rails.application.routes.draw do
 
   #footprint
   post "v1/update_footprint/", to: "api/v1/footprint#update_footprint"
+  get  "/v1/sync_stats", to: "api/v1/footprint#stats"
 
   #merging
   post "v1/merge_people", to: "api/v1/merge#merge"
@@ -109,5 +112,32 @@ Rails.application.routes.draw do
   put 'v1/mailing_list/:id', to: 'api/v1/mailing_lists#update'
   delete 'v1/mailing_list/:id/deactivate', to: 'api/v1/mailing_lists#destroy'
 
-  root to: redirect('/api-docs/')
+  #root to: redirect('/api-docs/')
+
+  root "api/v1/services#index"
+
+  get "documentation", to: "api/v1/documentation#index"
+  get "quick_links", to: "api/v1/quick_links#index"
+
+  # Troubleshooting
+  namespace :api do
+    namespace :v1 do
+      # Troubleshooting with resources
+      resources :troubleshooting, only: [:index] do
+        collection do
+          post :troubleshoot
+          post :reset_sync_credentials
+          post :test_sync
+        end
+      end
+
+      # Services with resources
+      resources :services, only: [:index] do
+        collection do
+          get :manage_services, to: "services#manage"
+        end
+      end
+    end
+  end
+  
 end

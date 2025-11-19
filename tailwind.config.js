@@ -1,0 +1,14 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './app/views/**/*.{html,erb,html.erb}',
+    './app/helpers/**/*.rb',
+    './app/assets/stylesheets/**/*.css',
+    './app/javascript/**/*.js',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+  output: './app/assets/builds/application.css'
+}

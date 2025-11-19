@@ -72,3 +72,10 @@ end
 gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
 
 gem 'his_emr_user_management', '~> 0.1.2'
+gem "turbo-rails", "~> 2.0"
+
+gem "importmap-rails"
+
+gem "sprockets-rails"
+
+gem "tailwindcss-rails"

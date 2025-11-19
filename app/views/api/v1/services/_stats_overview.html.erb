@@ -1,0 +1,11 @@
+
+ <% unless ENV['MASTER'].to_s.downcase == 'true' %>
+ <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+   <%= render "sync_status" %>
+   <%== render "quick_access" %>
+   </div>
+  <% else %>
+   <div class="grid grid-cols-1 lg:grid-cols-1 gap-6">
+     <%== render "quick_access" %>
+    </div>
+  <% end %>
