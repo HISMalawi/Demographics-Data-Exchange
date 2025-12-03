@@ -3,172 +3,132 @@ require 'sidekiq-cron'
 require 'redis'
 require 'yaml'
 
-# Load sidekiq.yml config
-def load_sidekiq_config
-  YAML.load_file(Rails.root.join('config', 'sidekiq.yml'))
+SIDEKIQ_YML_PATH = Rails.root.join('config', 'sidekiq.yml')
+SCHEDULE_YML_PATH = Rails.root.join('config', 'schedule.yml')
+
+# ---------------------------
+# Cron configs
+# ---------------------------
+def cron_config(cron_time, job_class_name, queue_name, description)
+  {
+    'cron' => cron_time,
+    'class' => job_class_name,
+    'queue' => queue_name,
+    'description' => description
+  }
 end
 
-# Save the Redis DB choice to sidekiq.yml
-def store_db_choice(db)
-  config = load_sidekiq_config
+DDE4_SYNC_CONFIGS = cron_config('*/5 * * * *', 'SyncJob', 'sync', 'Syncs data demographics and NPIDs with master')
+DASHBOARD_SOCKET_CONFIGS = cron_config('0 0 * * *', 'DashboardSocketDataJob', 'default', 'Refreshes dashboard details')
+LOW_NPID_NOTIFICATION_CONFIGS = cron_config('30 7 * * *', 'LowNpidNotificationJob', 'low_npid_notification', 'Sends low NPIDs email notifications')
+LAST_SEEN_LAST_SYNCED_CONFIGS = cron_config('30 7 * * *', 'LastSeenLastSyncedJob', 'last_seen_last_synced', 'Sends last seen and last sync email notifications')
+ARCHIVE_SYNC_ERRORS_CONFIG = cron_config('30 7 * * *', 'ArchiveSyncErrorsJob', 'archive_sync_errors', 'Archives sync errors')
 
-  # Ensure config is a hash and :redis key exists
-  config = {} unless config.is_a? (Hash)
-  config[:redis] ||= {}
-  config[:redis][:url] = "redis://localhost:6379/#{db}"
-  
-  File.open(Rails.root.join('config', 'sidekiq.yml'), 'w') do |f|
-    f.write(config.to_yaml)
-  end
+# ---------------------------
+# Helpers
+# ---------------------------
+def load_yaml(path)
+  File.exist?(path) ? YAML.load_file(path) || {} : {}
 end
 
-# Read Redis DB choice from sidekiq.yml
+def save_yaml(path, hash)
+  File.write(path, hash.to_yaml)
+end
+
+# ---------------------------
+# Redis DB helpers
+# ---------------------------
 def read_db_choice
-  config = load_sidekiq_config
-  config[:redis][:url].match(/redis:\/\/localhost:6379\/(\d+)/)[1].to_i
+  config = load_yaml(SIDEKIQ_YML_PATH).transform_keys(&:to_sym)
+  url = config.dig(:redis, :url)
+  url.match(/redis:\/\/localhost:6379\/(\d+)/)[1].to_i if url
 rescue
   nil
 end
 
-# Find the first available Redis DB
-def find_free_redis_db(redis_client, max_db = 15)
+def find_free_redis_db(max_db = 15)
+  redis = Redis.new(url: 'redis://localhost:6379/0')
   (0..max_db).each do |db|
-    redis_client.select(db)
-    size = redis_client.dbsize
-    return db if size == 0
+    redis.select(db)
+    return db if redis.dbsize == 0
   end
-  raise "No free Redis databases available."
+  raise "No free Redis DB available!"
 end
 
-def store_master_schedule_config
-  schedule_file = Rails.root.join('config', 'schedule.yml')
+# ---------------------------
+# Determine queues and cron schedule
+# ---------------------------
+def determine_queues_and_schedule
+  default_queues = ['default', 'sync']
+  schedule = {}
 
-  if File.exist?(schedule_file)
-    config = YAML.load_file(schedule_file)
-
-    config = {} unless config.is_a?(Hash)
-
+  begin
     if ActiveRecord::Base.connection.data_source_exists?('npids')
-
-      unless config.key?('dashboard_socket')
-        config['dashboard_socket'] = DASHBOARD_SOCKET_CONFIGS
-      end
-
-      unless config.key?('low_npid_notification')
-        config['low_npid_notification'] = LOW_NPID_NOFICATION_CONFIGS
-      end
-
-      unless config.key?('last_seen_last_synced')
-        config['last_seen_last_synced'] = LAST_SEEN_LAST_SYNCED_CONFIGS
-      end
-
-      unless config.key?('archive_sync_errors')
-        config['archive_sync_errors'] = ARCHIVE_SYNC_ERRORS_CONFIG
-      end
-
-
-      if config.key?('dde4_sync')
-         config.delete('dde4_sync')
-      end
-
-      File.open(schedule_file, 'w') do |f|
-        f.write(config.to_yaml)
-      end
+      queues = ['default', 'location_npid', 'npid_pool', 'email_notifications', 'archive_sync_errors']
+      schedule = {
+        'dashboard_socket' => DASHBOARD_SOCKET_CONFIGS,
+        'low_npid_notification' => LOW_NPID_NOTIFICATION_CONFIGS,
+        'last_seen_last_synced' => LAST_SEEN_LAST_SYNCED_CONFIGS,
+        'archive_sync_errors' => ARCHIVE_SYNC_ERRORS_CONFIG
+      }
     else
-
-      unless config.key?('dde4_sync')
-        config['dde4_sync'] = DDE4_SYNC_CONFIGS
-      end
-
-      if config.key?('dashboard_socket')
-        config.delete('dashboard_socket')
-      end
-
-      if config.key?('last_seen_last_synced')
-        config.delete('last_seen_last_synced')
-      end
-
-      if config.key?('low_npid_notification')
-        config.delete('low_npid_notification')
-      end
-
-
-      if config.key?('archive_sync_errors')
-        config.delete('archive_sync_errors')
-      end
-
-      File.open(schedule_file, 'w') do |f|
-        f.write(config.to_yaml)
-      end
+      queues = default_queues
+      schedule = { 'dde4_sync' => DDE4_SYNC_CONFIGS }
     end
-  else
-    Rails.logger.warn "Schedule file not found at #{schedule_file}"
-    {}
+  rescue ActiveRecord::NoDatabaseError, ActiveRecord::ConnectionNotEstablished
+    queues = default_queues
+    schedule = { 'dde4_sync' => DDE4_SYNC_CONFIGS }
   end
+
+  [queues, schedule]
 end
 
-def cron_config(cron_time, job_class_name, queue_name, description)
-    {
-      'cron' => cron_time,
-      'class' => job_class_name,
-      'queue' => queue_name,
-      'description' => description
-    }
+# ---------------------------
+# Update sidekiq.yml safely
+# ---------------------------
+def update_sidekiq_config(free_db, queues)
+  config = load_yaml(SIDEKIQ_YML_PATH).transform_keys(&:to_sym)
+  config[:redis] ||= {}
+  config[:redis][:url] = "redis://localhost:6379/#{free_db}"
+  config[:queues] = queues
+  save_yaml(SIDEKIQ_YML_PATH, config)
 end
 
-DDE4_SYNC_CONFIGS = cron_config('*/5 * * * *', 
-                                'SyncJob',
-                                'sync',
-                                'Syncs data demographics and NPIDs with master')
-
-DASHBOARD_SOCKET_CONFIGS = cron_config('0 0 * * *',
-                                       'DashboardSocketDataJob',
-                                       'default',
-                                       'Refreshes dashboard details')
-
-LOW_NPID_NOFICATION_CONFIGS = cron_config('30 7 * * *',
-                                          'LowNpidNotificationJob',
-                                          'low_npid_notification', 
-                                          'Sends low NPIDs email nofications')
-
-LAST_SEEN_LAST_SYNCED_CONFIGS = cron_config('30 7  * * *', 
-                                            'LastSeenLastSyncedJob',
-                                            'last_seen_last_synced',
-                                            'Sends last seen and last sync email notifications')
-
-ARCHIVE_SYNC_ERRORS_CONFIG =  cron_config('30 7  * * *', 
-                                            'ArchiveSyncErrorsJob',
-                                            'archive_sync_errors',
-                                            'Archives sync errors')
-
-
-redis = Redis.new(url: 'redis://localhost:6379/0')
-free_db = read_db_choice || find_free_redis_db(redis)
-
-# Store the selected DB back in the sidekiq.yml file
-store_db_choice(free_db)
-
-begin
-  if ActiveRecord::Base.connection.active?
-    store_master_schedule_config
-  end
-rescue ActiveRecord::NoDatabaseError, ActiveRecord::ConnectionNotEstablished
-  Rails.logger.info "Skipping database-dependent initializer as the database is not available."
+# ---------------------------
+# Rewrite schedule.yml file
+# ---------------------------
+def rewrite_schedule_file(schedule_hash)
+  save_yaml(SCHEDULE_YML_PATH, schedule_hash)
 end
 
+# ---------------------------
+# Redis DB & queues
+# ---------------------------
+free_db = read_db_choice || find_free_redis_db
+queues, schedule_hash = determine_queues_and_schedule
+
+# Update sidekiq.yml
+update_sidekiq_config(free_db, queues)
+
+# Rewrite schedule.yml based on current db state
+rewrite_schedule_file(schedule_hash)
+
+# ---------------------------
+# Sidekiq server/client config
+# ---------------------------
 Sidekiq.configure_server do |config|
   config.redis = { url: "redis://localhost:6379/#{free_db}" }
+
+  # Load cron schedule from file
+  if File.exist?(SCHEDULE_YML_PATH)
+    Sidekiq::Cron::Job.load_from_hash(load_yaml(SCHEDULE_YML_PATH))
+  end
 end
+
 Sidekiq.configure_client do |config|
   config.redis = { url: "redis://localhost:6379/#{free_db}" }
 end
 
 Rails.application.configure do
   config.active_job.queue_adapter = :sidekiq
-end
-
-schedule_file = "config/schedule.yml"
-
-if File.exist?(schedule_file) && Sidekiq.server?
-  Sidekiq::Cron::Job.load_from_hash YAML.load_file(schedule_file)
 end
