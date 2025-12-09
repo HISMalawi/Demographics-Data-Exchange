@@ -223,8 +223,13 @@ class Troubleshooter
 
     # Update locally
     sync_user = User.find_by(username: sync_username)
-    return { status: :error, message: "Sync user not found locally" } unless sync_user
-    sync_user.update(password: new_password)
+    if sync_user.exist?
+      sync_user.update(password: new_password)
+    else
+      User.create(username: sync_username,
+                  password: new_password,
+                  location_id: )
+    end
 
     # Update remotely
     update_url = "#{remote_base_url}/update_password"

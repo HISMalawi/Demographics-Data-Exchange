@@ -2,9 +2,11 @@
 :queues:
 - default
 - location_npid
+- low_npid_notification
 - npid_pool
 - email_notifications
 - archive_sync_errors
+- last_seen_last_synced
 - sync
 
 :redis:
