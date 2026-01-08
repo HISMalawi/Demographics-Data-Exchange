@@ -114,16 +114,16 @@ sudo rm -f Gemfile.lock
 
 # Run Bundle install
 echo "Running Bundle install ..."
-$bundle_path install --local
+cd $APP_DIR && bundle install --local
 
 
 
 # Get the path of Puma, Ruby, and Ruby version manager
-puma_path="/home/$username/.rbenv/shims/puma"
+puma_path="$(which puma)"
 ruby_path="$(which ruby)"
-rails_path="/home/$username/.rbenv/shims/rails"
-#bundle_path="$(which bundle)"
-bundle_path="/home/$username/.rbenv/shims/bundle"
+rails_path="$(which rails)"
+bundle_path="$(which bundle)"
+# bundle_path="/home/$username/.rbenv/shims/bundle"
 
 echo "Run any pending  migrations"
 cd $APP_DIR && RAILS_ENV=production $rails_path db:migrate
