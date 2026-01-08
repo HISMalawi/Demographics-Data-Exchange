@@ -46,8 +46,8 @@ else
     tput setaf 1; echo "❌ Import failed"; tput sgr0
 fi
 
-#username="$(whoami)"
-username="emr-user"
+username="$(whoami)"
+# username="emr-user"
 
 environment=${environment:-production}
 
@@ -114,22 +114,26 @@ sudo rm -f Gemfile.lock
 
 # Run Bundle install
 echo "Running Bundle install ..."
-$bundle_path install --local
+cd $APP_DIR && bundle install --local
 
 
 
 # Get the path of Puma, Ruby, and Ruby version manager
-puma_path="/home/emr-user/.rbenv/shims/puma"
+puma_path="$(which puma)"
 ruby_path="$(which ruby)"
-rails_path="/home/emr-user/.rbenv/shims/rails"
-#bundle_path="$(which bundle)"
-bundle_path="/home/emr-user/.rbenv/shims/bundle"
+rails_path="$(which rails)"
+bundle_path="$(which bundle)"
+# bundle_path="/home/$username/.rbenv/shims/bundle"
 
-echo "Run any penidng  migrations"
-cd /var/www/dde4 && RAILS_ENV=production $rails_path db:migrate
+echo "Run any pending  migrations"
+cd $APP_DIR && RAILS_ENV=production $rails_path db:migrate
+
+echo 'Precompile assets'
+cd $APP_DIR && RAILS_ENV=production $rails_path assets:clobber
+cd $APP_DIR && RAILS_ENV=production $rails_path assets:precompile
 
 if [[ $ruby_version_manager == 1 ]]; then
-    version_manager_path="/home/emr-user/.rbenv/bin/rbenv"
+    version_manager_path="/home/$username/.rbenv/bin/rbenv"
     new_exec_start="/bin/bash -lc '$version_manager_path local 3.2.0 && $bundle_path exec $puma_path -C $APP_DIR/config/puma.rb'"
 else
     new_exec_start="/bin/bash -lc 'rvm use ruby-3.2.0 && $bundle_path exec $puma_path -C $APP_DIR/config/puma.rb'"
