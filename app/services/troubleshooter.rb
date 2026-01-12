@@ -9,6 +9,7 @@ class Troubleshooter
 
   CONFIG_FILE_PATH = Rails.root.join("config", "database.yml")
   LOCK_FILE_PATH = "/tmp/dde_sync.lock"
+  EMR_APPLICATION_CONFIG_FILE = "/var/www/EMR-API/config/application.yml"
 
   def initialize
     @config = load_config
@@ -22,10 +23,29 @@ class Troubleshooter
       resolve_sync_configs
     when "detect_footprint_conflicts"
       detect_footprint_conflicts
+    when "resolve_program_credentials"
+      reset_program_user_credentials
     else
       { status: :unknown, message: "Unknown error type" }
     end
   end
+
+  def reset_program_user_credentials
+    program_credentials = get_emr_program_credentials
+
+    results = program_credentials.each do | program_credential|
+      local_success = authenticate_local(program_credential[:username], program_credential[:password])
+
+      if local_success
+        program_credential[:authentication_status] = "passed"
+      else
+        program_credential[:authentication_status] = "failed"
+      end 
+    end 
+
+    { status: :ok, results: results}
+    
+  end 
 
   def reset_sync_credentials(username:, password:, location_id:)
     config = load_config
@@ -249,5 +269,31 @@ class Troubleshooter
     Sidekiq::Workers.new.any? do |process_id, thread_id, work|
       work["payload"]["class"] == SyncJob
     end
+  end
+
+  # -----------------------------
+  # EMR PROGRAM CREDENTIALS
+  # -----------------------------
+
+  def get_emr_program_credentials
+    begin 
+      config = YAML.load_file(EMR_APPLICATION_CONFIG_FILE)
+      dde_config = config["dde"]
+      credentials = []
+
+        dde_config.each do |program_name, details|
+        if details.is_a?(Hash) && details.key?("username")
+          credentials << {
+            program: program_name,
+            username: details["username"],
+            password: details["password"]
+          }
+        end
+      end 
+
+      credentials
+    rescue Errno::ENOENT
+      {}
+    end 
   end
 end
