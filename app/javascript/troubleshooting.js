@@ -57,6 +57,7 @@ export async function autoRunTroubleshooting() {
     { key: "unlock_sync_job", name: "Unlock Sync Job" },
     { key: "resolve_sync_configs", name: "Resolve Sync Configurations" },
     { key: "detect_footprint_conflicts", name: "Detect Footprint Conflicts" },
+    { key: "resolve_program_credentials", name: "Resolve Program Users Configs" }
   ];
 
   let step = 0;
@@ -77,17 +78,62 @@ export async function autoRunTroubleshooting() {
       });
 
       const result = await response.json();
-
       const colorClass = result.status === "ok"
         ? "bg-green-50 border-green-300 text-green-700"
         : "bg-red-50 border-red-300 text-red-700";
 
-      const section = document.createElement("div");
-      section.className = `p-4 mb-4 rounded-lg border ${colorClass} shadow-sm transition-all duration-300`;
-      section.innerHTML = `<strong class="block mb-1">${item.name}</strong>
-                           <span class="whitespace-pre-line">${result.message || "No message"}</span>`;
+      if (item.key === "resolve_program_credentials") {
+        const section = document.createElement("div");
+        section.className = `p-4 mb-4 rounded-lg border border-gray-300 bg-white shadow-sm transition-all duration-300`;
+        
+        let tableHTML = `<strong class="block mb-3">${item.name}</strong>
+                         <table class="w-full text-sm border-collapse">
+                           <thead>
+                             <tr class="border-b-2 border-gray-300">
+                               <th class="text-left p-2 font-semibold">Program</th>
+                               <th class="text-left p-2 font-semibold">Username</th>
+                               <th class="text-center p-2 font-semibold">Authentication Status</th>
+                               <th class="text-center p-2 font-semibold">Action</th>
+                             </tr>
+                           </thead>
+                           <tbody>`;
+        
+        if (result.message && Array.isArray(result.message)) {
+          result.message.forEach(cred => {
+            const statusBg = cred.authentication_status === "passed" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
+            const isFailedBtn = cred.authentication_status === "failed" 
+              ? `<button class="px-3 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white text-s font-medium reset-cred-btn" data-program="${cred.program}">Reset</button>`
+              : `<span class="text-gray-400 text-xs">N/A</span>`;
+            
+            tableHTML += `<tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="p-2">${cred.program || "N/A"}</td>
+                            <td class="p-2">${cred.username || "N/A"}</td>
+                            <td class="p-2 text-center"><span class="px-3 py-1 rounded ${statusBg} font-medium">${cred.authentication_status || "N/A"}</span></td>
+                            <td class="p-2 text-center">${isFailedBtn}</td>
+                          </tr>`;
+          });
+        }
+        
+        tableHTML += `</tbody>
+                     </table>`;
+        
+        section.innerHTML = tableHTML;
+        outputDiv.appendChild(section);
 
-      outputDiv.appendChild(section);
+        // Add event listeners for reset buttons
+        section.querySelectorAll(".reset-cred-btn").forEach(btn => {
+          btn.addEventListener("click", async function() {
+            const program = this.getAttribute("data-program");
+            await resetProgramCredentials(program);
+          });
+        });
+      } else {
+        const section = document.createElement("div");
+        section.className = `p-4 mb-4 rounded-lg border ${colorClass} shadow-sm transition-all duration-300`;
+        section.innerHTML = `<strong class="block mb-1">${item.name}</strong>
+                           <span class="whitespace-pre-line">${result.message || "No message"}</span>`;
+        outputDiv.appendChild(section);
+      }
     } catch (error) {
       const errorDiv = document.createElement("div");
       errorDiv.className = "text-red-600 p-2 border border-red-200 rounded mb-2";
@@ -102,32 +148,32 @@ export async function autoRunTroubleshooting() {
   statusText.textContent = "Diagnostics completed";
 }
 
-export async function runTestSync(){
-    const testBtn = document.getElementById("btn-test-sync");
+export async function runTestSync() {
+  const testBtn = document.getElementById("btn-test-sync");
 
-    if (!testBtn) return;
+  if (!testBtn) return;
 
-    testBtn.disabled = true;
-    const originalText = testBtn.innerHTML;
-    testBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Syncing...`;
+  testBtn.disabled = true;
+  const originalText = testBtn.innerHTML;
+  testBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> Syncing...`;
 
-    try {
-      const response = await fetch("/api/v1/troubleshooting/test_sync", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-        }
-      });
+  try {
+    const response = await fetch("/api/v1/troubleshooting/test_sync", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      }
+    });
 
-    
-    } catch (error) {
-      console.error("Error running test sync:", error);
-      showAlert("Sync Test ", error.message || "Failed to run test sync.", "error");
-    } finally {
-      testBtn.disabled = false;
-      testBtn.innerHTML = originalText;
-    }
+
+  } catch (error) {
+    console.error("Error running test sync:", error);
+    showAlert("Sync Test ", error.message || "Failed to run test sync.", "error");
+  } finally {
+    testBtn.disabled = false;
+    testBtn.innerHTML = originalText;
+  }
 }
 
 // --- Helper ---
@@ -148,7 +194,7 @@ function showAlert(title, message, type = "info", duration = 5000) {
   // Set color based on type
   let bgColor = "bg-white";
   let titleColor = "text-gray-900";
-  switch(type) {
+  switch (type) {
     case "success":
       bgColor = "bg-green-100";
       titleColor = "text-green-800";

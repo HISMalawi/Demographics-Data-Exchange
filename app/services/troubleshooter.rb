@@ -33,7 +33,7 @@ class Troubleshooter
   def reset_program_user_credentials
     program_credentials = get_emr_program_credentials
 
-    results = program_credentials.each do | program_credential|
+    results = program_credentials.map do | program_credential|
       local_success = authenticate_local(program_credential[:username], program_credential[:password])
 
       if local_success
@@ -41,9 +41,12 @@ class Troubleshooter
       else
         program_credential[:authentication_status] = "failed"
       end 
+      
+      # Remove password before returning
+      program_credential.except(:password)
     end 
-
-    { status: :ok, results: results}
+    
+    { status: :ok, message: results}
     
   end 
 
