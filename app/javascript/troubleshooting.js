@@ -119,14 +119,6 @@ export async function autoRunTroubleshooting() {
         
         section.innerHTML = tableHTML;
         outputDiv.appendChild(section);
-
-        // Add event listeners for reset buttons
-        section.querySelectorAll(".reset-cred-btn").forEach(btn => {
-          btn.addEventListener("click", async function() {
-            const program = this.getAttribute("data-program");
-            await resetProgramCredentials(program);
-          });
-        });
       } else {
         const section = document.createElement("div");
         section.className = `p-4 mb-4 rounded-lg border ${colorClass} shadow-sm transition-all duration-300`;
