@@ -115,6 +115,58 @@ class Troubleshooter
     end
   end
 
+  def reset_program_user(program:, username:, password:)
+    # Check if user appears in more than one program
+    config = YAML.load_file(EMR_APPLICATION_CONFIG_FILE)
+    dde_config = config["dde"]
+    
+    program_count = 0
+    dde_config.each do |program_name, details|
+      if details.is_a?(Hash) && details["username"] == username
+        program_count += 1
+      end
+    end
+    
+    if program_count > 1
+      raise "Error: Username '#{username}' is used by more than one program. Cannot reset credentials."
+    end
+    
+    # Find or create user in database
+    user = User.find_by(username: username)
+    
+    if user
+      # User exists, update password
+      user.update(password: password)
+    else
+      # User not found, create new user
+      user = User.create(
+        username: username,
+        password: password
+      )
+    end
+    
+    # Update credentials in EMR-API config file
+    update_emr_program_credentials(program, username, password)
+    
+    user_action = user.new_record? ? "created" : "updated"
+    { status: :ok, message: "User '#{username}' password #{user_action} successfully for program '#{program}'. EMR-API config updated." }
+  end
+  
+  def update_emr_program_credentials(program, username, password)
+    config = YAML.load_file(EMR_APPLICATION_CONFIG_FILE)
+    
+    if config["dde"] && config["dde"][program].is_a?(Hash)
+      config["dde"][program]["username"] = username
+      config["dde"][program]["password"] = password
+      
+      File.open(EMR_APPLICATION_CONFIG_FILE, "w") do |f|
+        f.write(config.to_yaml)
+      end
+    else
+      raise "Program '#{program}' not found in EMR-API configuration."
+    end
+  end
+
   private
 
   # -----------------------------

@@ -168,6 +168,37 @@ export async function runTestSync() {
   }
 }
 
+export async function resetProgramCredentials(program, username, password){
+  try {
+    const response = await fetch("/api/v1/troubleshooting/reset_program_credentials", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+      },
+      body: JSON.stringify({ 
+        program: program,
+        username: username,
+        password: password
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.status === "ok") {
+      showAlert("Success", `${program} credentials reset successfully`, "success");
+      return result;
+    } else {
+      showAlert("Error", result.message || "Failed to reset credentials", "error");
+      throw new Error(result.message || "Failed to reset credentials");
+    }
+  } catch (error) {
+    console.error("Error resetting program credentials:", error);
+    showAlert("Error", error.message || "Failed to reset credentials", "error");
+    throw error;
+  }
+}
+
 // --- Helper ---
 function getMetaValue(name) {
   const element = document.querySelector(`meta[name='${name}']`);

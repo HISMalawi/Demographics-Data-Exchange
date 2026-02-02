@@ -128,6 +128,7 @@ Rails.application.routes.draw do
           post :troubleshoot
           post :reset_sync_credentials
           post :test_sync
+          post :reset_program_credentials
         end
       end
 
