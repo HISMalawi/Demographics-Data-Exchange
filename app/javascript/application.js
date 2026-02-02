@@ -4,7 +4,7 @@ import "@hotwired/turbo-rails"
 import { Application } from "@hotwired/stimulus"
 import PageController from "./controllers/page_controller"
 
-import { fetchStats, autoRunTroubleshooting, runTestSync/** resetProgramCredentials**/ } from "./troubleshooting";
+import { fetchStats, autoRunTroubleshooting, runTestSync, resetProgramCredentials } from "./troubleshooting";
 
 const application = Application.start()
 application.register("page", PageController)
@@ -37,8 +37,8 @@ document.addEventListener("DOMContentLoaded", () => {
       resetBtn.textContent = "Resetting...";
       
       try {
-       // await resetProgramCredentials(program, username, password);
-        //closeResetCredentialModal();
+        await resetProgramCredentials(program, username, password);
+        closeResetCredentialModal();
       } catch (error) {
         console.error("Error resetting credentials:", error);
       } finally {

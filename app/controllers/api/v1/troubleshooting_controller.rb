@@ -2,7 +2,9 @@ class Api::V1::TroubleshootingController < ActionController::Base
   layout "application"
   skip_before_action :verify_authenticity_token, only: [:troubleshoot, 
                                                         :reset_sync_credentials,
-                                                        :reset_location_id, :test_sync ]
+                                                        :reset_location_id, 
+                                                        :test_sync, 
+                                                        :reset_program_credentials]
 
   def index
     @result = params[:result]
@@ -63,6 +65,28 @@ class Api::V1::TroubleshootingController < ActionController::Base
     end
   end
 
+  def reset_program_credentials
+    begin
+      program = params[:program]
+      username = params[:username]
+      password = params[:password]
+
+      result = troubleshooting_service.reset_program_user(
+        program: program, 
+        username: username, 
+        password: password
+      )
+
+      respond_to do |format|
+        format.json { render json: result }
+      end
+    rescue => e
+      respond_to do |format|
+        format.json { render json: { status: :error, message: e.message }, status: :unprocessable_entity }
+      end
+    end 
+  end 
+
  def test_sync
   SyncJob.unlock!      
 
@@ -79,3 +103,5 @@ class Api::V1::TroubleshootingController < ActionController::Base
     Troubleshooter.new
   end
 end
+
+
