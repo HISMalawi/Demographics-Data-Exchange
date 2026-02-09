@@ -4,7 +4,7 @@ require 'yaml'
 class SyncJob < ApplicationJob
   queue_as :sync
 
-  def initialize(*args)
+  def initialize(*_args)
     super()
 
     sync_configs = YAML.load(File.read("#{Rails.root}/config/database.yml"), aliases: true)[:dde_sync_config]
@@ -31,7 +31,7 @@ class SyncJob < ApplicationJob
     @location = @user['location_id'].to_i
 
     @token = ''
-  end 
+  end
 
   def perform(*_args)
     # Do something later
@@ -47,32 +47,32 @@ class SyncJob < ApplicationJob
     end
     begin
       clear_errors
-      broadcast("Starting synchronization...", level: :info)
+      broadcast('Starting synchronization...', level: :info)
       authorize
-      broadcast("Authorized successfully.", level: :success)
+      broadcast('Authorized successfully.', level: :success)
 
       pull_new_records
-      broadcast("Pull new records.", level: :info)
+      broadcast('Pull new records.', level: :info)
 
       pull_updated_records
-      broadcast("Pull updated records.", level: :info)
+      broadcast('Pull updated records.', level: :info)
 
       push_records_new
-      broadcast("Push new records.", level: :info)
+      broadcast('Push new records.', level: :info)
 
       push_records_updates
-      broadcast("Push updated records.", level: :info)
+      broadcast('Push updated records.', level: :info)
 
       push_footprints
-      broadcast("Push footprints.", level: :info)
+      broadcast('Push footprints.', level: :info)
 
       pull_npids
-      broadcast("Pull NPIDs.", level: :info)
+      broadcast('Pull NPIDs.', level: :info)
 
       push_errors
-      broadcast("Push sync errors.", level: :info)
+      broadcast('Push sync errors.', level: :info)
 
-      broadcast("Synchronization completed successfully!", level: :success)
+      broadcast('Synchronization completed successfully!', level: :success)
     rescue StandardError => e
       log_error(e.message)
     ensure
@@ -204,7 +204,10 @@ class SyncJob < ApplicationJob
 
       unless npids.blank?
         npids.each do |npid|
-          next if LocationNpid.find_by_npid(npid['npid'])
+          if LocationNpid.unscoped.find_by_npid(npid['npid'])
+            log_error("NPID seems to have already been assigned to a location: #{npid['npid']}")
+            next
+          end
 
           ActiveRecord::Base.transaction do
             LocationNpid.create!(location_id: npid['location_id'],
@@ -343,30 +346,32 @@ class SyncJob < ApplicationJob
   end
 
   def test_sync_flow
-    begin
-      authorize
+    authorize
 
-      # Try pulling one record 
-      url = "#{@base_url}/person_changes_new?site_id=#{@location}&pull_seq=0&limit=1"
-      updates = JSON.parse(RestClient.get(url, { Authorization: @token }))
+    # Try pulling one record
+    url = "#{@base_url}/person_changes_new?site_id=#{@location}&pull_seq=0&limit=1"
+    JSON.parse(RestClient.get(url, { Authorization: @token }))
 
-      updates = JSON.parse(response) rescue []
-
-      if updates.present?
-        { status: 'success', message: 'Sync working: Able to fetch test record from remote server.' }
-      else
-        { status: 'warning', message: 'Connected and authenticated, but no records returned (pull working but no new data).' }
-      end
-
-    rescue RestClient::Exceptions::OpenTimeout, RestClient::Exceptions::ReadTimeout
-      { status: 'failed', message: 'Sync failed: Connection timed out.' }
-    rescue RestClient::ExceptionWithResponse => e
-      { status: 'failed', message: "Sync failed at API layer: #{e.response}" }
-    rescue StandardError => e
-      { status: 'failed', message: "Unexpected Error: #{e.message}" }
+    updates = begin
+      JSON.parse(response)
+    rescue StandardError
+      []
     end
+
+    if updates.present?
+      { status: 'success', message: 'Sync working: Able to fetch test record from remote server.' }
+    else
+      { status: 'warning',
+        message: 'Connected and authenticated, but no records returned (pull working but no new data).' }
+    end
+  rescue RestClient::Exceptions::OpenTimeout, RestClient::Exceptions::ReadTimeout
+    { status: 'failed', message: 'Sync failed: Connection timed out.' }
+  rescue RestClient::ExceptionWithResponse => e
+    { status: 'failed', message: "Sync failed at API layer: #{e.response}" }
+  rescue StandardError => e
+    { status: 'failed', message: "Unexpected Error: #{e.message}" }
   end
-   
+
   private
 
   def log_error(error)
@@ -389,13 +394,13 @@ class SyncJob < ApplicationJob
   end
 
   def clear_errors
-      ActiveRecord::Base.connection.execute("TRUNCATE TABLE sync_errors;")
-  end 
+    ActiveRecord::Base.connection.execute('TRUNCATE TABLE sync_errors;')
+  end
 
   def broadcast(message, level: :info)
     ActionCable.server.broadcast(
-      "sync_channel",
-      { message: message, level: level, timestamp: Time.now.strftime("%H:%M:%S") }
+      'sync_channel',
+      { message: message, level: level, timestamp: Time.now.strftime('%H:%M:%S') }
     )
   end
 end

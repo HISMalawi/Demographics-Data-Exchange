@@ -131,6 +131,8 @@ cd $APP_DIR && RAILS_ENV=production $rails_path db:migrate
 echo 'Precompile assets'
 cd $APP_DIR && RAILS_ENV=production $rails_path assets:clobber
 cd $APP_DIR && RAILS_ENV=production $rails_path assets:precompile
+cd $APP_DIR && RAILS_ENV=production $rails_path tailwindcss:build
+
 
 if [[ $ruby_version_manager == 1 ]]; then
     version_manager_path="/home/$username/.rbenv/bin/rbenv"
