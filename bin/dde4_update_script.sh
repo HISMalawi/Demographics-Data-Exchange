@@ -53,17 +53,29 @@ environment=${environment:-production}
 
 # Check if the file exists and extract the port number
 if [ -f "$APP_DIR/config/server/production.rb" ]; then
-    port_number=$(grep  -rn 'port\s*ENV' "$APP_DIR/config/server/production.rb" | awk -F '[{}]' '{print $2}')
+    port_number=$(grep  -rn 'port\s*ENV' "$APP_DIR/config/server/production.rb" | awk -F '[{}]' '{print $2}' | tr -d ' ')
 elif [ -f "$APP_DIR/config/puma.rb" ]; then
-    port_number=$(grep  -rn 'port\s*ENV' "$APP_DIR/config/puma.rb" | awk -F '[{}]' '{print $2}')
+    port_number=$(grep  -rn 'port\s*ENV' "$APP_DIR/config/puma.rb" | awk -F '[{}]' '{print $2}' | tr -d ' ')
 fi
+
+# Default to 8050 if port detection fails
+if [ -z "$port_number" ]; then
+    port_number="8050"
+fi
+
+# Set DDE_HOST_URL based on port
+export DDE_HOST_URL="http://127.0.0.1:${port_number}"
 
 
 # Prompt user to select Ruby version manager to use
 echo -e "\nSELECT Ruby Version Manager to use"
 echo "1) Rbenv"
 echo "2) RVM"
-read -sn1 -s ruby_version_manager
+read -t 5 -n 1 ruby_version_manager
+if [ -z "$ruby_version_manager" ]; then
+    echo -e "\nNo selection made, defaulting to Rbenv"
+    ruby_version_manager=1
+fi
 
 # Copying YAML files
 echo -e '\n\e[1;33mCopying Database YAML file..\e[0m'
@@ -100,12 +112,18 @@ sed -i -e "s/^:batch_size:[[:space:]]*'[^']*'/:batch_size:\n  :batch: ${SYNC_BAT
 
 cp ${APP_DIR}/config/sidekiq.yml.example $APP_DIR/config/sidekiq.yml
 cp ${APP_DIR}/config/schedule.yml.example $APP_DIR/config/schedule.yml
+cp ${APP_DIR}/config/cable.yml.example $APP_DIR/config/cable.yml
 sudo chmod 777 $APP_DIR/config/sidekiq.yml
 sudo chmod 777 $APP_DIR/config/schedule.yml
+sudo chmod 777 $APP_DIR/config/cable.yml
 
-# Kill the process using port 8050
+# Kill the process using port
 echo "Killing the process using port $port_number..."
-sudo fuser -k $port_number/tcp
+if sudo fuser -k ${port_number}/tcp 2>/dev/null; then
+    echo "Process killed successfully"
+else
+    echo "No process found on port $port_number or unable to kill"
+fi
 
 # Remove the vendor folder and Gemfile.lock
 echo "Removing vendor folder and Gemfile.lock"
@@ -126,12 +144,12 @@ bundle_path="$(which bundle)"
 # bundle_path="/home/$username/.rbenv/shims/bundle"
 
 echo "Run any pending  migrations"
-cd $APP_DIR && RAILS_ENV=production $rails_path db:migrate
+cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $rails_path db:migrate
 
 echo 'Precompile assets'
-cd $APP_DIR && RAILS_ENV=production $rails_path assets:clobber
-cd $APP_DIR && RAILS_ENV=production $rails_path assets:precompile
-cd $APP_DIR && RAILS_ENV=production $rails_path tailwindcss:build
+cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $rails_path assets:clobber
+cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $rails_path assets:precompile
+cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $rails_path tailwindcss:build
 
 
 if [[ $ruby_version_manager == 1 ]]; then
