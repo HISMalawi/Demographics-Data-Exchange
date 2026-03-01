@@ -64,7 +64,7 @@ Rails.application.configure do
   smtp_config_path = Rails.root.join('config', 'smtp_settings.yml')
 
   if File.exist?(smtp_config_path)
-    smtp_settings = YAML.load_file(smtp_config_path)
+    smtp_settings = YAML.safe_load(ERB.new(File.read(smtp_config_path)).result)
                         .deep_symbolize_keys[:smtp_settings][Rails.env.to_sym]
 
     config.action_mailer.smtp_settings = {
