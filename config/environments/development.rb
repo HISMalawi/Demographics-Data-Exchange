@@ -33,9 +33,9 @@ Rails.application.configure do
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = true
 
-  config.action_mailer.show_previews = true 
+  config.action_mailer.show_previews = true
   config.action_mailer.preview_path =  "#{Rails.root}/test/mailers/previews"
-  config.action_mailer.delivery_method = :smtp 
+  config.action_mailer.delivery_method = :smtp
 
   config.action_mailer.show_previews = true
   config.action_mailer.preview_path = "#{Rails.root}/test/mailers/previews"
@@ -43,7 +43,7 @@ Rails.application.configure do
   smtp_config_path = Rails.root.join('config', 'smtp_settings.yml')
 
   if File.exist?(smtp_config_path)
-    smtp_settings = YAML.load_file(smtp_config_path)
+    smtp_settings = YAML.safe_load(ERB.new(File.read(smtp_config_path)).result)
                         .deep_symbolize_keys[:smtp_settings][Rails.env.to_sym]
 
     config.action_mailer.smtp_settings = {
@@ -58,7 +58,7 @@ Rails.application.configure do
       read_timeout: 60
     }
   else
-     puts "WARNING: SMTP config file not found at #{smtp_config_path}. Skipping SMTP setup."
+    puts "WARNING: SMTP config file not found at #{smtp_config_path}. Skipping SMTP setup."
     # You can choose to set default SMTP settings here or skip entirely.
     # config.action_mailer.smtp_settings = { ...default values... }
   end
@@ -77,7 +77,6 @@ Rails.application.configure do
   # Disable Legacy connection handling
   config.active_record.legacy_connection_handling = false
 
-
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
 
@@ -85,11 +84,11 @@ Rails.application.configure do
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
-  #Activate Logrotate
-  config.logger = Logger.new("#{Rails.root}/log/#{ENV['RAILS_ENV']}.log", 10, 1048576)
-  Rails.application.routes.default_url_options[:host] = ENV["DDE_HOST_URL"]
+  # Activate Logrotate
+  config.logger = Logger.new("#{Rails.root}/log/#{ENV['RAILS_ENV']}.log", 10, 1_048_576)
+  Rails.application.routes.default_url_options[:host] = ENV['DDE_HOST_URL']
 
   config.action_cable.allowed_request_origins = [
-    /https?:\/\/.*/  # Allows any HTTP or HTTPS origin
+    %r{https?://.*} # Allows any HTTP or HTTPS origin
   ]
 end
