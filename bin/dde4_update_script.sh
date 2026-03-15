@@ -148,6 +148,7 @@ cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $rails_path db:mi
 
 echo 'Precompile assets'
 cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $rails_path assets:clobber
+cd $APP_DIR && rm -rf tmp/cache
 cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $rails_path assets:precompile
 cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $rails_path tailwindcss:build
 
