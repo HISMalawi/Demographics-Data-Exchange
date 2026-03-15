@@ -71,7 +71,7 @@ module DashboardService
       ")
   end
 
-  def self.location_npids(_location_id)
+  def self.location_npids(location_id)
     ActiveRecord::Base.connection.select_all("
       SELECT
       l.name location_name,
@@ -117,7 +117,7 @@ module DashboardService
           ON
       l.location_id = unassigned.location_id
     WHERE
-      ip_address is not null;
+    l.location_id = #{ActiveRecord::Base.connection.quote(location_id)};
       ")
   end
 
