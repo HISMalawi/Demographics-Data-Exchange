@@ -143,6 +143,19 @@ rails_path="$(which rails)"
 bundle_path="$(which bundle)"
 # bundle_path="/home/$username/.rbenv/shims/bundle"
 
+# Check if locations table has activated column, if not, remove the migration version
+echo "Checking if locations table has 'activated' column..."
+COLUMN_EXISTS=$(mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" -ss -e "SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='$DB_NAME' AND TABLE_NAME='locations' AND COLUMN_NAME='activated';")
+
+if [ "$COLUMN_EXISTS" -eq 0 ]; then
+    echo "ℹ️  'activated' column does not exist in locations table"
+    echo "🔄 Removing migration version 20220620164529 to allow migration to run..."
+    mysql -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" -e "DELETE FROM schema_migrations WHERE version='20220620164529';" 2>/dev/null || true
+    echo "✅ Migration version removed (if it existed), migration will now run"
+else
+    echo "✅ 'activated' column already exists in locations table, skipping migration removal"
+fi
+
 echo "Run any pending  migrations"
 cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $rails_path db:migrate
 
