@@ -157,13 +157,13 @@ else
 fi
 
 echo "Run any pending  migrations"
-cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $rails_path db:migrate
+cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $bundle_path exec rails db:migrate
 
 echo 'Precompile assets'
-cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $rails_path assets:clobber
+cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $bundle_path exec rails assets:clobber
 cd $APP_DIR && rm -rf tmp/cache
-cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $rails_path assets:precompile
-cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $rails_path tailwindcss:build
+cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $bundle_path exec rails assets:precompile
+cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $bundle_path exec rails tailwindcss:build
 
 
 if [[ $ruby_version_manager == 1 ]]; then
