@@ -234,7 +234,7 @@ class Troubleshooter
 
     # Update locally
     sync_user = User.find_by(username: sync_username)
-    if sync_user.exist?
+    if sync_user.present?
       sync_user.update(password: new_password)
     else
       User.create(username: sync_username,
