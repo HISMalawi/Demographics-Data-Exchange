@@ -82,16 +82,21 @@ class SyncJob < ApplicationJob
 
   def authorize
     if File.exist?("#{Rails.root}/tmp/token.json")
-      @token = JSON.parse(File.read("#{Rails.root}/tmp/token.json")).symbolize_keys[:token]
-      return @token if token_valid(@token)
+      content = File.read("#{Rails.root}/tmp/token.json").strip
+      @token = content.present? ? JSON.parse(content).symbolize_keys[:token] : nil
+      return @token if @token.present? && token_valid(@token)
 
       @token = authenticate
       File.write("#{Rails.root}/tmp/token.json", { token: @token }.to_json)
-
     else
       @token = authenticate
       File.write("#{Rails.root}/tmp/token.json", { token: @token }.to_json)
     end
+  rescue JSON::ParserError, NoMethodError, TypeError => e
+    Rails.logger.warn "SyncJob#authorize: Invalid token file (#{e.class}: #{e.message}). Re-authenticating..."
+    log_error("SyncJob#authorize: Invalid token file (#{e.class}: #{e.message}). Re-authenticating...")
+    @token = authenticate
+    File.write("#{Rails.root}/tmp/token.json", { token: @token }.to_json)
   end
 
   def authenticate
