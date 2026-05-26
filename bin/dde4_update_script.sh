@@ -161,6 +161,7 @@ cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $bundle_path exec
 
 echo 'Precompile assets'
 cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $bundle_path exec rails assets:clobber
+cd $APP_DIR && rm -f public/assets/.manifest.json # Delete Manifest
 cd $APP_DIR && rm -rf tmp/cache
 cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $bundle_path exec rails assets:precompile
 cd $APP_DIR && DDE_HOST_URL=$DDE_HOST_URL RAILS_ENV=production $bundle_path exec rails tailwindcss:build
