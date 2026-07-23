@@ -7,7 +7,7 @@ module Api
     # Synchronization service
     class SyncController < ApplicationController
       before_action :validate_pull_source, only: %i[pull_updates_new pull_updates pull_npids]
-      before_action :validate_push_source, only: %i[pushed_updates_new pushed_updates]
+      before_action :validate_push_source, only: %i[pushed_updates_new pushed_updates], unless: :from_mahis?
       before_action :validate_foot_print_source, only: [:pushed_footprints], unless: :from_mahis?
       after_action :update_movement_cache, only: [:pushed_footprints]
 
