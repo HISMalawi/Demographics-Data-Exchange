@@ -3,23 +3,39 @@ module SyncService
   config = YAML.load_file('config/database.yml', aliases: true)
   @batch = config[:batch_size][:batch].to_i
 
-
-  def self.person_changes_new(pull_params)
-    site_id = pull_params[0]
-    pull_seq = pull_params[1]
-    PersonDetail.unscoped
-                .where('location_updated_at != ? AND id > ?', site_id, pull_seq)
-                .order(:id).limit(@batch)
+  # Get location IDs of sites migrated to MaHIS
+  def self.migrated_to_mahis_location_ids
+    Location.where(migrated_to_mahis: true).pluck(:location_id)
   end
 
-  def self.person_changes_updates(pull_params)
+  def self.person_changes_new(pull_params, exclude_migrated: false)
+    site_id = pull_params[0]
+    pull_seq = pull_params[1]
+    query = PersonDetail.unscoped
+                        .where('location_updated_at != ? AND id > ?', site_id, pull_seq)
+    
+    if exclude_migrated
+      migrated_ids = migrated_to_mahis_location_ids
+      query = query.where('location_updated_at NOT IN (?)', migrated_ids) if migrated_ids.any?
+    end
+    
+    query.order(:id).limit(@batch)
+  end
+
+  def self.person_changes_updates(pull_params, exclude_migrated: false)
     site_id = pull_params[0].to_i
     pull_seq = pull_params[1].to_i
-    PersonDetail.unscoped.joins(:person_details_audit)
+    query = PersonDetail.unscoped.joins(:person_details_audit)
                 .where('person_details.location_updated_at != ? AND person_details_audits.id > ?',site_id, pull_seq)
-                .order('person_details_audits.id')
-                .limit(@batch)
-                .select('person_details.*,person_details_audits.id as update_seq')
+    
+    if exclude_migrated
+      migrated_ids = migrated_to_mahis_location_ids
+      query = query.where('person_details.location_updated_at NOT IN (?)', migrated_ids) if migrated_ids.any?
+    end
+    
+    query.order('person_details_audits.id')
+         .limit(@batch)
+         .select('person_details.*,person_details_audits.id as update_seq')
   end
 
   def self.update_records_updates(data)

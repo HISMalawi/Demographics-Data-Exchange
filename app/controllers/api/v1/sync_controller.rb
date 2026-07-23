@@ -12,13 +12,13 @@ module Api
       after_action :update_movement_cache, only: [:pushed_footprints]
 
       def pull_updates_new
-        records_changed = SyncService.person_changes_new(update_params)
+        records_changed = SyncService.person_changes_new(update_params, exclude_migrated: from_mahis?)
 
         render json: records_changed
       end
 
       def pull_updates
-        records_changed = SyncService.person_changes_updates(update_params)
+        records_changed = SyncService.person_changes_updates(update_params, exclude_migrated: from_mahis?)
 
         render json: records_changed
       end
