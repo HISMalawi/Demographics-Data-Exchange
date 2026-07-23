@@ -29,14 +29,22 @@ class SyncJob < ApplicationJob
     end
 
     @location = @user['location_id'].to_i
-    @is_mahis_sync = false  # Flag to indicate if this job is syncing for MaHIS
+    
+    # Determine if this is a MaHIS site by checking location name
+    @is_mahis_sync = is_mahis_location(@location)
 
     @token = ''
   end
 
+  def is_mahis_location(location_id)
+    location = Location.find_by(location_id: location_id)
+    return false unless location.present?
+    
+    location.name.to_s.downcase.include?('mahis')
+  end
+
   def self.perform_for_mahis
     job = new
-    job.instance_variable_set(:@is_mahis_sync, true)
     job.perform
   end
 
