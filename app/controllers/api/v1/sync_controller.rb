@@ -7,18 +7,18 @@ module Api
     # Synchronization service
     class SyncController < ApplicationController
       before_action :validate_pull_source, only: %i[pull_updates_new pull_updates pull_npids]
-      before_action :validate_push_source, only: %i[pushed_updates_new pushed_updates]
-      before_action :validate_foot_print_source, only: [:pushed_footprints]
+      before_action :validate_push_source, only: %i[pushed_updates_new pushed_updates], unless: :from_mahis?
+      before_action :validate_foot_print_source, only: [:pushed_footprints], unless: :from_mahis?
       after_action :update_movement_cache, only: [:pushed_footprints]
 
       def pull_updates_new
-        records_changed = SyncService.person_changes_new(update_params)
+        records_changed = SyncService.person_changes_new(update_params, exclude_migrated: from_mahis?)
 
         render json: records_changed
       end
 
       def pull_updates
-        records_changed = SyncService.person_changes_updates(update_params)
+        records_changed = SyncService.person_changes_updates(update_params, exclude_migrated: from_mahis?)
 
         render json: records_changed
       end
@@ -175,6 +175,19 @@ module Api
       def update_movement_cache
         person_uuid = foot_print_params[:person_uuid]
         UpdateMovementJob.perform_later(person_uuid)
+      end
+
+      def from_mahis?
+        # Skip IP-based validation for MaHIS requests
+        # MaHIS is an external centralized system that handles location mapping internally
+        request.headers['X-Source-System'] == 'MaHIS' || mahis_location_by_ip?
+      end
+
+      def mahis_location_by_ip?
+        location = Location.find_by_ip_address(request.remote_ip)
+        return false unless location.present?
+
+        location.name.to_s.downcase.include?('mahis')
       end
     end
   end

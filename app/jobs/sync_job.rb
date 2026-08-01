@@ -29,8 +29,23 @@ class SyncJob < ApplicationJob
     end
 
     @location = @user['location_id'].to_i
+    
+    # Determine if this is a MaHIS site by checking location name
+    @is_mahis_sync = is_mahis_location(@location)
 
     @token = ''
+  end
+
+  def is_mahis_location(location_id)
+    location = Location.find_by(location_id: location_id)
+    return false unless location.present?
+    
+    location.name.to_s.downcase.include?('mahis')
+  end
+
+  def self.perform_for_mahis
+    job = new
+    job.perform
   end
 
   def perform(*_args)
@@ -117,6 +132,10 @@ class SyncJob < ApplicationJob
     return true if response.code == 200
 
     false
+  end
+
+  def migrated_to_mahis_location_ids
+    Location.where(migrated_to_mahis: true).pluck(:location_id)
   end
 
   def pull_new_records
@@ -232,12 +251,23 @@ class SyncJob < ApplicationJob
 
     push_seq = Config.find_by_config('push_seq_new')['config_value'].to_i
 
-    records_to_push = PersonDetail.unscoped.where('person_details.id > ? AND person_details.location_updated_at = ?',
-                                                  push_seq, @location).order(:id).limit(100)
+    if @is_mahis_sync
+      # For MaHIS: only push records from migrated locations
+      migrated_ids = migrated_to_mahis_location_ids
+      records_to_push = PersonDetail.unscoped.where('person_details.id > ? AND person_details.location_updated_at IN (?)',
+                                                    push_seq, migrated_ids).order(:id).limit(100)
+    else
+      # For facility: push only records from this location
+      records_to_push = PersonDetail.unscoped.where('person_details.id > ? AND person_details.location_updated_at = ?',
+                                                    push_seq, @location).order(:id).limit(100)
+    end
 
     # PUSH UPDATES
     records_to_push.each do |record|
-      response = RestClient.post(url, format_payload(record), { Authorization: @token })
+      headers = { Authorization: @token }
+      headers['X-Source-System'] = 'MaHIS' if @is_mahis_sync
+      
+      response = RestClient.post(url, format_payload(record), headers)
       redo if response.code != 201
       updated = Config.find_by_config('push_seq_new').update(config_value: record.id.to_i) if response.code == 201
       redo if updated != true
@@ -251,12 +281,23 @@ class SyncJob < ApplicationJob
 
     push_seq = Config.find_by_config('push_seq_update')['config_value'].to_i
 
-    records_to_push = PersonDetail.unscoped.joins(:person_details_audit).where('person_details.location_updated_at = ?
+    if @is_mahis_sync
+      # For MaHIS: only push records from migrated locations
+      migrated_ids = migrated_to_mahis_location_ids
+      records_to_push = PersonDetail.unscoped.joins(:person_details_audit).where('person_details.location_updated_at IN (?)
+        AND person_details_audits.id > ?', migrated_ids, push_seq).order('person_details_audits.id').limit(100).select('person_details.*,person_details_audits.id as update_seq')
+    else
+      # For facility: push only records from this location
+      records_to_push = PersonDetail.unscoped.joins(:person_details_audit).where('person_details.location_updated_at = ?
         AND person_details_audits.id > ?', @location, push_seq).order('person_details_audits.id').limit(100).select('person_details.*,person_details_audits.id as update_seq')
+    end
 
     # PUSH UPDATES
     records_to_push.each do |record|
-      response = RestClient.post(url, format_payload(record), { Authorization: @token })
+      headers = { Authorization: @token }
+      headers['X-Source-System'] = 'MaHIS' if @is_mahis_sync
+      
+      response = RestClient.post(url, format_payload(record), headers)
       redo if response.code != 201
       if response.code == 201
         updated = Config.find_by_config('push_seq_update').update(config_value: record.update_seq.to_i)
