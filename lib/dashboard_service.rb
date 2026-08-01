@@ -79,6 +79,8 @@ module DashboardService
       l.activated,
       assigned.assigned,
       unassigned.unassigned,
+      max_updated.allocated,
+      max_updated.unallocated,
       date_last_updated,
       ROUND(assigned.assigned / DATEDIFF(date_last_updated, min_date_updated)) avg_consumption_rate_per_day
     FROM
@@ -87,7 +89,9 @@ module DashboardService
       SELECT
         location_id,
         max(updated_at) date_last_updated,
-        min(updated_at) min_date_updated
+        min(updated_at) min_date_updated,
+        SUM(CASE WHEN allocated = 1 OR assigned = 1 THEN 1 ELSE 0 END) allocated,
+        SUM(CASE WHEN allocated = 0 AND assigned = 0 THEN 1 ELSE 0 END) unallocated
       FROM
         location_npids
       GROUP BY
