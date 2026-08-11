@@ -55,7 +55,7 @@ Rails.application.configure do
   # config.cache_store = :mem_cache_store
 
   # Use a real queuing backend for Active Job (and separate queues per environment)
-  # config.active_job.queue_adapter     = :resque
+  config.active_job.queue_adapter     = :sidekiq
   # config.active_job.queue_name_prefix = "Demographics-Data-Exchange_#{Rails.env}"
 
   # SMTP Settings
@@ -64,7 +64,7 @@ Rails.application.configure do
   smtp_config_path = Rails.root.join('config', 'smtp_settings.yml')
 
   if File.exist?(smtp_config_path)
-    smtp_settings = YAML.load_file(smtp_config_path)
+	  smtp_settings = YAML.safe_load(ERB.new(File.read(smtp_config_path)).result)
                         .deep_symbolize_keys[:smtp_settings][Rails.env.to_sym]
 
     config.action_mailer.smtp_settings = {
@@ -112,7 +112,7 @@ Rails.application.configure do
 
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
-  Rails.application.routes.default_url_options[:host] = ENV.fetch('DDE_HOST_URL')
+  Rails.application.routes.default_url_options[:host] = ENV.fetch('DDE_HOST_URL', 'http://10.44.0.64:9000')
 
   config.action_cable.allowed_request_origins = [
     /https?:\/\/.*/  # Allows any HTTP or HTTPS origin
