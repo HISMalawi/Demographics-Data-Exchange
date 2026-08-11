@@ -73,51 +73,36 @@ module DashboardService
 
   def self.location_npids(location_id)
     ActiveRecord::Base.connection.select_all("
-      SELECT
-      l.name location_name,
-      l.location_id,
-      l.activated,
-      assigned.assigned,
-      unassigned.unassigned,
-      date_last_updated,
-      ROUND(assigned.assigned / DATEDIFF(date_last_updated, min_date_updated)) avg_consumption_rate_per_day
-    FROM
-      locations l
-    JOIN (
-      SELECT
-        location_id,
-        max(updated_at) date_last_updated,
-        min(updated_at) min_date_updated
-      FROM
-        location_npids
-      GROUP BY
-        location_id) max_updated
-          ON
-      l.location_id = max_updated.location_id
-    JOIN (
-      SELECT
-        ln.location_id,
-        count(*) assigned
-      FROM
-        location_npids ln
-      WHERE ln.assigned = 1
-      GROUP BY
-        location_id) assigned
-          ON
-      l.location_id = assigned.location_id
-    JOIN  (
-      SELECT
-        ln.location_id,
-        count(*) unassigned
-      FROM
-        location_npids ln
-      WHERE ln.assigned = 0
-      GROUP BY
-        location_id) unassigned
-          ON
-      l.location_id = unassigned.location_id
-    WHERE
-    l.location_id = #{ActiveRecord::Base.connection.quote(location_id)};
+SELECT
+  l.name location_name,
+  l.location_id,
+  l.activated,
+  stats.assigned,
+  stats.unassigned,
+  stats.allocated,
+  stats.unallocated,
+  stats.date_last_updated,
+  ROUND(stats.assigned / DATEDIFF(stats.date_last_updated, stats.min_date_updated)) avg_consumption_rate_per_day
+FROM
+  locations l
+JOIN (
+  SELECT
+    location_id,
+    MAX(updated_at) date_last_updated,
+    MIN(updated_at) min_date_updated,
+    SUM(CASE WHEN allocated = 1 OR assigned = 1 THEN 1 ELSE 0 END) allocated,
+    SUM(CASE WHEN allocated = 0 AND assigned = 0 THEN 1 ELSE 0 END) unallocated,
+    SUM(CASE WHEN assigned = 1 THEN 1 ELSE 0 END) assigned,
+    SUM(CASE WHEN assigned = 0 THEN 1 ELSE 0 END) unassigned
+  FROM
+    location_npids
+  WHERE
+    location_id = #{ActiveRecord::Base.connection.quote(location_id)}
+  GROUP BY
+    location_id
+) stats ON l.location_id = stats.location_id
+WHERE
+  l.location_id = #{ActiveRecord::Base.connection.quote(location_id)};
       ")
   end
 
