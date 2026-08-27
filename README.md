@@ -168,6 +168,20 @@ This will create the npids table which you can populate with your preferred uniq
   rails r bin/npids_faker.rb
 ```
 
+### Mark sites as migrated to MaHIS
+
+On both the DDE Master and MaHIS, mark each site that has migrated to MaHIS so that DDE handles its synchronization correctly. Run the following command on each system, replacing the location IDs with the DDE `location_id` values for the equivalent MaHIS sites:
+
+```bash
+rails runner 'Location.where(location_id: [LOCATION_ID_1, LOCATION_ID_2]).update_all(migrated_to_mahis: true)'
+```
+
+Confirm the migrated sites:
+
+```bash
+rails runner 'puts Location.where(migrated_to_mahis: true).pluck(:location_id)'
+```
+
 
 **Important:** The `DDE_HOST_URL` environment variable *must* be set to the correct hostname or IP address and Port where DDE is running. This is required for mailer reports to be stored correctly and for the EMR User Management engine to authenticate properly.
 
