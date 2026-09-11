@@ -1,6 +1,58 @@
 require 'rails_helper'
 
 RSpec.describe SyncJob do
+  describe '#push_footprints' do
+    let(:job) do
+      described_class.allocate.tap do |instance|
+        instance.instance_variable_set(:@location, 1)
+        instance.instance_variable_set(:@base_url, 'http://example.com/v1')
+        instance.instance_variable_set(:@token, 'Bearer test-token')
+      end
+    end
+
+    before do
+      allow(RestClient).to receive(:post).and_return(double(code: 201))
+    end
+
+    def create_footprint(location_id:, synced: false)
+      FootPrint.create!(
+        user_id: 1,
+        person_uuid: SecureRandom.uuid,
+        program_id: 1,
+        location_id: location_id,
+        uuid: SecureRandom.uuid,
+        encounter_datetime: Time.current,
+        synced: synced
+      )
+    end
+
+    it 'pushes unsynced footprints from every location for a MaHIS sync' do
+      instance = job
+      instance.instance_variable_set(:@is_mahis_sync, true)
+      local_footprint = create_footprint(location_id: 1)
+      other_location_footprint = create_footprint(location_id: 2)
+
+      instance.push_footprints
+
+      expect(local_footprint.reload.synced).to be(true)
+      expect(other_location_footprint.reload.synced).to be(true)
+      expect(RestClient).to have_received(:post).twice
+    end
+
+    it 'pushes only the configured location footprints for a facility sync' do
+      instance = job
+      instance.instance_variable_set(:@is_mahis_sync, false)
+      local_footprint = create_footprint(location_id: 1)
+      other_location_footprint = create_footprint(location_id: 2)
+
+      instance.push_footprints
+
+      expect(local_footprint.reload.synced).to be(true)
+      expect(other_location_footprint.reload.synced).to be(false)
+      expect(RestClient).to have_received(:post).once
+    end
+  end
+
   describe '#pull_new_records' do
     let(:location_id) { 1 }
     let(:base_url) { 'http://example.com' }
