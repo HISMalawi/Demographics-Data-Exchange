@@ -115,7 +115,28 @@ module SyncService
 
   def self.save_errors(error)
     error.delete(:id)
-    SyncError.create!(error) unless SyncError.find_by_uuid(error[:uuid])
+    SyncError.find_by_uuid(error[:uuid]) ||
+      find_existing_error(error[:site_id], error[:error]) ||
+      SyncError.create!(error)
+  end
+
+  def self.find_existing_error(site_id, error_message)
+    normalized_message = normalize_error_message(error_message)
+    return SyncError.find_by(site_id: site_id, error: error_message) unless normalized_message.include?('<id>')
+
+    pattern = normalized_message.split('<id>').map do |part|
+      SyncError.sanitize_sql_like(part)
+    end.join('%')
+
+    SyncError.where(site_id: site_id).where('error LIKE ?', pattern).find_each.find do |existing_error|
+      normalize_error_message(existing_error.error) == normalized_message
+    end
+  end
+
+  def self.normalize_error_message(error_message)
+    error_message.to_s
+                 .gsub(/\b(error_id:\s*)\d+/i, '\1<id>')
+                 .gsub(/(\b\d{3}\s+[^:\r\n]*?)\s+\d+(?=:)/, '\1 <id>')
   end
 
   def self.sync_errors
