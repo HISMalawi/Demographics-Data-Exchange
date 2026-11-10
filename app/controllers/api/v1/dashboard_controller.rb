@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 class Api::V1::DashboardController < ApplicationController
+  skip_before_action :authenticate_request, only: :dashboard_data
+
   def new_registrations
     registrations = PersonDetail.where('date(date_registered) = date(now())').count
 
@@ -77,6 +79,11 @@ class Api::V1::DashboardController < ApplicationController
       data = DashboardStat.where(:name => "dashboard_stats")
       ActionCable.server.broadcast('dashboard_channel',{ message: data.first&.value})
       render json: {message: 'Initilized Dashboard Refresh'}, status: :ok 
+  end
+
+  def dashboard_data
+    data = DashboardStat.find_by(name: 'dashboard_stats')
+    render json: { message: data&.value }, status: :ok
   end
 
   private
