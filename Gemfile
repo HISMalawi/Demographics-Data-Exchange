@@ -47,17 +47,17 @@ gem 'rack-cors'
 gem 'jwt'
 gem 'simple_command'
 
-#matching algorithm
+# matching algorithm
 gem 'whitesimilarity'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'byebug', platforms: %i[mri mingw x64_mingw]
   gem 'rspec-rails'
 end
 
 group :test do
-  #gem 'simplecov', require: false
+  # gem 'simplecov', require: false
 end
 
 group :development do
@@ -67,15 +67,16 @@ group :development do
   gem 'spring-watcher-listen', '~> 2.0.0'
 end
 
-
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
 
 gem 'his_emr_user_management', '~> 0.1.2'
-gem "turbo-rails", "~> 2.0"
+gem 'turbo-rails', '~> 2.0'
 
-gem "importmap-rails"
+gem 'importmap-rails'
 
-gem "sprockets-rails"
+gem 'sprockets-rails'
 
-gem "tailwindcss-rails"
+gem 'tailwindcss-rails'
+
+gem 'connection_pool', '< 3.0'
