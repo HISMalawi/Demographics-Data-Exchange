@@ -86,6 +86,7 @@ Rails.application.routes.draw do
   get   'v1/connected_sites', to: 'api/v1/dashboard#connected_sites'
   get   'v1/site_activity', to: 'api/v1/dashboard#site_activity'
   get   'v1/location_npid_status', to: 'api/v1/dashboard#location_npid_status'
+  get   'v1/dashboard_data', to: 'api/v1/dashboard#dashboard_data'
   get   'v1/refresh_dashboard', to: 'api/v1/dashboard#refresh_dashboard'
   get   'v1/npid_reservoir', to: 'api/v1/dashboard#npid_reservoir'
 
