@@ -2,6 +2,33 @@ require 'rails_helper'
 require 'syncing_service/sync_service'
 
 RSpec.describe SyncService do
+  describe '.update_records_updates' do
+    let(:update) do
+      {
+        person_uuid: 'missing-person',
+        location_updated_at: 1,
+        update_seq: 2,
+        first_name: 'Updated'
+      }
+    end
+
+    it 'returns not found without creating a tracker when the person does not exist' do
+      result = described_class.update_records_updates(update)
+
+      expect(result).to eq(status: 404, error: 'Person not found', person_uuid: 'missing-person')
+      expect(PushTracker.where(site_id: 1, push_type: 'update')).to be_empty
+    end
+
+    it 'does not advance an existing tracker when the person does not exist' do
+      tracker = PushTracker.create!(site_id: 1, push_seq: 1, push_type: 'update')
+
+      result = described_class.update_records_updates(update)
+
+      expect(result[:status]).to eq(404)
+      expect(tracker.reload.push_seq).to eq(1)
+    end
+  end
+
   describe '.save_errors' do
     let(:error) do
       {
