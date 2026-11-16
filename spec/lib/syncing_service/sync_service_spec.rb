@@ -29,6 +29,45 @@ RSpec.describe SyncService do
     end
   end
 
+  describe '.update_records_new' do
+    let(:new_person) do
+      {
+        id: 2,
+        person_uuid: 'new-person',
+        npid: 'missing-npid',
+        first_name: 'New',
+        last_name: 'Person',
+        gender: 'M',
+        birthdate: Date.new(1990, 1, 1),
+        date_registered: Time.current,
+        last_edited: Time.current,
+        location_created_at: 1,
+        location_updated_at: 1,
+        creator: 1,
+        first_name_soundex: 'N',
+        last_name_soundex: 'P'
+      }
+    end
+
+    it 'returns not found without creating a person or tracker when the NPID is missing' do
+      result = described_class.update_records_new(new_person)
+
+      expect(result).to eq(status: 404, error: 'NPID not found', npid: 'missing-npid')
+      expect(PersonDetail.unscoped.find_by_person_uuid('new-person')).to be_nil
+      expect(PushTracker.where(site_id: 1, push_type: 'new')).to be_empty
+    end
+
+    it 'does not advance an existing tracker when the NPID is missing' do
+      tracker = PushTracker.create!(site_id: 1, push_seq: 1, push_type: 'new')
+
+      result = described_class.update_records_new(new_person)
+
+      expect(result).to eq(status: 404, error: 'NPID not found', npid: 'missing-npid')
+      expect(PersonDetail.unscoped.find_by_person_uuid('new-person')).to be_nil
+      expect(tracker.reload.push_seq).to eq(1)
+    end
+  end
+
   describe '.save_errors' do
     let(:error) do
       {
