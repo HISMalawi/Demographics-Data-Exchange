@@ -40,18 +40,18 @@ module SyncService
 
   def self.update_records_updates(data)
     push_seq = PushTracker.find_by(site_id: data[:location_updated_at].to_i, push_type: 'update')
-    if push_seq.blank?
-      push_seq = PushTracker.create!(site_id: data[:location_updated_at].to_i,push_seq: 0, push_type: 'update')
-    end
-    return {status: 200} if push_seq.push_seq > data[:update_seq].to_i # Skip data if has already been tracked
+    return {status: 200} if push_seq.present? && push_seq.push_seq > data[:update_seq].to_i # Skip data if has already been tracked
 
     person = PersonDetail.unscoped.find_by_person_uuid(data[:person_uuid])
+    return {status: 404, error: 'Person not found', person_uuid: data[:person_uuid]} if person.blank?
+
     current_seq = data[:update_seq].to_i
     data.delete('id')
     data.delete('created_at')
     data.delete('updated_at')
     data.delete('update_seq')
     ActiveRecord::Base.transaction do
+        push_seq ||= PushTracker.create!(site_id: data[:location_updated_at].to_i, push_seq: 0, push_type: 'update')
         audit_record = JSON.parse(person.dup.to_json)
         person.update(data)
         audit_record.delete('id')

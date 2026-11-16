@@ -25,7 +25,9 @@ module Api
 
       def pushed_updates
         update = SyncService.update_records_updates(push_params)
-        if update
+        if update[:status] == 404
+          render json: update.except(:status), status: :not_found
+        elsif update
           render json: update, status: :created
         else
           render json: { msg: 'Something went wrong' }, status: :internal_server_error
