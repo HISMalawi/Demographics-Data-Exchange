@@ -53,4 +53,27 @@ RSpec.describe Api::V1::SyncController, type: :controller do
       expect(JSON.parse(response.body)).to eq('error' => 'Invalid update')
     end
   end
+
+  describe '#pushed_errors' do
+    it 'identifies an error already stored on the master as a duplicate' do
+      error = SyncError.new(uuid: 'existing-error-uuid', site_id: 1, incident_time: Time.current, error: 'Duplicate')
+      allow(SyncService).to receive(:save_errors).and_return(error)
+
+      post :pushed_errors, params: { site_id: 1, incident_time: Time.current, error: 'Duplicate' }
+
+      expect(response).to have_http_status(:created)
+      expect(JSON.parse(response.body)).to include('uuid' => 'existing-error-uuid', 'duplicate' => true)
+    end
+
+    it 'does not label a newly stored error as a duplicate' do
+      error = SyncError.new(uuid: 'new-error-uuid', site_id: 1, incident_time: Time.current, error: 'New error')
+      allow(error).to receive(:previously_new_record?).and_return(true)
+      allow(SyncService).to receive(:save_errors).and_return(error)
+
+      post :pushed_errors, params: { site_id: 1, incident_time: Time.current, error: 'New error' }
+
+      expect(response).to have_http_status(:created)
+      expect(JSON.parse(response.body)).not_to have_key('duplicate')
+    end
+  end
 end
