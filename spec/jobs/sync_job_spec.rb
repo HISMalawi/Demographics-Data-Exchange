@@ -53,6 +53,65 @@ RSpec.describe SyncJob do
     end
   end
 
+  describe '#push_errors' do
+    let(:job) do
+      described_class.allocate.tap do |instance|
+        instance.instance_variable_set(:@base_url, 'http://example.com/v1')
+        instance.instance_variable_set(:@token, '******')
+      end
+    end
+
+    def create_sync_error
+      SyncError.create!(
+        site_id: 1,
+        incident_time: Time.current,
+        error: 'Connection timed out',
+        uuid: SecureRandom.uuid
+      )
+    end
+
+    it 'marks an error as synced when the master confirms it is a duplicate' do
+      error = create_sync_error
+      allow(RestClient).to receive(:post).and_return(double(code: 201, body: { duplicate: true }.to_json))
+
+      job.push_errors
+
+      expect(error.reload.synced).to be(true)
+    end
+
+    it 'does not mark an error as synced when the master does not accept it' do
+      error = create_sync_error
+      allow(RestClient).to receive(:post).and_return(double(code: 200, body: {}.to_json))
+
+      job.push_errors
+
+      expect(error.reload.synced).to be(false)
+    end
+  end
+
+  describe '#log_error' do
+    let(:job) do
+      described_class.allocate.tap do |instance|
+        instance.instance_variable_set(:@location, 1)
+      end
+    end
+
+    it 'keeps the original error and incident time when a duplicate numeric ID changes' do
+      job.send(:log_error, '511 Network Authentication Required 53915: {"msg":"Request source cannot be verified"}')
+      existing_error = SyncError.last
+      original_incident_time = existing_error.incident_time
+      original_updated_at = existing_error.updated_at
+
+      expect do
+        job.send(:log_error, '511 Network Authentication Required 53913: {"msg":"Request source cannot be verified"}')
+      end.not_to change(SyncError, :count)
+
+      expect(existing_error.reload.error).to include('53915')
+      expect(existing_error.incident_time).to eq(original_incident_time)
+      expect(existing_error.updated_at).to eq(original_updated_at)
+    end
+  end
+
   describe '#pull_new_records' do
     let(:location_id) { 1 }
     let(:base_url) { 'http://example.com' }
