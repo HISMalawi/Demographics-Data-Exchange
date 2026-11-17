@@ -83,6 +83,8 @@ RSpec.describe SyncService do
       duplicate_error = described_class.save_errors(error)
 
       expect(duplicate_error).to eq(existing_error)
+      expect(existing_error.previously_new_record?).to be(true)
+      expect(duplicate_error.previously_new_record?).to be(false)
       expect(SyncError.where(site_id: 1, error: 'Connection timed out').count).to eq(1)
     end
 
