@@ -69,8 +69,10 @@ module Api
         error = SyncService.save_errors(error_params)
         if error.errors.any?
           render json: { msg: 'Something went wrong' }, status: :internal_server_error
-        else
+        elsif error.previously_new_record?
           render json: error, status: :created
+        else
+          render json: error.as_json.merge(duplicate: true), status: :created
         end
       end
 
