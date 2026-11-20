@@ -25,20 +25,30 @@ module Api
 
       def pushed_updates
         update = SyncService.update_records_updates(push_params)
-        if update
+        if update && update[:status] != 200
+          render json: update.except(:status), status: update[:status]
+        elsif update
           render json: update, status: :created
         else
           render json: { msg: 'Something went wrong' }, status: :internal_server_error
         end
+      rescue StandardError => e
+        log_sync_error(e)
+        render json: { msg: 'Something went wrong' }, status: :internal_server_error
       end
 
       def pushed_updates_new
         update = SyncService.update_records_new(push_params)
-        if update
+        if update && update[:status] != 200
+          render json: update.except(:status), status: update[:status]
+        elsif update
           render json: update, status: :created
         else
           render json: { msg: 'Something went wrong' }, status: :unprocessable_entity
         end
+      rescue StandardError => e
+        log_sync_error(e)
+        render json: { msg: 'Something went wrong' }, status: :internal_server_error
       end
 
       def pull_npids
@@ -59,8 +69,10 @@ module Api
         error = SyncService.save_errors(error_params)
         if error.errors.any?
           render json: { msg: 'Something went wrong' }, status: :internal_server_error
-        else
+        elsif error.previously_new_record?
           render json: error, status: :created
+        else
+          render json: error.as_json.merge(duplicate: true), status: :created
         end
       end
 
@@ -165,6 +177,12 @@ module Api
 
       def error_params
         params.permit(:site_id, :incident_time, :error, :synced, :uuid, :created_at, :updated_at)
+      end
+
+      def log_sync_error(error)
+        Rails.logger.error(
+          "[SyncController##{action_name}] #{error.class}: #{error.message}\n#{error.backtrace&.join("\n")}"
+        )
       end
 
       def send_mail
