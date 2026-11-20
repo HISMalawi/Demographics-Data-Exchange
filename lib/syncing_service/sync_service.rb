@@ -1,7 +1,10 @@
+require 'yaml'
+
 module SyncService
 
-  config = YAML.load_file('config/database.yml', aliases: true)
-  @batch = config[:batch_size][:batch].to_i
+  def self.batch_size
+    @batch ||= YAML.load_file('config/database.yml', aliases: true)[:batch_size][:batch].to_i
+  end
 
   # Get location IDs of sites migrated to MaHIS
   def self.migrated_to_mahis_location_ids
@@ -19,7 +22,7 @@ module SyncService
       query = query.where('location_updated_at NOT IN (?)', migrated_ids) if migrated_ids.any?
     end
     
-    query.order(:id).limit(@batch)
+    query.order(:id).limit(batch_size)
   end
 
   def self.person_changes_updates(pull_params, exclude_migrated: false)
@@ -34,7 +37,7 @@ module SyncService
     end
     
     query.order('person_details_audits.id')
-         .limit(@batch)
+         .limit(batch_size)
          .select('person_details.*,person_details_audits.id as update_seq')
   end
 
