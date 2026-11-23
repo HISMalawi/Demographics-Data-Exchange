@@ -34,7 +34,7 @@ module Api
         end
       rescue StandardError => e
         log_sync_error(e)
-        render json: { msg: 'Something went wrong' }, status: :internal_server_error
+        render json: { msg: e.message }, status: :internal_server_error
       end
 
       def pushed_updates_new
@@ -48,7 +48,7 @@ module Api
         end
       rescue StandardError => e
         log_sync_error(e)
-        render json: { msg: 'Something went wrong' }, status: :internal_server_error
+        render json: { msg: e.message }, status: :internal_server_error
       end
 
       def pull_npids
