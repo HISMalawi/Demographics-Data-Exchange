@@ -16,7 +16,7 @@ RSpec.describe Api::V1::SyncController, type: :controller do
       post :pushed_updates, params: { person_uuid: 'person-uuid', location_updated_at: 1 }
 
       expect(response).to have_http_status(:internal_server_error)
-      expect(JSON.parse(response.body)).to eq('msg' => 'Something went wrong')
+      expect(JSON.parse(response.body)).to eq('msg' => 'unexpected failure')
     end
 
     it 'returns any non-success status returned by the sync service' do
@@ -39,7 +39,7 @@ RSpec.describe Api::V1::SyncController, type: :controller do
       post :pushed_updates_new, params: { person_uuid: 'person-uuid', location_updated_at: 1 }
 
       expect(response).to have_http_status(:internal_server_error)
-      expect(JSON.parse(response.body)).to eq('msg' => 'Something went wrong')
+      expect(JSON.parse(response.body)).to eq('msg' => 'unexpected failure')
     end
 
     it 'returns any non-success status returned by the sync service' do
