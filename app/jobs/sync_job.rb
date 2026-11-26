@@ -1,5 +1,6 @@
 require 'rest-client'
 require 'yaml'
+require 'syncing_service/sync_service'
 
 class SyncJob < ApplicationJob
   queue_as :sync
@@ -381,7 +382,16 @@ class SyncJob < ApplicationJob
     SyncError.where(synced: false).find_in_batches(batch_size: 500) do |batch|
       responses = Parallel.map(batch, in_threads: 10) do |error|
         response = RestClient.post(url, error.as_json, { Authorization: @token })
-        error.id if response.code == 201 # Collect successful IDs
+        if response.code == 201
+          if response.body.present? && JSON.parse(response.body)['duplicate']
+            Rails.logger.info("Sync error #{error.id} is already recorded on the master")
+          end
+          error.id
+        end
+      rescue JSON::ParserError => e
+        Rails.logger.error("Invalid response syncing Error #{error.id}: #{e.message}")
+        log_error("Invalid response syncing Error #{error.id}: #{e.message}")
+        error.id if response&.code == 201
       rescue RestClient::ExceptionWithResponse => e
         Rails.logger.error("Failed to sync Error #{error.id}: #{e.response}")
         log_error("msg: #{e.message} error_id: #{error.id}: response: #{e.response}")
@@ -427,22 +437,18 @@ class SyncJob < ApplicationJob
   private
 
   def log_error(error)
-    return if @location_id.blank? || error.to_s.blank?
+    site_id = @location || @location_id
+    return if site_id.blank? || error.to_s.blank?
 
-    existing_error = SyncError.find_by(site_id: @location_id, error: error.to_s)
+    existing_error = SyncService.find_existing_error(site_id, error.to_s)
 
-    if existing_error
-      existing_error.update!(
-        incident_time: Time.now,
-        updated_at: Time.now
-      )
-    else
-      SyncError.create!(
-        site_id: @location_id,
-        incident_time: Time.now,
-        error: error.to_s
-      )
-    end
+    return if existing_error
+
+    SyncError.create!(
+      site_id: site_id,
+      incident_time: Time.now,
+      error: error.to_s
+    )
   end
 
   def clear_errors
